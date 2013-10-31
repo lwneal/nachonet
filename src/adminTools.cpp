@@ -54,6 +54,29 @@ CURLcode curl_read(const std::string& url, std::ostream& os, long timeout = 30)
 	return code;
 }
 
+CURLcode curl_post(const std::string& url, std::ostream& os, long timeout = 30)
+{
+	CURLcode code(CURLE_FAILED_INIT);
+	CURL* curl = curl_easy_init();
+
+	if(curl)
+	{
+		if(CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS,
+				"localhost:5984\_replicate '{\"source\":\"http://192.168.1.11:5984/nachonet/node_2\", \"target\":\"node_2\"}'"))
+		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L))
+		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L))
+		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_FILE, &os))
+		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout))
+		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_URL, url.c_str())))
+		{
+			code = curl_easy_perform(curl);
+		}
+		curl_easy_cleanup(curl);
+	}
+
+	return code;
+
+}
 
 int menu(int menuID)
 {
@@ -126,6 +149,93 @@ int menu(int menuID)
 	return selection;
 }
 
+void cleanJSONData(std::string jsonData)
+{
+	std::string word;
+	bool bInArray = false;
+	int objNum = -1;
+
+	for(unsigned int i = 0; i < jsonData.length(); i++)
+	{
+		switch(jsonData[i])
+		{
+			case '{':
+				objNum++;
+				break;
+
+			case '}':
+				objNum--;
+				break;
+
+			case '[':
+				std::cout << std::endl;
+				bInArray = true;
+				break;
+
+			case ']':
+				bInArray = false;
+				break;
+
+			case '"':
+				if(bInArray)
+				{
+					word.push_back('\t');
+				}
+
+				while('"' != jsonData[++i])
+				{
+					word.push_back(jsonData[i]);
+				}
+
+				std::cout << word << " ";
+
+				word.clear();
+				break;
+
+			case ',':
+				if(0 == objNum)
+				{
+					std::cout << std::endl;
+				}
+				else
+				{
+					std::cout << "\t";
+				}
+
+
+				break;
+
+			case ':':
+				++i;
+
+				if('[' == jsonData[i])
+				{
+					--i;
+				}
+				else
+				{
+					std::cout << " ";
+
+					while(',' != jsonData[i] && '}' != jsonData[i])
+					{
+						word.push_back(jsonData[i]);
+						++i;
+					}
+
+					std::cout << word << " ";
+
+					word.clear();
+
+					--i;
+				}
+				break;
+
+		}
+
+	}
+
+}
+
 int main()
 {
 	int menuID = AdminTools::MAIN;
@@ -155,13 +265,16 @@ int main()
 						//replicate database and print
 
 						//from same place as other curl code
-						if(CURLE_OK == curl_read("localhost:5984/NachoNet/node_2", oss))
+						if(CURLE_OK == curl_read("localhost:5984/nachonet/node_2", oss))
 						{
 							// Web page successfully written to string
 							json = oss.str();
+							oss.str("");
 						}
 
-						std::cout << json << std::endl;
+						std::cout << "\n\n---------------------------------------------------------\n";
+						cleanJSONData(json);
+						std::cout << "\n---------------------------------------------------------\n\n\n";
 
 						break;
 
@@ -171,13 +284,16 @@ int main()
 					case AdminTools::LIST_DEVICES:
 						//FOR PROTOTYPE DEMO ONLY!!!
 						//pull data from database and print
-						if(CURLE_OK == curl_read("localhost:5984/NachoNet/locations", oss))
+						if(CURLE_OK == curl_read("localhost:5984/nachonet/locations", oss))
 						{
 							// Web page successfully written to string
 							json = oss.str();
+							oss.str("");
 						}
 
-						std::cout << json << std::endl;
+						std::cout << "\n\n---------------------------------------------------------\n";
+						cleanJSONData(json);
+						std::cout << "\n---------------------------------------------------------\n\n\n";
 
 						break;
 

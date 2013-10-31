@@ -54,25 +54,26 @@ CURLcode curl_read(const std::string& url, std::ostream& os, long timeout = 30)
 	return code;
 }
 
-CURLcode curl_post(const std::string& url, std::ostream& os, long timeout = 30)
+CURLcode curl_post(const std::string& url)
 {
 	CURLcode code(CURLE_FAILED_INIT);
 	CURL* curl = curl_easy_init();
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append(headers, "Content-Type: application/json");
 
 	if(curl)
 	{
 		if(CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS,
-				"localhost:5984\_replicate '{\"source\":\"http://192.168.1.11:5984/nachonet/node_2\", \"target\":\"node_2\"}'"))
-		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L))
-		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L))
-		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_FILE, &os))
-		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout))
+				"{\"source\":\"http://192.168.1.11:5984/nachonet\", \"target\":\"nachonet\"}"))
+		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers))
 		&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_URL, url.c_str())))
 		{
 			code = curl_easy_perform(curl);
 		}
 		curl_easy_cleanup(curl);
 	}
+
+	curl_slist_free_all(headers);
 
 	return code;
 
@@ -264,8 +265,15 @@ int main()
 						//FOR PROTOTYPE DEMO ONLY!!!
 						//replicate database and print
 
+						if(CURLE_OK == curl_post("http://192.168.1.10:5984/_replicate"))
+						{
+
+
+						}
+
+
 						//from same place as other curl code
-						if(CURLE_OK == curl_read("localhost:5984/nachonet/node_2", oss))
+						if(CURLE_OK == curl_read("http://192.168.1.10:5984/nachonet/node_2", oss))
 						{
 							// Web page successfully written to string
 							json = oss.str();
@@ -284,7 +292,7 @@ int main()
 					case AdminTools::LIST_DEVICES:
 						//FOR PROTOTYPE DEMO ONLY!!!
 						//pull data from database and print
-						if(CURLE_OK == curl_read("localhost:5984/nachonet/locations", oss))
+						if(CURLE_OK == curl_read("http://192.168.1.10:5984/nachonet/locations", oss))
 						{
 							// Web page successfully written to string
 							json = oss.str();

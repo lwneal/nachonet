@@ -9,12 +9,14 @@ Purpose:		Defines all of the useful constants and structures used by the
 
 #pragma once
 
+/*
 struct DeviceEntry
 {
 	int id;
 	int xCoordinate;
 	int yCoordinate;
 }DeviceEntry;
+*/
 
 class AdminTools
 {

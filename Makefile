@@ -17,7 +17,7 @@ VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 all: bin/adminTools bin/prototype
 
 bin/adminTools: bin/adminTools.o bin/adminToolsDriver include/adminTools.h 
-	${CC} ${CFLAGS} -o bin/adminTools bin/adminTools.o bin/adminToolsDriver \
+	${CC} ${CFLAGS} -o bin/adminTools bin/adminTools.o bin/adminToolsDriver.o \
 	-lcurl
 
 bin/prototype: bin/prototype.o include/adminTools.h

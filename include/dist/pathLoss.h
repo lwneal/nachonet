@@ -15,8 +15,8 @@ Purpose:		The file defines the interface to the pathLoss module which will
 class pathLoss : public distMeasure
 {
 	public:
-		pathLoss();
 		virtual ~pathLoss();
+		virtual void init();
 		virtual distMeasurement measure(ssMeasurement devSS);
 
 	private:

@@ -15,8 +15,8 @@ Purpose:		Defines the interface to the fsPathLoss module which implements
 class fsPathLoss : public distMeasure
 {
 	public:
-		fsPathLoss();
 		virtual ~fsPathLoss();
+		virtual void init();
 		virtual distMeasurement measure(ssMeasurement devSS);
 
 	private:

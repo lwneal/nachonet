@@ -16,18 +16,20 @@ VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 
 all: bin/adminTools bin/prototype
 
-bin/adminTools: bin/adminTools.o bin/adminToolsDriver include/adminTools.h 
+bin/adminTools: bin/adminTools.o bin/adminToolsDriver \
+include/tools/adminTools.h 
 	${CC} ${CFLAGS} -o bin/adminTools bin/adminTools.o bin/adminToolsDriver.o \
 	-lcurl
 
-bin/prototype: bin/prototype.o include/adminTools.h
+bin/prototype: bin/prototype.o include/tools/adminTools.h
 	${CC} ${CLFAGS} -o bin/prototype bin/prototype.o -lcurl
 
-bin/adminTools.o: src/adminTools.cpp include/adminTools.h 
-	${CC} ${CFLAGS} -o bin/adminTools.o -c src/adminTools.cpp
+bin/adminTools.o: src/tools/adminTools.cpp include/tools/adminTools.h 
+	${CC} ${CFLAGS} -o bin/adminTools.o -c src/tools/adminTools.cpp
 	
-bin/adminToolsDriver.o: src/adminToolsDriver.cpp include/adminTools.h
-	${CC} ${CFLAGS} -o bin/adminToolsDriver.o -c src/adminToolsDriver.cpp
+bin/adminToolsDriver.o: src/tools/adminToolsDriver.cpp \
+include/tools/adminTools.h
+	${CC} ${CFLAGS} -o bin/adminToolsDriver.o -c src/tools/adminToolsDriver.cpp
 	
 bin/prototype.o: src/prototype.cpp include/adminTools.h
 	${CC} ${CFLAGS} -o bin/prototype.o -c src/prototype.cpp

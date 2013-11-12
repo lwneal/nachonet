@@ -10,17 +10,29 @@ Purpose:		The file defines the interface to the pathLoss module which will
 
 #pragma once
 #include "dist.h"
-#include <cmath>
+#include <math.h>
 
 class pathLoss : public distMeasure
 {
 	public:
+		pathLoss();
 		virtual ~pathLoss();
 		virtual void init();
 		virtual distMeasurement measure(ssMeasurement devSS);
 
+
+		//These aren't entirely arbitrary. They were chosen by looking at the plot
+		//on page 13 of [Pu et. al. 2011]
+		const float DEFAULT_REF_DIST = 1;
+		const float DEFAULT_ENV_VAL= 3.5;
+
 	private:
-		float d_0; //dist at which reference measurement is taken (from config file)
-		float n; //environmental characterization value (from config file)
+		//d_0
+		float refDist; //dist at which reference measurement is taken
+									 //(from config file)
+		//n
+		float envVal; //environmental characterization value (from config file)
+		//P_d0
+		float powerAtRefDist;
 };
 

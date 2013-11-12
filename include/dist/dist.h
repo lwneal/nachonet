@@ -25,6 +25,8 @@ class distMeasure
 		virtual void init() = 0;
 		virtual distMeasurement measure(ssMeasurement devSS) = 0;
 
+		const char * CONFIG = "dist.config";
+
 	private:
 };
 

@@ -15,6 +15,7 @@ Purpose:		Defines the interface to the fsPathLoss module which implements
 class fsPathLoss : public distMeasure
 {
 	public:
+		fsPathLoss(float frequency = 2.412); //frequency in GHz of WiFi channel 1
 		virtual ~fsPathLoss();
 		virtual void init();
 		virtual distMeasurement measure(ssMeasurement devSS);

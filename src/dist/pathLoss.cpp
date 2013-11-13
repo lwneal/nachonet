@@ -10,6 +10,7 @@ Purpose:		The file implements the behavior of the pathLoss module which means
 
 #include "../../include/dist/pathLoss.h"
 #include <fstream>
+#include <iostream>
 
 pathLoss::pathLoss()
 {
@@ -23,7 +24,7 @@ void pathLoss::init()
 {
 	std::ifstream inFile;
 
-	inFile.open(pathLoss::CONFIG);
+	inFile.open(CONFIG);
 
 	if(!inFile)
 	{

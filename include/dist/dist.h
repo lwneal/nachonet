@@ -19,14 +19,14 @@ typedef struct distMeasurement
   float dist;
 } distMeasurement;
 
+static const char * CONFIG = "dist.config";
+
 class distMeasure
 {
 	public:
 		virtual ~distMeasure();
 		virtual void init() = 0;
 		virtual distMeasurement measure(ssMeasurement devSS) = 0;
-
-		const char * CONFIG = "dist.config";
 
 	private:
 };

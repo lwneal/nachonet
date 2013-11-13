@@ -16,13 +16,14 @@ fsPathLoss::fsPathLoss(float frequency)
 	wavelength = 299792458 / frequency; // lamda = speed of light / frequency
 }
 
-distMeasurement measure(ssMeasurement devSS)
+distMeasurement fsPathLoss::measure(ssMeasurement devSS)
 {
 	distMeasurement devDist;
 
 	devDist.devID = devSS.devID;
 
-	devDist.dist = sqrt(pow(wavelength, 2) / (pow(4 * M_PI, 2) * pow(10, devSS.ss / -10)));
+	devDist.dist = sqrt(pow(wavelength * pow(10,9), 2) / (pow(4 * M_PI, 2)
+			* pow(10, devSS.ss / -10)));
 
 	return devDist;
 }

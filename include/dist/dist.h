@@ -11,6 +11,8 @@ Purpose:		This file defines the interface to the abstract class
 #pragma once
 #include <dataCollect.h>
 #include <string.h>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 typedef struct distMeasurement
 {

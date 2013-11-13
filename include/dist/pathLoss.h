@@ -10,7 +10,6 @@ Purpose:		The file defines the interface to the pathLoss module which will
 
 #pragma once
 #include "dist.h"
-#include <math.h>
 
 class pathLoss : public distMeasure
 {

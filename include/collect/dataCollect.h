@@ -7,10 +7,10 @@ Purpose:		The file defines the interface to the data collection module
 *******************************************************************************/
 
 #pragma once
-#include <string.h>
+#include <string>
 
 typedef struct ssMeasurement
 {
-  string devID;
+  std::string devID;
   int ss;
 } ssMeasurement;

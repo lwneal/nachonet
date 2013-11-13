@@ -14,7 +14,7 @@ VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 
 .PHONY: all clean package
 
-all: bin/adminTools bin/prototype
+all: bin/adminTools bin/prototype bin/distDriver
 
 ########################ADMIN TOOLS###############################
 
@@ -33,7 +33,7 @@ bin/adminToolsDriver.o: src/tools/adminToolsDriver.cpp \
 include/tools/adminTools.h
 	${CC} ${CFLAGS} -o bin/adminToolsDriver.o -c src/tools/adminToolsDriver.cpp
 	
-bin/prototype.o: src/prototype.cpp include/adminTools.h
+bin/prototype.o: src/prototype.cpp include/tools/adminTools.h
 	${CC} ${CFLAGS} -o bin/prototype.o -c src/prototype.cpp
 	
 ########################DIST MEASURE###############################

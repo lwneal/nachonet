@@ -23,7 +23,8 @@ class pathLoss : public distMeasure
 		//These aren't entirely arbitrary. They were chosen by looking at the plot
 		//on page 13 of [Pu et. al. 2011]
 		const float DEFAULT_REF_DIST = 1;
-		const float DEFAULT_ENV_VAL= 3.5;
+		const float DEFAULT_ENV_VAL = 3.5;
+		const float DEFAULT_POW_AT_REF = 1;
 
 	private:
 		//d_0

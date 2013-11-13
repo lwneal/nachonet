@@ -9,14 +9,13 @@ Purpose:		This file defines the interface to the abstract class
 *******************************************************************************/
 
 #pragma once
-#include <dataCollect.h>
-#include <string.h>
+#include "../collect/dataCollect.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 
 typedef struct distMeasurement
 {
-  string devID;
+  std::string devID;
   float dist;
 } distMeasurement;
 

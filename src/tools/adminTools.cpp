@@ -6,4 +6,4 @@ Project:		NachoNet
 Purpose:		Implements the methods adminTools object
 *******************************************************************************/
 
-#include "../include/adminTools.h"
+#include "../../include/tools/adminTools.h"

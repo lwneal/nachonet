@@ -14,7 +14,7 @@ Purpose:		The file defines the interface to the pathLoss module which will
 class pathLoss : public distMeasure
 {
 	public:
-		pathLoss();
+		pathLoss(bool debug = false);
 		virtual ~pathLoss();
 		virtual void init();
 		virtual distMeasurement measure(ssMeasurement devSS);
@@ -34,5 +34,7 @@ class pathLoss : public distMeasure
 		float envVal; //environmental characterization value (from config file)
 		//P_d0
 		float powerAtRefDist;
+
+		bool debug;
 };
 

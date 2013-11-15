@@ -11,12 +11,15 @@ Purpose:		The file defines the interface to the pathLoss module which will
 #pragma once
 #include "dist.h"
 
+static const char * CONFIG = "dist.config";
+
 class pathLoss : public distMeasure
 {
 	public:
 		pathLoss(bool debug = false);
 		virtual ~pathLoss();
 		virtual void init();
+		virtual bool configFileSetup();
 		virtual distMeasurement measure(ssMeasurement devSS);
 
 
@@ -24,7 +27,7 @@ class pathLoss : public distMeasure
 		//on page 13 of [Pu et. al. 2011]
 		static const float DEFAULT_REF_DIST = 1;
 		static const float DEFAULT_ENV_VAL = 3.5;
-		static const float DEFAULT_POW_AT_REF = 1;
+		static const int DEFAULT_POW_AT_REF = -1;
 
 	private:
 		//d_0
@@ -33,7 +36,7 @@ class pathLoss : public distMeasure
 		//n
 		float envVal; //environmental characterization value (from config file)
 		//P_d0
-		float powerAtRefDist;
+		int powerAtRefDist;
 
 		bool debug;
 };

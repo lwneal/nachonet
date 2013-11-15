@@ -30,8 +30,6 @@ pathLoss::~pathLoss()
 //expects d_0 then n then P_d0
 void pathLoss::init()
 {
-	const char * CONFIG = "dist.config";
-
 	std::ifstream inFile;
 
 	inFile.open(CONFIG);
@@ -48,6 +46,53 @@ void pathLoss::init()
 	}
 
 	inFile.close();
+}
+
+bool pathLoss::configFileSetup()
+{
+	float d_0, n;
+	int P_d0;
+	bool returnVal = true;
+	std::ofstream outFile;
+
+	outFile.open(CONFIG);
+
+	if(!outFile)
+	{
+		std::cout << "ERROR: could not open file for writing\n";
+		returnVal = false;
+	}
+	else
+	{
+		std::cout << "Enter the values needed for this equation: d = d_0 * lg_n(P_d0 / P_r)\n";
+
+		do
+		{
+			std::cout << "d_0: ";
+			std::cin >> d_0;
+			std::cout << "\n";
+		}while(0 >= d_0);
+
+		do
+		{
+			std::cout << "n: ";
+			std::cin >> n;
+			std::cout << "\n";
+		}while(0 >= n);
+
+		do
+		{
+			std::cout << "P_d0: ";
+			std::cin >> P_d0;
+			std::cout << "\n";
+		}while(0 <= P_d0);
+
+		outFile << d_0 << "\n" << n << "\n" << P_d0;
+	}
+
+	outFile.close();
+
+	return returnVal;
 }
 
 distMeasurement pathLoss::measure(ssMeasurement devSS)

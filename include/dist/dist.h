@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
 File:				dist.h
 Author: 		Josh Siva
 Date:				11/15/13
@@ -6,7 +6,7 @@ Project:		NachoNet
 Purpose:		This file defines the interface to the abstract class
 						distMeasure which provides the basic structure for calculating
 						a distance from a IEEE 802.11 signal strength
-*******************************************************************************/
+******************************************************************************/
 
 #pragma once
 #include "../collect/dataCollect.h"

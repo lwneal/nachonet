@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
 File:				pathLoss.cpp
 Author: 		Josh Siva
 Date:				11/15/13
@@ -6,13 +6,22 @@ Project:		NachoNet
 Purpose:		The file implements the behavior of the pathLoss module which means
 						implementing the following equation:
 						d = 10^((P - P_d0) / (10 * n))
-*******************************************************************************/
+******************************************************************************/
 
 #include "../../include/dist/pathLoss.h"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
 
+/******************************************************************************
+ *Constructor:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 pathLoss::pathLoss(bool debug)
 {
 	envVal = pathLoss::DEFAULT_ENV_VAL;
@@ -21,12 +30,30 @@ pathLoss::pathLoss(bool debug)
 	this->debug = debug;
 }
 
+/******************************************************************************
+ *Destructor:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 pathLoss::~pathLoss()
 {
 
 }
 
 //expects n then P_d0
+/******************************************************************************
+ *Method:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 void pathLoss::init()
 {
 	std::ifstream inFile;
@@ -47,6 +74,15 @@ void pathLoss::init()
 	inFile.close();
 }
 
+/******************************************************************************
+ *Method:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 bool pathLoss::configFileSetup()
 {
 	float n;
@@ -88,6 +124,15 @@ bool pathLoss::configFileSetup()
 	return returnVal;
 }
 
+/******************************************************************************
+ *Method:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 distMeasurement pathLoss::measure(ssMeasurement devSS)
 {
 	distMeasurement devDist;

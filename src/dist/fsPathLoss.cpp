@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
 File:				fsPathLoss.cpp
 Author: 		Josh Siva
 Date:				11/15/13
@@ -6,13 +6,22 @@ Project:		NachoNet
 Purpose:		Implements the behavior of the fsPathLoss module (free space path
 						loss) which means implementing:
 						d = sqrt(lamba^2 / ((4*pi)^2 * 10^(P/-10)))
-*******************************************************************************/
+******************************************************************************/
 
 #include "../../include/dist/fsPathLoss.h"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
 
+/******************************************************************************
+ *Constructor:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 fsPathLoss::fsPathLoss(bool debug)
 {
 
@@ -21,11 +30,29 @@ fsPathLoss::fsPathLoss(bool debug)
 	this->debug = debug;
 }
 
+/******************************************************************************
+ *Destructor:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 fsPathLoss::~fsPathLoss()
 {
 
 }
 
+/******************************************************************************
+ *Method:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 void fsPathLoss::setWavelength(int channel)
 {
 	float frequency = DEFAULT_FREQ + ((channel - 1) * CHANNEL_DIFF);
@@ -33,12 +60,30 @@ void fsPathLoss::setWavelength(int channel)
 	setWavelength(frequency);
 }
 
+/******************************************************************************
+ *Method:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 void fsPathLoss::setWavelength(float frequency)
 {
 	// lamda = speed of light / frequency
 	wavelength = 299792458 / (frequency * pow(10,9));
 }
 
+/******************************************************************************
+ *Method:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 void fsPathLoss::init()
 {
 	char format;
@@ -75,6 +120,15 @@ void fsPathLoss::init()
 	inFile.close();
 }
 
+/******************************************************************************
+ *Method:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 bool fsPathLoss::configFileSetup()
 {
 	char format;
@@ -131,6 +185,15 @@ bool fsPathLoss::configFileSetup()
 	return returnVal;
 }
 
+/******************************************************************************
+ *Method:
+ *
+ *Description:
+ *
+ *Parameters:
+ *
+ *Returned:
+ *****************************************************************************/
 distMeasurement fsPathLoss::measure(ssMeasurement devSS)
 {
 	distMeasurement devDist;

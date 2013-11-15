@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
 File:				pathLoss.h
 Author: 		Josh Siva
 Date:				11/15/13
@@ -6,7 +6,7 @@ Project:		NachoNet
 Purpose:		The file defines the interface to the pathLoss module which will
 						implement the following path loss equation:
 						d = 10^((P - P_d0) / (10 * n))
-*******************************************************************************/
+******************************************************************************/
 
 #pragma once
 #include "dist.h"

@@ -14,7 +14,12 @@ int main(int argc, char**argv)
 	pathLoss pl;
 	fsPathLoss fspl;
 	ssMeasurement devSS;
-	distMeasurement devDis;
+	distMeasurement devDist;
+
+	devSS.devID = "abc123";
+	devSS.ss = -60.0; //dBm is a log scale
+
+	devDist = pl.measure(devSS);
 
 	return 0;
 }

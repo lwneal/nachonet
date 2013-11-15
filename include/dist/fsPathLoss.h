@@ -11,7 +11,6 @@ Purpose:		Defines the interface to the fsPathLoss module which implements
 #pragma once
 #include "dist.h"
 
-static const char * CONFIG = "dist.config";
 
 class fsPathLoss : public distMeasure
 {
@@ -27,7 +26,13 @@ class fsPathLoss : public distMeasure
 
 		//frequency in GHz of WiFi channel 1
 		static const float DEFAULT_FREQ = 2.412;
+
 		static const float CHANNEL_DIFF = .005;
+		static const int MIN_CHANNEL = 1;
+		static const int MAX_CHANNEL = 12;
+
+		static const char CHANNEL = 'c';
+		static const char FREQUENCY = 'f';
 
 	private:
 		float wavelength; //lambda in the above eqn (from file) based on channel

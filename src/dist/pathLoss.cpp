@@ -5,7 +5,7 @@ Date:				11/15/13
 Project:		NachoNet
 Purpose:		The file implements the behavior of the pathLoss module which means
 						implementing the following equation:
-						d = d_0 * lg_n(P_d0 / P_r)
+						d = 10^((P - P_d0) / (10 * n))
 *******************************************************************************/
 
 #include "../../include/dist/pathLoss.h"
@@ -15,7 +15,6 @@ Purpose:		The file implements the behavior of the pathLoss module which means
 
 pathLoss::pathLoss(bool debug)
 {
-	refDist = pathLoss::DEFAULT_REF_DIST;
 	envVal = pathLoss::DEFAULT_ENV_VAL;
 	powerAtRefDist = pathLoss::DEFAULT_POW_AT_REF;
 
@@ -27,7 +26,7 @@ pathLoss::~pathLoss()
 
 }
 
-//expects d_0 then n then P_d0
+//expects n then P_d0
 void pathLoss::init()
 {
 	std::ifstream inFile;
@@ -37,12 +36,12 @@ void pathLoss::init()
 	if(!inFile)
 	{
 		std::cout << "ERROR: could not open file\n";
-		std::cout << "Using default values: d_0 = "<< pathLoss::DEFAULT_REF_DIST;
-		std::cout << ", n = " << pathLoss::DEFAULT_ENV_VAL << std::endl;
+		std::cout << "Using default values: n = " << pathLoss::DEFAULT_ENV_VAL;
+		std::cout << ", P_d0 = " << pathLoss::DEFAULT_POW_AT_REF << std::endl;
 	}
 	else
 	{
-		inFile >> refDist >> envVal >> powerAtRefDist;
+		inFile >> envVal >> powerAtRefDist;
 	}
 
 	inFile.close();
@@ -50,7 +49,7 @@ void pathLoss::init()
 
 bool pathLoss::configFileSetup()
 {
-	float d_0, n;
+	float n;
 	int P_d0;
 	bool returnVal = true;
 	std::ofstream outFile;
@@ -64,14 +63,8 @@ bool pathLoss::configFileSetup()
 	}
 	else
 	{
-		std::cout << "Enter the values needed for this equation: d = d_0 * lg_n(P_d0 / P_r)\n";
-
-		do
-		{
-			std::cout << "d_0: ";
-			std::cin >> d_0;
-			std::cout << "\n";
-		}while(0 >= d_0);
+		std::cout << "Enter the values needed for this equation: ";
+		std::cout << "d = 10^((P - P_d0) / (10 * n))";
 
 		do
 		{
@@ -87,7 +80,7 @@ bool pathLoss::configFileSetup()
 			std::cout << "\n";
 		}while(0 <= P_d0);
 
-		outFile << d_0 << "\n" << n << "\n" << P_d0;
+		outFile << n << "\n" << P_d0;
 	}
 
 	outFile.close();
@@ -101,17 +94,15 @@ distMeasurement pathLoss::measure(ssMeasurement devSS)
 
 	devDist.devID = devSS.devID;
 
-	devDist.dist = refDist * (log( powerAtRefDist / (float)(devSS.ss) ) /
-			log(envVal));
+	devDist.dist = pow(10, (devSS.ss - powerAtRefDist) / 10 * envVal);
 
 	if(debug)
 	{
 		std::cout << "***" << devDist.devID << "***\n";
-		std::cout << std::setw(5) << "SS" << std::setw(5) << "d_0";
+		std::cout << std::setw(5) << "SS";
 		std::cout << std::setw(5) << "P_d0" << std::setw(5) << "n\n";
 		std::cout << "--------------------\n";
 		std::cout << std::setw(5) << devSS.ss << std::setw(5)
-							<< std::setprecision(3) << refDist << std::setw(5)
 							<< powerAtRefDist << std::setw(5) << std::setprecision(4)
 							<< envVal << "\n\n";
 	}

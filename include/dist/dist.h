@@ -13,6 +13,9 @@ Purpose:		This file defines the interface to the abstract class
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+
+static const char * CONFIG = "dist.config";
+
 typedef struct distMeasurement
 {
   std::string devID;

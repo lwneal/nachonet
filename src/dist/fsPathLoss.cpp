@@ -41,6 +41,10 @@ void fsPathLoss::setWavelength(float frequency)
 
 void fsPathLoss::init()
 {
+	char format;
+	int channel;
+	float frequency;
+
 	std::ifstream inFile;
 
 	inFile.open(CONFIG);
@@ -52,7 +56,20 @@ void fsPathLoss::init()
 	}
 	else
 	{
-		inFile >> wavelength;
+		inFile >> format;
+
+		if(CHANNEL == format)
+		{
+			inFile >> channel;
+
+			setWavelength(channel);
+		}
+		else
+		{
+			inFile >> frequency;
+
+			setWavelength(frequency);
+		}
 	}
 
 	inFile.close();
@@ -61,7 +78,8 @@ void fsPathLoss::init()
 bool fsPathLoss::configFileSetup()
 {
 	char format;
-	float lambda;
+	float frequency;
+	int channel;
 	bool returnVal = true;
 	std::ofstream outFile;
 
@@ -75,18 +93,36 @@ bool fsPathLoss::configFileSetup()
 	else
 	{
 		std::cout << "Enter the values needed for this equation: ";
-		std::cout << "d = sqrt(lamba^2 / ((4*pi)^2 * 10^(P/-10)))\n";
+		std::cout << "d = sqrt(lamba^2 / ((4*pi)^2 * 10^(P/10)))\n";
 
 		do
 		{
-			std::cout << "(c)hannel # or (r)aw frequency?: ";
+			std::cout << "(c)hannel # or (f)requency?: ";
 			std::cin >> format;
 			std::cout << "\n";
-		}while ('c' != format && 'r' != format);
+		}while (CHANNEL != format && FREQUENCY != format);
 
-		if('c' == format)
+		if(CHANNEL == format)
 		{
+			do
+			{
+				std::cout << "channel: ";
+				std::cin >> channel;
+				std::cout << "\n";
+			} while(MIN_CHANNEL > channel || MAX_CHANNEL < channel);
 
+			outFile << CHANNEL << " " << channel;
+		}
+		else
+		{
+			do
+			{
+				std::cout << "frequency (in GHz): ";
+				std::cin >> frequency;
+				std::cout << "\n";
+			}while(0 >= frequency);
+
+			outFile << FREQUENCY << " " << frequency;
 		}
 	}
 
@@ -102,7 +138,7 @@ distMeasurement fsPathLoss::measure(ssMeasurement devSS)
 	devDist.devID = devSS.devID;
 
 	devDist.dist = sqrt(pow(wavelength, 2) / (pow(4 * M_PI, 2)
-			* pow(10.0, devSS.ss / -10.0)));
+			* pow(10.0, devSS.ss / 10.0)));
 
 	if(debug)
 	{

@@ -5,13 +5,11 @@ Date:				11/15/13
 Project:		NachoNet
 Purpose:		The file defines the interface to the pathLoss module which will
 						implement the following path loss equation:
-						d = d_0 * lg_n(P_d0 / P_r)
+						d = 10^((P - P_d0) / (10 * n))
 *******************************************************************************/
 
 #pragma once
 #include "dist.h"
-
-static const char * CONFIG = "dist.config";
 
 class pathLoss : public distMeasure
 {
@@ -22,17 +20,12 @@ class pathLoss : public distMeasure
 		virtual bool configFileSetup();
 		virtual distMeasurement measure(ssMeasurement devSS);
 
-
-		//These aren't entirely arbitrary. They were chosen by looking at the plot
-		//on page 13 of [Pu et. al. 2011]
-		static const float DEFAULT_REF_DIST = 1;
-		static const float DEFAULT_ENV_VAL = 3.5;
-		static const int DEFAULT_POW_AT_REF = -1;
+		//These values have been chosen by looking at an example graph in
+		// [Pu et. al. 2011]
+		static const float DEFAULT_ENV_VAL = 2.25;
+		static const int DEFAULT_POW_AT_REF = -38; //the power at 1m (unobstructed)
 
 	private:
-		//d_0
-		float refDist; //dist at which reference measurement is taken
-									 //(from config file)
 		//n
 		float envVal; //environmental characterization value (from config file)
 		//P_d0

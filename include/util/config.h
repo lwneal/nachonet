@@ -25,6 +25,6 @@ class Config
 		std::vector<std::pair<std::string, std::string>> read(std::string section);
 	private:
 		bool corruptObject;
-		std::ifstream configFile;
+		std::fstream configFile;
 		std::map<std::string, std::string> configMap;
 };

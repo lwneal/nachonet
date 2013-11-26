@@ -17,7 +17,6 @@ class pathLoss : public distMeasure
 		pathLoss(bool debug = false, Config *pConfig);
 		virtual ~pathLoss();
 		virtual void init(Config *pConfig);
-		virtual bool configFileSetup();
 		virtual distMeasurement measure(ssMeasurement devSS);
 
 		//These values have been chosen by looking at an example graph in

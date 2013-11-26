@@ -28,7 +28,6 @@ class distMeasure
 	public:
 		virtual ~distMeasure(){}
 		virtual void init(Config *pConfig) = 0;
-		//virtual bool configFileSetup() = 0;
 		virtual distMeasurement measure(ssMeasurement devSS) = 0;
 		std::string getName() const;
 

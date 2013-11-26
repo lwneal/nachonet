@@ -5,7 +5,8 @@ Date:				11/24/13
 Project:		NachoNet
 Purpose:		Implements the interface to the config object which will handle all
 						reading from and writing to a file that is filled with key-value
-						pairs differentiated by section headers.
+						pairs differentiated by section headers. Comments in this file are
+					  on their own line and preceded by #
 *******************************************************************************/
 
 #pragma once
@@ -38,6 +39,8 @@ class Config
 			BAD_OBJECT,
 			NO_ERROR
 		}Errors ;
+
+		static const std::string FILE_EXT = ".conf";
 
 	private:
 		bool corruptObject;

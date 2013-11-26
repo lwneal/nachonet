@@ -14,44 +14,55 @@ Purpose:		Implements the behavior of the fsPathLoss module (free space path
 #include <iomanip>
 
 /******************************************************************************
- *Constructor:
+ *Constructor: fsPathLoss
  *
- *Description:
+ *Description: Initializes the fsPathLoss object by initializing the wavelength
+ *						 and setting up the config object to work with this module
  *
- *Parameters:
+ *Parameters:	 debug - set to false by default. If true, this module will
+ *										 print debugging output for the computations
+ *						 pConfig - the configuration object that will save the values
+ *						 					 needed by this module
  *
- *Returned:
+ *Returned:		 None
  *****************************************************************************/
-fsPathLoss::fsPathLoss(bool debug, Config *pConfig)
+fsPathLoss::fsPathLoss(bool debug, Config *pConfig) : name("fsPathLoss")
 {
+	std::vector<std::pair<std::string, float>> keyVal;
+	setWavelength(MIN_CHANNEL);
 
-	setWavelength(DEFAULT_FREQ);
+	pConfig->addSection(name);
+
+	keyVal.push_back(std::make_pair("channel", MIN_CHANNEL));
+
+	pConfig->write(name, keyVal);
+	pConfig->save();
 
 	this->debug = debug;
 }
 
 /******************************************************************************
- *Destructor:
+ *Destructor:		fsPathLoss
  *
- *Description:
+ *Description:	Does nothing
  *
- *Parameters:
+ *Parameters:		None
  *
- *Returned:
+ *Returned:			None
  *****************************************************************************/
 fsPathLoss::~fsPathLoss()
 {
-
 }
 
 /******************************************************************************
- *Method:
+ *Method:				setWavelength
  *
- *Description:
+ *Description:	Sets the wavelength based on the WiFi channel.
  *
- *Parameters:
+ *Parameters:		channel - the integer between 1 and 12 that indicates the WiFi
+ *												channel
  *
- *Returned:
+ *Returned:			None
  *****************************************************************************/
 void fsPathLoss::setWavelength(int channel)
 {
@@ -61,138 +72,57 @@ void fsPathLoss::setWavelength(int channel)
 }
 
 /******************************************************************************
- *Method:
+ *Method:				setWavelength
  *
- *Description:
+ *Description:	Sets the wavelength based on the frequency of the wave and
+ *							using the equation: lamda = speed of light / frequency
  *
- *Parameters:
+ *Parameters:		frequency - the frequency in GHz of the wave
  *
- *Returned:
+ *Returned:			None
  *****************************************************************************/
 void fsPathLoss::setWavelength(float frequency)
 {
-	// lamda = speed of light / frequency
 	wavelength = 299792458 / (frequency * pow(10,9));
 }
 
 /******************************************************************************
- *Method:
+ *Method:				init
  *
- *Description:
+ *Description:  Uses the config object (which has hopefully been set up) to
+ *							get the saved values for our calculation variables. If the
+ *							config file has not been set up then we'll just stick with the
+ *							default values we set up in the constructor
  *
- *Parameters:
+ *Parameters:		pConfig - the configuration object that will provide a map
+ *												of the values.
  *
- *Returned:
+ *Returned:			None
  *****************************************************************************/
 void fsPathLoss::init(Config *pConfig)
 {
-	char format;
-	int channel;
-	float frequency;
+	std::map<std::string, float> keyVal;
 
-	std::ifstream inFile;
+	keyVal = pConfig->read(name);
 
-	inFile.open(CONFIG);
-
-	if(!inFile)
+	//if there is nothing in the file then don't overwrite the default values
+	if(0 == keyVal.size())
 	{
-		std::cout << "ERROR: could not open file\n";
-		std::cout << "Using default values: lambda = " << wavelength << "\n";
+		setWavelength(keyVal["channel"]);
 	}
-	else
-	{
-		inFile >> format;
-
-		if(CHANNEL == format)
-		{
-			inFile >> channel;
-
-			setWavelength(channel);
-		}
-		else
-		{
-			inFile >> frequency;
-
-			setWavelength(frequency);
-		}
-	}
-
-	inFile.close();
 }
 
 /******************************************************************************
- *Method:
+ *Method:				measure
  *
- *Description:
+ *Description:	Measures the distance of a device based on the free space path
+ *							loss model which is, once more:
+ *							d = sqrt(lamba^2 / ((4*pi)^2 * 10^(P/-10)))
  *
- *Parameters:
+ *Parameters:		devSS - the signal strength measurement struct which has the
+ *											signal strength and the device ID
  *
- *Returned:
- *****************************************************************************/
-bool fsPathLoss::configFileSetup()
-{
-	char format;
-	float frequency;
-	int channel;
-	bool returnVal = true;
-	std::ofstream outFile;
-
-	outFile.open(CONFIG);
-
-	if(!outFile)
-	{
-		std::cout << "ERROR: could not open file for writing\n";
-		returnVal = false;
-	}
-	else
-	{
-		std::cout << "Enter the values needed for this equation: ";
-		std::cout << "d = sqrt(lamba^2 / ((4*pi)^2 * 10^(P/10)))\n";
-
-		do
-		{
-			std::cout << "(c)hannel # or (f)requency?: ";
-			std::cin >> format;
-			std::cout << "\n";
-		}while (CHANNEL != format && FREQUENCY != format);
-
-		if(CHANNEL == format)
-		{
-			do
-			{
-				std::cout << "channel: ";
-				std::cin >> channel;
-				std::cout << "\n";
-			} while(MIN_CHANNEL > channel || MAX_CHANNEL < channel);
-
-			outFile << CHANNEL << " " << channel;
-		}
-		else
-		{
-			do
-			{
-				std::cout << "frequency (in GHz): ";
-				std::cin >> frequency;
-				std::cout << "\n";
-			}while(0 >= frequency);
-
-			outFile << FREQUENCY << " " << frequency;
-		}
-	}
-
-	outFile.close();
-
-	return returnVal;
-}
-
-/******************************************************************************
- *Method:
- *
- *Description:
- *
- *Parameters:
- *
- *Returned:
+ *Returned:			distMeasurement - the distance and device ID
  *****************************************************************************/
 distMeasurement fsPathLoss::measure(ssMeasurement devSS)
 {

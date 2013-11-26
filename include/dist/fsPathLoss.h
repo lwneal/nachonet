@@ -18,7 +18,6 @@ class fsPathLoss : public distMeasure
 		fsPathLoss(bool debug = false, Config *pConfig);
 		virtual ~fsPathLoss();
 		virtual void init(Config *pConfig);
-		virtual bool configFileSetup();
 		virtual distMeasurement measure(ssMeasurement devSS);
 
 		void setWavelength(int channel);

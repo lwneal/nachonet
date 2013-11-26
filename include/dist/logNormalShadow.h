@@ -18,7 +18,6 @@ class logNormalShadow : public distMeasure
 	public:
 		logNormalShadow(bool debug = false, Config *config);
 		virtual void init(Config *pConfig);
-		//virtual bool configFileSetup();
 		virtual distMeasurement measure(ssMeasurement devSS);
 
 		static const float DEFAULT_REF_DIST = 1;

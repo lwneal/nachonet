@@ -14,13 +14,18 @@ Purpose:		The file implements the behavior of the pathLoss module which means
 #include <iomanip>
 
 /******************************************************************************
- *Constructor:
+ *Constructor: pathLoss
  *
- *Description:
+ *Description: Initializes the object by setting default values for the
+ *						 variables and setting up the config module to hold the variables
+ *						 used by this module.
  *
- *Parameters:
+ *Parameters:	 debug - set to false by default. If true, this module will
+ *										 print debugging output for the computations
+ *						 pConfig - the configuration object that will save the values
+ *						 					 needed by this module
  *
- *Returned:
+ *Returned:		 None
  *****************************************************************************/
 pathLoss::pathLoss(bool debug, Config *pConfig) : name("pathLoss")
 {
@@ -35,18 +40,19 @@ pathLoss::pathLoss(bool debug, Config *pConfig) : name("pathLoss")
 	keyVal.push_back(std::make_pair("P_d0", powerAtRefDist));
 
 	pConfig->write(name, keyVal);
+	pConfig->save();
 
 	this->debug = debug;
 }
 
 /******************************************************************************
- *Destructor:
+ *Destructor:		pathLoss
  *
- *Description:
+ *Description:	Does nothing
  *
- *Parameters:
+ *Parameters:   None
  *
- *Returned:
+ *Returned:			None
  *****************************************************************************/
 pathLoss::~pathLoss()
 {
@@ -54,92 +60,44 @@ pathLoss::~pathLoss()
 }
 
 /******************************************************************************
- *Method:
+ *Method:				init
  *
- *Description:
+ *Description:  Uses the config object (which has hopefully been set up) to
+ *							get the saved values for our calculation variables. If the
+ *							config file has not been set up then we'll just stick with the
+ *							default values we set up in the constructor
  *
- *Parameters:
+ *Parameters:		pConfig - the configuration object that will provide a map
+ *												of the values.
  *
- *Returned:
+ *Returned:			None
  *****************************************************************************/
 void pathLoss::init(Config *pConfig)
 {
-	std::ifstream inFile;
+	std::map<std::string, float> keyVal;
 
-	inFile.open(CONFIG);
+	keyVal = pConfig->read(name);
 
-	if(!inFile)
+	//if there is nothing in the file then don't overwrite the default values
+	if(0 == keyVal.size())
 	{
-		std::cout << "ERROR: could not open file\n";
-		std::cout << "Using default values: n = " << pathLoss::DEFAULT_ENV_VAL;
-		std::cout << ", P_d0 = " << pathLoss::DEFAULT_POW_AT_REF << std::endl;
+		envVal = keyVal["n"];
+		powerAtRefDist = keyVal["P_d0"];
 	}
-	else
-	{
-		inFile >> envVal >> powerAtRefDist;
-	}
-
-	inFile.close();
 }
 
-/******************************************************************************
- *Method:
- *
- *Description:
- *
- *Parameters:
- *
- *Returned:
- *****************************************************************************/
-bool pathLoss::configFileSetup()
-{
-	float n;
-	int P_d0;
-	bool returnVal = true;
-	std::ofstream outFile;
-
-	outFile.open(CONFIG);
-
-	if(!outFile)
-	{
-		std::cout << "ERROR: could not open file for writing\n";
-		returnVal = false;
-	}
-	else
-	{
-		std::cout << "Enter the values needed for this equation: ";
-		std::cout << "d = 10^((P - P_d0) / (10 * n))";
-
-		do
-		{
-			std::cout << "n: ";
-			std::cin >> n;
-			std::cout << "\n";
-		}while(0 >= n);
-
-		do
-		{
-			std::cout << "P_d0: ";
-			std::cin >> P_d0;
-			std::cout << "\n";
-		}while(0 <= P_d0);
-
-		outFile << n << "\n" << P_d0;
-	}
-
-	outFile.close();
-
-	return returnVal;
-}
 
 /******************************************************************************
- *Method:
+ *Method:				measure
  *
- *Description:
+ *Description:  Measures the distance of a device based on the signal strength
+ *							from the device. The equation, once more, is:
+ *							d = 10^((P - P_d0) / (10 * n))
  *
- *Parameters:
+ *Parameters:   devSS - the signal strength measurement struct which has the
+ *											signal strength and the device ID
  *
- *Returned:
+ *Returned:			distMeasurement - the distance and device ID
  *****************************************************************************/
 distMeasurement pathLoss::measure(ssMeasurement devSS)
 {

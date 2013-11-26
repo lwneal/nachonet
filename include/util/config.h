@@ -21,10 +21,30 @@ class Config
 		Config(std::string fileName = "default.conf");
 		~Config();
 		int write(std::string section,
-				std::vector<std::pair<std::string, std::string>> keyVals);
-		std::vector<std::pair<std::string, std::string>> read(std::string section);
+				std::vector<std::pair<std::string, float>> keyVals);
+		std::vector<std::pair<std::string, float>> read(std::string section);
+
+		int save();
+
+		void addSection(std::string section);
+
+		std::string getFileName() const;
+		bool isCorrupt() const;
+
+		typedef enum Errors
+		{
+			BAD_FILE = -3,
+			SECTION_NOT_FOUND,
+			BAD_OBJECT,
+			NO_ERROR
+		}Errors ;
+
 	private:
 		bool corruptObject;
-		std::fstream configFile;
-		std::map<std::string, std::string> configMap;
+		std::string fileName;
+		std::vector<std::string> fileText;
+		std::map<std::string, std::pair<int, float>> sectionMap;
+		int sectionStart;
+
+		int fillMap(std::string section);
 };

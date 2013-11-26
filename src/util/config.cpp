@@ -11,6 +11,11 @@ Purpose:		Implements the functionality of the config object
 
 Config::Config(std::string fileName)
 {
+	std::ifstream configFile;
+	std::string line;
+
+	this->fileName = fileName;
+
 	configFile.open(fileName.c_str());
 
 	if(!configFile)
@@ -20,95 +25,213 @@ Config::Config(std::string fileName)
 	else
 	{
 		corruptObject = false;
+
+		while(!configFile.eof())
+		{
+			std::getline(configFile, line);
+			fileText.push_back(line);
+		}
+
+		sectionStart = -1;
+
+		configFile.close();
 	}
 }
 
 Config::~Config()
 {
-	if(!corruptObject)
-	{
-		configFile.close();
-	}
-
+	save();
 }
 
-int Config::write(std::string section,
-		std::vector<std::pair<std::string, std::string>> keyVals)
+int Config::save()
 {
-	char tmp[101];
-	int returnVal = 0;
-	std::string line, currentSection, key;
-	float value;
-	bool sectionFound = false, readyToWrite = false;
+	std::ofstream configFile;
+	int returnVal = NO_ERROR;
+	std::vector<std::string>::iterator iter = fileText.begin();
 
-	if(!corruptObject)
+	configFile.open(fileName.c_str());
+
+	if(!configFile)
 	{
-		configFile.clear();
-		configFile.seekg(0, std::ios::beg);
-
-		//search for the correct section and fill map
-		while(!readyToWrite)
+		returnVal = BAD_FILE;
+	}
+	else
+	{
+		while(fileText.end() != iter)
 		{
-			std::getline(configFile, line);
-
-			if(!configFile.eof())
-			{
-				switch(line[0])
-				{
-					case '[':
-
-						if(!sectionFound)
-						{
-							for(int i = 1; i < line.length(); i++)
-							{
-								currentSection.push_back(line[i]);
-							}
-
-							if(0 == currentSection.compare(section))
-							{
-								sectionFound = true;
-							}
-						}
-						else
-						{
-							readyToWrite = true;
-						}
-
-						break;
-
-					case '#': //Do nothing because this is an in line comment
-						break;
-
-					default:
-						if(sectionFound)
-						{
-							std::sscanf(line.c_str(), "%100s=%f", &tmp, &value);
-
-							key = tmp;
-
-							configMap[key] = value;
-						}
-						break;
-				}
-			}
-			else
-			{
-				readyToWrite = true;
-			}
+			configFile << *iter;
+			++iter;
 		}
 
-		//the map is filled, so now we need to write out the data from the vector
-
+		configFile.close();
 	}
 
 	return returnVal;
 }
 
+int Config::fillMap(std::string section)
+{
+	char tmp[101];
+	int returnVal = NO_ERROR, lineNum = 0;
+	std::string line, currentSection, key;
+	std::vector<std::string>::iterator iter = fileText.begin();
+	float value;
+	bool sectionFound = false;
 
-std::vector<std::pair<std::string, std::string>>
+	if(!corruptObject)
+	{
+		//search for the correct section and fill map
+		while(fileText.end() != iter)
+		{
+			line = *iter;
+
+			switch(line[0])
+			{
+				case '[':
+
+					for(int i = 1; i < line.length(); i++)
+					{
+						currentSection += line[i];
+					}
+
+					if(0 == currentSection.compare(section))
+					{
+						sectionFound = true;
+						sectionStart = lineNum;
+					}
+
+					break;
+
+				case '#': //Do nothing because this is an in line comment
+					break;
+
+				default:
+					if(sectionFound)
+					{
+						std::sscanf(line.c_str(), "%100s=%f", &tmp, &value);
+
+						key = tmp;
+
+						sectionMap[key] = std::make_pair(lineNum, value);
+					}
+					break;
+			}
+
+			++iter;
+			lineNum++;
+		}
+
+		if(!sectionFound)
+		{
+			returnVal = SECTION_NOT_FOUND;
+		}
+	}
+	else
+	{
+		returnVal = BAD_OBJECT;
+	}
+
+	return returnVal;
+}
+
+void Config::addSection(std::string section)
+{
+	fileText.push_back('[' + section + ']');
+}
+
+std::string Config::getFileName() const
+{
+	return fileName;
+}
+
+bool Config::isCorrupt() const
+{
+	return corruptObject;
+}
+
+int Config::write(std::string section,
+		std::vector<std::pair<std::string, float>> keyVals)
+{
+	int returnVal = NO_ERROR, lineNumber;
+	std::vector<std::pair<std::string, float>>::iterator iter = keyVals.begin(),
+																											 newEntryIter;
+	std::vector<std::pair<std::string, float>> newEntryBuffer;
+	std::map<std::string, std::pair<int, float>>::iterator mapIter;
+	std::string line;
+	std::pair<int, float> entry;
+
+	if(!corruptObject)
+	{
+		fillMap(section);
+
+		//update sectionMap of values
+		while(keyVals.end() != iter)
+		{
+			mapIter = sectionMap.find((*iter).first);
+
+			if(sectionMap.end() != mapIter)
+			{
+				sectionMap[(*iter).first] = std::make_pair((*mapIter).second.first,
+																											(*iter).second);
+			}
+			else
+			{
+				entry = std::make_pair((*iter).first, (*iter).second);
+
+				newEntryBuffer.push_back(entry);
+			}
+
+			++iter;
+		}
+
+		//write to file buffer
+		mapIter = sectionMap.begin();
+
+		while(sectionMap.end() != mapIter)
+		{
+			line = fileText[(*mapIter).second.first];
+			line.clear();
+
+			line = (*mapIter).first + '=' + (*mapIter).second.second;
+			fileText[(*mapIter).second.first] = line;
+
+			++mapIter;
+		}
+
+		//now write the new stuff if there is any
+		if(0 != newEntryBuffer.size() && -1 != sectionStart)
+		{
+			newEntryIter = newEntryBuffer.begin();
+
+			while(newEntryBuffer.end() != newEntryIter)
+			{
+				line = (*newEntryIter).first + '=' + (*newEntryIter).second;
+
+				fileText.insert(fileText.begin() + sectionStart + 1, line);
+
+				++newEntryIter;
+			}
+		}
+		else if(0 != newEntryBuffer.size() && -1 == sectionStart)
+		{
+			returnVal = SECTION_NOT_FOUND;
+		}
+
+	}
+	else
+	{
+		returnVal = BAD_OBJECT;
+	}
+
+
+	return returnVal;
+}
+
+
+std::vector<std::pair<std::string, float>>
 			Config::read(std::string section)
 {
-	std::vector<std::pair<std::string, std::string>> keyVals;
+	std::vector<std::pair<std::string, float>> keyVals;
 
 
 	return keyVals;

@@ -22,10 +22,19 @@ Purpose:		The file implements the behavior of the pathLoss module which means
  *
  *Returned:
  *****************************************************************************/
-pathLoss::pathLoss(bool debug)
+pathLoss::pathLoss(bool debug, Config *pConfig) : name("pathLoss")
 {
+	std::vector<std::pair<std::string, float>> keyVal;
+
+	pConfig->addSection(name);
+
 	envVal = pathLoss::DEFAULT_ENV_VAL;
 	powerAtRefDist = pathLoss::DEFAULT_POW_AT_REF;
+
+	keyVal.push_back(std::make_pair("n", envVal));
+	keyVal.push_back(std::make_pair("P_d0", powerAtRefDist));
+
+	pConfig->write(name, keyVal);
 
 	this->debug = debug;
 }
@@ -44,7 +53,6 @@ pathLoss::~pathLoss()
 
 }
 
-//expects n then P_d0
 /******************************************************************************
  *Method:
  *
@@ -54,7 +62,7 @@ pathLoss::~pathLoss()
  *
  *Returned:
  *****************************************************************************/
-void pathLoss::init()
+void pathLoss::init(Config *pConfig)
 {
 	std::ifstream inFile;
 

@@ -22,7 +22,7 @@ class Config
 		~Config();
 		int write(std::string section,
 				std::vector<std::pair<std::string, float>> keyVals);
-		std::vector<std::pair<std::string, float>> read(std::string section);
+		std::map<std::string, float> read(std::string section);
 
 		int save();
 

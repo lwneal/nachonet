@@ -22,7 +22,7 @@ Purpose:		Implements the behavior of the fsPathLoss module (free space path
  *
  *Returned:
  *****************************************************************************/
-fsPathLoss::fsPathLoss(bool debug)
+fsPathLoss::fsPathLoss(bool debug, Config *pConfig)
 {
 
 	setWavelength(DEFAULT_FREQ);
@@ -84,7 +84,7 @@ void fsPathLoss::setWavelength(float frequency)
  *
  *Returned:
  *****************************************************************************/
-void fsPathLoss::init()
+void fsPathLoss::init(Config *pConfig)
 {
 	char format;
 	int channel;

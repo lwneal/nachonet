@@ -136,7 +136,10 @@ int Config::fillMap(std::string section)
 
 void Config::addSection(std::string section)
 {
-	fileText.push_back('[' + section + ']');
+	if(SECTION_NOT_FOUND != fillMap(section))
+	{
+		fileText.push_back('[' + section + ']');
+	}
 }
 
 std::string Config::getFileName() const
@@ -228,11 +231,21 @@ int Config::write(std::string section,
 }
 
 
-std::vector<std::pair<std::string, float>>
-			Config::read(std::string section)
+std::map<std::string, float> Config::read(std::string section)
 {
-	std::vector<std::pair<std::string, float>> keyVals;
+	std::map<std::string, float> keyVals;
+	std::map<std::string, std::pair<int, float>>::iterator iter =
+																												sectionMap.begin();
 
+	if(SECTION_NOT_FOUND != fillMap(section))
+	{
+		while(sectionMap.end() != iter)
+		{
+			keyVals[(*iter).first] = (*iter).second.second;
+
+			++iter;
+		}
+	}
 
 	return keyVals;
 }

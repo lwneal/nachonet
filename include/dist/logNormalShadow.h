@@ -16,14 +16,19 @@ Purpose:		This file defines the interface to the logNormalShadow module which
 class logNormalShadow : public distMeasure
 {
 	public:
-		logNormalShadow(bool debug = false);
-		virtual void init();
+		logNormalShadow(bool debug = false, Config *config);
+		virtual void init(Config *pConfig);
 		//virtual bool configFileSetup();
 		virtual distMeasurement measure(ssMeasurement devSS);
+
+		static const float DEFAULT_REF_DIST = 1;
+		static const float DEFAULT_POW_AT_REF = 38;
+		static const float DEFAULT_ENV_VAL = 3.5;
 	private:
+		bool debug;
 		float refDist; //d_0
 		float powerAtRefDist; //P_d0
 		float envVal; //n
-		std::normal_distribution<> randomVar; //X
-		float stdDev; //sigma
+		std::default_random_engine generator;
+		std::normal_distribution<float> randomVar; //X
 };

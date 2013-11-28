@@ -15,7 +15,7 @@ Purpose:		Defines the interface to the fsPathLoss module which implements
 class fsPathLoss : public distMeasure
 {
 	public:
-		fsPathLoss(bool debug = false, Config *pConfig);
+		fsPathLoss(bool debug = false, Config *pConfig = NULL);
 		virtual ~fsPathLoss();
 		virtual void init(Config *pConfig);
 		virtual distMeasurement measure(ssMeasurement devSS);
@@ -24,9 +24,9 @@ class fsPathLoss : public distMeasure
 		void setWavelength(float frequency);
 
 		//frequency in GHz of WiFi channel 1
-		static const float DEFAULT_FREQ = 2.412;
+		const float DEFAULT_FREQ = 2.412;
 
-		static const float CHANNEL_DIFF = .005;
+		const float CHANNEL_DIFF = .005;
 		static const int MIN_CHANNEL = 1;
 		static const int MAX_CHANNEL = 12;
 

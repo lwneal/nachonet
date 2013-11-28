@@ -27,20 +27,31 @@ Purpose:		The file implements the behavior of the pathLoss module which means
  *
  *Returned:		 None
  *****************************************************************************/
-pathLoss::pathLoss(bool debug, Config *pConfig) : name("pathLoss")
+pathLoss::pathLoss(bool debug, Config *pConfig)
 {
-	std::vector<std::pair<std::string, float>> keyVal;
+	std::vector<std::pair<std::string, std::string>> keyVal;
 
-	pConfig->addSection(name);
-
+	name = "pathLoss";
 	envVal = pathLoss::DEFAULT_ENV_VAL;
 	powerAtRefDist = pathLoss::DEFAULT_POW_AT_REF;
 
-	keyVal.push_back(std::make_pair("n", envVal));
-	keyVal.push_back(std::make_pair("P_d0", powerAtRefDist));
 
-	pConfig->write(name, keyVal);
-	pConfig->save();
+	if(NULL != pConfig)
+	{
+		pConfig->addSection(name);
+
+		keyVal.push_back(std::make_pair("n", std::to_string(envVal)));
+		keyVal.push_back(std::make_pair("P_d0", std::to_string(powerAtRefDist)));
+
+		pConfig->write(name, keyVal);
+		pConfig->save();
+
+		noConfig = false;
+	}
+	else
+	{
+		noConfig = true;
+	}
 
 	this->debug = debug;
 }
@@ -74,16 +85,20 @@ pathLoss::~pathLoss()
  *****************************************************************************/
 void pathLoss::init(Config *pConfig)
 {
-	std::map<std::string, float> keyVal;
+	std::map<std::string, std::string> keyVal;
 
-	keyVal = pConfig->read(name);
-
-	//if there is nothing in the file then don't overwrite the default values
-	if(0 == keyVal.size())
+	if(NULL != pConfig && !noConfig)
 	{
-		envVal = keyVal["n"];
-		powerAtRefDist = keyVal["P_d0"];
+		keyVal = pConfig->read(name);
+
+		//if there is nothing in the file then don't overwrite the default values
+		if(0 == keyVal.size())
+		{
+			envVal = std::stof(keyVal["n"]);
+			powerAtRefDist = std::stoi(keyVal["P_d0"]);
+		}
 	}
+
 }
 
 

@@ -25,21 +25,32 @@ Purpose:		Defines the behavior of the logNormalShadow object which means
  *Returned:		 None
  *****************************************************************************/
 logNormalShadow::logNormalShadow(bool debug, Config *pConfig) :
-name("logNormal"), randomVar(0, 3.0)
+randomVar(0, 3.0)
 {
-	std::vector<std::pair<std::string, float>> keyVal;
+	std::vector<std::pair<std::string, std::string>> keyVal;
 
-	pConfig->addSection(name);
-
+	name = "logNormal";
 	envVal = logNormalShadow::DEFAULT_ENV_VAL;
 	powerAtRefDist = logNormalShadow::DEFAULT_POW_AT_REF;
 	refDist = logNormalShadow::DEFAULT_POW_AT_REF;
 
-	keyVal.push_back(std::make_pair("n", envVal));
-	keyVal.push_back(std::make_pair("P_d0", powerAtRefDist));
-	keyVal.push_back(std::make_pair("d0", refDist));
+	if(NULL != pConfig)
+	{
+		pConfig->addSection(name);
 
-	pConfig->write(name, keyVal);
+		keyVal.push_back(std::make_pair("n", std::to_string(envVal)));
+		keyVal.push_back(std::make_pair("P_d0", std::to_string(powerAtRefDist)));
+		keyVal.push_back(std::make_pair("d0", std::to_string(refDist)));
+
+		pConfig->write(name, keyVal);
+
+		noConfig = false;
+	}
+	else
+	{
+		noConfig = true;
+	}
+
 
 	this->debug = debug;
 }
@@ -59,18 +70,20 @@ name("logNormal"), randomVar(0, 3.0)
  *****************************************************************************/
 void logNormalShadow::init(Config *pConfig)
 {
-	std::map<std::string, float> keyVal;
+	std::map<std::string, std::string> keyVal;
 
-	keyVal = pConfig->read(name);
-
-	//if there is nothing in the file then don't overwrite the default values
-	if(0 == keyVal.size())
+	if(NULL != pConfig && !noConfig)
 	{
-		envVal = keyVal["n"];
-		powerAtRefDist = keyVal["P_d0"];
-		refDist = keyVal["d0"];
-	}
+		keyVal = pConfig->read(name);
 
+		//if there is nothing in the file then don't overwrite the default values
+		if(0 == keyVal.size())
+		{
+			envVal = std::stof(keyVal["n"]);
+			powerAtRefDist = std::stoi(keyVal["P_d0"]);
+			refDist = std::stof(keyVal["d0"]);
+		}
+	}
 }
 
 /******************************************************************************

@@ -8,18 +8,29 @@ Purpose:
 
 #include "../../include/dist/fsPathLoss.h"
 #include "../../include/dist/pathLoss.h"
+#include "../../include/dist/logNormalShadow.h"
+
+#include "../../include/util/config.h"
 
 int main(int argc, char**argv)
 {
-	pathLoss pl;
-	fsPathLoss fspl;
+	Config config;
+	pathLoss pl(true, &config);
+	fsPathLoss fspl(true, &config);
+	logNormalShadow lns(true, &config);
 	ssMeasurement devSS;
 	distMeasurement devDist;
+
+	pl.init(&config);
+	fspl.init(&config);
+	lns.init(&config);
+
 
 	devSS.devID = "abc123";
 	devSS.ss = -60.0; //dBm is a log scale
 
 	devDist = pl.measure(devSS);
+
 
 	return 0;
 }

@@ -23,10 +23,11 @@ Purpose:		Implements the functionality of the config object
  *****************************************************************************/
 Config::Config(std::string fileName)
 {
+	const std::string FILE_EXT = ".conf";
 	std::ifstream configFile;
 	std::string line;
 
-	if(-1 == fileName.find(FILE_EXT))
+	if(std::string::npos == fileName.find(FILE_EXT))
 	{
 		corruptObject = true;
 	}
@@ -122,11 +123,10 @@ int Config::save()
  *****************************************************************************/
 int Config::fillMap(std::string section)
 {
-	char tmp[101];
+	char tmp[101], tmp2[101];
 	int returnVal = NO_ERROR, lineNum = 0;
-	std::string line, currentSection, key;
+	std::string line, currentSection, key, value;
 	std::vector<std::string>::iterator iter = fileText.begin();
-	float value;
 	bool sectionFound = false;
 
 	if(!corruptObject)
@@ -140,7 +140,7 @@ int Config::fillMap(std::string section)
 			{
 				case '[':
 
-					for(int i = 1; i < line.length(); i++)
+					for(unsigned int i = 1; i < line.length(); i++)
 					{
 						currentSection += line[i];
 					}
@@ -160,9 +160,10 @@ int Config::fillMap(std::string section)
 					if(sectionFound)
 					{
 						//maybe use find and substr to break up the string
-						std::sscanf(line.c_str(), "%100s=%f", &tmp, &value);
+						std::sscanf(line.c_str(), "%100s=%s", tmp, tmp2);
 
 						key = tmp;
+						value = tmp2;
 
 						sectionMap[key] = std::make_pair(lineNum, value);
 					}
@@ -247,15 +248,15 @@ bool Config::isCorrupt() const
  *Returned:			int - NO_ERROR, SECTION_NOT_FOUND, BAD_OBJECT
  *****************************************************************************/
 int Config::write(std::string section,
-		std::vector<std::pair<std::string, float>> keyVals)
+		std::vector<std::pair<std::string, std::string>> keyVals)
 {
-	int returnVal = NO_ERROR, lineNumber;
-	std::vector<std::pair<std::string, float>>::iterator iter = keyVals.begin(),
-																											 newEntryIter;
-	std::vector<std::pair<std::string, float>> newEntryBuffer;
-	std::map<std::string, std::pair<int, float>>::iterator mapIter;
+	int returnVal = NO_ERROR;
+	std::vector<std::pair<std::string, std::string>>::iterator iter =
+																							keyVals.begin(), newEntryIter;
+	std::vector<std::pair<std::string, std::string>> newEntryBuffer;
+	std::map<std::string, std::pair<int, std::string>>::iterator mapIter;
 	std::string line;
-	std::pair<int, float> entry;
+	std::pair<std::string, std::string> entry;
 
 	if(!corruptObject)
 	{
@@ -334,10 +335,10 @@ int Config::write(std::string section,
  *
  *Returned:			std::map<std::string, float>
  *****************************************************************************/
-std::map<std::string, float> Config::read(std::string section)
+std::map<std::string, std::string> Config::read(std::string section)
 {
-	std::map<std::string, float> keyVals;
-	std::map<std::string, std::pair<int, float>>::iterator iter =
+	std::map<std::string, std::string> keyVals;
+	std::map<std::string, std::pair<int, std::string>>::iterator iter =
 																												sectionMap.begin();
 
 	if(SECTION_NOT_FOUND != fillMap(section))

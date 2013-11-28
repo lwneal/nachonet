@@ -26,17 +26,28 @@ Purpose:		Implements the behavior of the fsPathLoss module (free space path
  *
  *Returned:		 None
  *****************************************************************************/
-fsPathLoss::fsPathLoss(bool debug, Config *pConfig) : name("fsPathLoss")
+fsPathLoss::fsPathLoss(bool debug, Config *pConfig)
 {
-	std::vector<std::pair<std::string, float>> keyVal;
+	std::vector<std::pair<std::string, std::string>> keyVal;
+
+	name = "pathLoss";
 	setWavelength(MIN_CHANNEL);
 
-	pConfig->addSection(name);
+	if(NULL != pConfig)
+	{
+		pConfig->addSection(name);
 
-	keyVal.push_back(std::make_pair("channel", MIN_CHANNEL));
+		keyVal.push_back(std::make_pair("channel", std::to_string(MIN_CHANNEL)));
 
-	pConfig->write(name, keyVal);
-	pConfig->save();
+		pConfig->write(name, keyVal);
+		pConfig->save();
+
+		noConfig = false;
+	}
+	else
+	{
+		noConfig = true;
+	}
 
 	this->debug = debug;
 }
@@ -101,15 +112,19 @@ void fsPathLoss::setWavelength(float frequency)
  *****************************************************************************/
 void fsPathLoss::init(Config *pConfig)
 {
-	std::map<std::string, float> keyVal;
+	std::map<std::string, std::string> keyVal;
 
-	keyVal = pConfig->read(name);
-
-	//if there is nothing in the file then don't overwrite the default values
-	if(0 == keyVal.size())
+	if(NULL != pConfig && !noConfig)
 	{
-		setWavelength(keyVal["channel"]);
+		keyVal = pConfig->read(name);
+
+		//if there is nothing in the file then don't overwrite the default values
+		if(0 == keyVal.size())
+		{
+			setWavelength(std::stof(keyVal["channel"]));
+		}
 	}
+
 }
 
 /******************************************************************************

@@ -13,9 +13,7 @@ Purpose:		This file defines the interface to the abstract class
 #include "../util/config.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-
-
-static const char * CONFIG = "dist.config";
+#include <iomanip>
 
 typedef struct distMeasurement
 {
@@ -33,6 +31,8 @@ class distMeasure
 
 	protected:
 		std::string name;
+		bool noConfig;
+
 	private:
 
 };

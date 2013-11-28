@@ -22,8 +22,8 @@ class Config
 		Config(std::string fileName = "default.conf");
 		~Config();
 		int write(std::string section,
-				std::vector<std::pair<std::string, float>> keyVals);
-		std::map<std::string, float> read(std::string section);
+				std::vector<std::pair<std::string, std::string>> keyVals);
+		std::map<std::string, std::string> read(std::string section);
 
 		int save();
 
@@ -40,13 +40,11 @@ class Config
 			NO_ERROR
 		}Errors ;
 
-		static const std::string FILE_EXT = ".conf";
-
 	private:
 		bool corruptObject;
 		std::string fileName;
 		std::vector<std::string> fileText;
-		std::map<std::string, std::pair<int, float>> sectionMap;
+		std::map<std::string, std::pair<int, std::string>> sectionMap;
 		int sectionStart;
 
 		int fillMap(std::string section);

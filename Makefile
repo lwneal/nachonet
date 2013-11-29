@@ -14,7 +14,7 @@ VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 
 .PHONY: all clean package zeus
 
-all: bin/adminTools bin/prototype bin/distDriver
+all: bin/adminTools bin/prototype bin/distDriver bin/configDriver
 
 ########################ADMIN TOOLS###############################
 
@@ -60,6 +60,12 @@ src/dist/logNormalShadow.cpp
 	-lm
 
 ##########################Utilities###############################
+
+bin/configDriver: bin/configDriver.o bin/config.o
+	${CC} ${CFLAGS} -o bin/configDriver bin/configDriver.o bin/config.o
+	
+bin/configDriver.o: src/util/configDriver.cpp include/util/config.h
+	${CC} ${CFLAGS} -o bin/configDriver.o -c src/util/configDriver.cpp
 
 bin/config.o: include/util/config.h src/util/config.cpp
 	${CC} ${CFLAGS} -o bin/config.o -c src/util/config.cpp

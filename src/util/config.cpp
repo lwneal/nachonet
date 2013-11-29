@@ -86,18 +86,22 @@ Config::~Config()
  *****************************************************************************/
 int Config::save()
 {
+	std::ifstream fileTest;
 	std::ofstream configFile;
 	int returnVal = NO_ERROR;
 	std::vector<std::string>::iterator iter = fileText.begin();
 
-	configFile.open(fileName.c_str());
+	fileTest.open(fileName.c_str());
 
-	if(!configFile)
+	if(!fileTest)
 	{
 		returnVal = BAD_FILE;
 	}
 	else
 	{
+		fileTest.close();
+		configFile.open(fileName.c_str(), std::ofstream::trunc);
+
 		while(fileText.end() != iter)
 		{
 			configFile << *iter;

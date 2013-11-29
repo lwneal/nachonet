@@ -40,7 +40,7 @@ class Config
 			NO_ERROR
 		}Errors ;
 
-	private:
+	//private:
 		bool corruptObject;
 		std::string fileName;
 		std::vector<std::string> fileText;

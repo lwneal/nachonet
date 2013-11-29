@@ -127,7 +127,8 @@ int Config::save()
  *****************************************************************************/
 int Config::fillMap(std::string section)
 {
-	char tmp[101], tmp2[101];
+	//char tmp[101], tmp2[101];
+	unsigned position;
 	int returnVal = NO_ERROR, lineNum = 0;
 	std::string line, currentSection, key, value;
 	std::vector<std::string>::iterator iter = fileText.begin();
@@ -144,7 +145,7 @@ int Config::fillMap(std::string section)
 			{
 				case '[':
 
-					for(unsigned int i = 1; i < line.length(); i++)
+					for(unsigned int i = 1; i < line.length() - 1; i++)
 					{
 						currentSection += line[i];
 					}
@@ -163,11 +164,15 @@ int Config::fillMap(std::string section)
 				default:
 					if(sectionFound)
 					{
-						//maybe use find and substr to break up the string
-						std::sscanf(line.c_str(), "%100s=%s", tmp, tmp2);
+						position = line.find("=");
+						key = line.substr(0, position);
+						value = line.substr(position + 1, line.length() - (position + 1));
 
-						key = tmp;
-						value = tmp2;
+						//maybe use find and substr to break up the string
+						//std::sscanf(line.c_str(), "%100s=%s", tmp, tmp2);
+
+						//key = tmp;
+						//value = tmp2;
 
 						sectionMap[key] = std::make_pair(lineNum, value);
 					}
@@ -205,7 +210,7 @@ int Config::fillMap(std::string section)
  *****************************************************************************/
 void Config::addSection(std::string section)
 {
-	if(SECTION_NOT_FOUND != fillMap(section))
+	if(SECTION_NOT_FOUND == fillMap(section))
 	{
 		fileText.push_back('[' + section + ']');
 	}
@@ -264,61 +269,59 @@ int Config::write(std::string section,
 
 	if(!corruptObject)
 	{
-		fillMap(section);
+		returnVal = fillMap(section);
 
-		//update sectionMap of values
-		while(keyVals.end() != iter)
+		if(SECTION_NOT_FOUND != returnVal)
 		{
-			mapIter = sectionMap.find((*iter).first);
-
-			if(sectionMap.end() != mapIter)
+			//update sectionMap of values
+			while(keyVals.end() != iter)
 			{
-				sectionMap[(*iter).first] = std::make_pair((*mapIter).second.first,
-																											(*iter).second);
+				mapIter = sectionMap.find((*iter).first);
+
+				if(sectionMap.end() != mapIter)
+				{
+					sectionMap[(*iter).first] = std::make_pair((*mapIter).second.first,
+																												(*iter).second);
+				}
+				else
+				{
+					entry = std::make_pair((*iter).first, (*iter).second);
+
+					newEntryBuffer.push_back(entry);
+				}
+
+				++iter;
 			}
-			else
+
+			//write to file buffer
+			mapIter = sectionMap.begin();
+
+			while(sectionMap.end() != mapIter)
 			{
-				entry = std::make_pair((*iter).first, (*iter).second);
+				line = fileText[(*mapIter).second.first];
+				line.clear();
 
-				newEntryBuffer.push_back(entry);
+				line = (*mapIter).first + '=' + (*mapIter).second.second;
+				fileText[(*mapIter).second.first] = line;
+
+				++mapIter;
 			}
 
-			++iter;
-		}
-
-		//write to file buffer
-		mapIter = sectionMap.begin();
-
-		while(sectionMap.end() != mapIter)
-		{
-			line = fileText[(*mapIter).second.first];
-			line.clear();
-
-			line = (*mapIter).first + '=' + (*mapIter).second.second;
-			fileText[(*mapIter).second.first] = line;
-
-			++mapIter;
-		}
-
-		//now write the new stuff if there is any
-		if(0 != newEntryBuffer.size() && -1 != sectionStart)
-		{
-			newEntryIter = newEntryBuffer.begin();
-
-			while(newEntryBuffer.end() != newEntryIter)
+			//now write the new stuff if there is any
+			if(0 != newEntryBuffer.size())
 			{
-				line = (*newEntryIter).first + '=' + (*newEntryIter).second;
+				newEntryIter = newEntryBuffer.begin();
 
-				fileText.insert(fileText.begin() + sectionStart + 1, line);
+				while(newEntryBuffer.end() != newEntryIter)
+				{
+					line = (*newEntryIter).first + '=' + (*newEntryIter).second;
 
-				++newEntryIter;
+					fileText.insert(fileText.begin() + sectionStart + 1, line);
+
+					++newEntryIter;
+				}
 			}
 		}
-		else if(0 != newEntryBuffer.size() && -1 == sectionStart)
-		{
-			returnVal = SECTION_NOT_FOUND;
-		}
-
 	}
 	else
 	{

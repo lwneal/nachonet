@@ -92,7 +92,7 @@ void pathLoss::init(Config *pConfig)
 		keyVal = pConfig->read(name);
 
 		//if there is nothing in the file then don't overwrite the default values
-		if(0 == keyVal.size())
+		if(0 != keyVal.size())
 		{
 			envVal = std::stof(keyVal["n"]);
 			powerAtRefDist = std::stoi(keyVal["P_d0"]);
@@ -120,17 +120,17 @@ distMeasurement pathLoss::measure(ssMeasurement devSS)
 
 	devDist.devID = devSS.devID;
 
-	devDist.dist = pow(10, (devSS.ss - powerAtRefDist) / 10 * envVal);
+	devDist.dist = pow(10, (devSS.ss - powerAtRefDist) / (10 * envVal));
 
 	if(debug)
 	{
 		std::cout << "***" << devDist.devID << "***\n";
-		std::cout << std::setw(5) << "SS";
-		std::cout << std::setw(5) << "P_d0" << std::setw(5) << "n\n";
-		std::cout << "--------------------\n";
-		std::cout << std::setw(5) << devSS.ss << std::setw(5)
-							<< powerAtRefDist << std::setw(5) << std::setprecision(4)
-							<< envVal << "\n\n";
+		std::cout << std::setw(10) << "SS" << std::setw(10) << "P_d0";
+		std::cout << std::setw(10) << "n" << std::setw(10) << "d\n";
+		std::cout << "----------------------------------------\n";
+		std::cout << std::setw(10) << devSS.ss << std::setw(10)
+							<< powerAtRefDist << std::setw(10) << std::setprecision(4)
+							<< envVal << std::setw(10) << devDist.dist << "\n\n";
 	}
 
 	return devDist;

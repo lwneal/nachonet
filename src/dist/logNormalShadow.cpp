@@ -31,7 +31,7 @@ randomVar(0, 3.0)
 
 	name = "logNormal";
 	envVal = logNormalShadow::DEFAULT_ENV_VAL;
-	powerAtRefDist = logNormalShadow::DEFAULT_POW_AT_REF;
+	powerAtRefDist = logNormalShadow::DEFAULT_REF_DIST;
 	refDist = logNormalShadow::DEFAULT_POW_AT_REF;
 
 	if(NULL != pConfig)
@@ -77,7 +77,7 @@ void logNormalShadow::init(Config *pConfig)
 		keyVal = pConfig->read(name);
 
 		//if there is nothing in the file then don't overwrite the default values
-		if(0 == keyVal.size())
+		if(0 != keyVal.size())
 		{
 			envVal = std::stof(keyVal["n"]);
 			powerAtRefDist = std::stoi(keyVal["P_d0"]);
@@ -110,17 +110,17 @@ distMeasurement logNormalShadow::measure(ssMeasurement devSS)
 	if(debug)
 	{
 		std::cout << "***" << devDist.devID << "***\n";
-		std::cout << std::setw(8) << "SS" << std::setw(8)<< "d_0"
-							<< std::setw(8) << "P_d0" << std::setw(8)<< "X"
-							<< std::setw(8) << "n" << std::setw(8) << "d\n";
+		std::cout << std::setw(10) << "SS" << std::setw(10)<< "d_0"
+							<< std::setw(10) << "P_d0" << std::setw(10)<< "X"
+							<< std::setw(10) << "n" << std::setw(10) << "d\n";
 
-		std::cout << "------------------------------------------------\n";
+		std::cout << "------------------------------------------------------------\n";
 
-		std::cout << std::setw(8) << devSS.ss << std::setw(8) << std::setprecision(2)
-							<< refDist << std::setw(8) << std::setprecision(2) << powerAtRefDist
-							<< std::setw(8) << std::setprecision(4) << random
-							<< std::setw(8) << std::setprecision(4) << envVal
-							<< std::setw(8) << std::setprecision(8) << devDist.dist << "\n\n";
+		std::cout << std::setw(10) << devSS.ss << std::setw(10) << std::setprecision(2)
+							<< refDist << std::setw(10) << std::setprecision(2) << powerAtRefDist
+							<< std::setw(10) << std::setprecision(4) << random
+							<< std::setw(10) << std::setprecision(4) << envVal
+							<< std::setw(10) << std::setprecision(4) << devDist.dist << "\n\n";
 	}
 
 	return devDist;

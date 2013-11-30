@@ -104,7 +104,7 @@ int Config::save()
 
 		while(fileText.end() != iter)
 		{
-			configFile << *iter;
+			configFile << *iter << std::endl;
 			++iter;
 		}
 
@@ -156,6 +156,8 @@ int Config::fillMap(std::string section)
 						sectionStart = lineNum;
 					}
 
+					currentSection.clear();
+
 					break;
 
 				case '#': //Do nothing because this is an in line comment
@@ -167,12 +169,6 @@ int Config::fillMap(std::string section)
 						position = line.find("=");
 						key = line.substr(0, position);
 						value = line.substr(position + 1, line.length() - (position + 1));
-
-						//maybe use find and substr to break up the string
-						//std::sscanf(line.c_str(), "%100s=%s", tmp, tmp2);
-
-						//key = tmp;
-						//value = tmp2;
 
 						sectionMap[key] = std::make_pair(lineNum, value);
 					}

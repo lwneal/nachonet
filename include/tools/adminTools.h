@@ -8,6 +8,7 @@ Purpose:		Defines all of the useful constants and structures used by the
 *******************************************************************************/
 
 #pragma once
+#include "adminDistMeasure.h"
 
 /*
 struct DeviceEntry
@@ -47,19 +48,21 @@ public:
 														CALIBRATE
 												} ManageMenu;
 
-	int startNachoNet();
-	int stopNachoNet();
-	void listDevices();
+	//int startNachoNet();
+	//int stopNachoNet();
+	//void listDevices();
 
-	int testDataCollect();
+	//int testDataCollect();
 	int testDist();
-	int testDataEx();
-	int testLocalize();
+	int configDist();
+	//int testDataEx();
+	//int testLocalize();
 
 private:
 	//DataCollectionTest dataCollectTest;
-	//DistMeasurementTest	distTest;
+	adminDistMeasure	distAdmin;
 	//DataExchangeTest dataExTest;
 	//LocalizationTest localizeTest;
+	bool debug;
 
 };

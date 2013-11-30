@@ -14,7 +14,7 @@ Purpose:
 
 int main(int argc, char**argv)
 {
-	Config config;
+	Config config("testfiles/distTest.conf");
 	pathLoss pl(true, &config);
 	fsPathLoss fspl(true, &config);
 	logNormalShadow lns(true, &config);
@@ -30,6 +30,8 @@ int main(int argc, char**argv)
 	devSS.ss = -60.0; //dBm is a log scale
 
 	devDist = pl.measure(devSS);
+	devDist = fspl.measure(devSS);
+	devDist = lns.measure(devSS);
 
 
 	return 0;

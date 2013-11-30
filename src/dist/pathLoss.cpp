@@ -38,13 +38,17 @@ pathLoss::pathLoss(bool debug, Config *pConfig)
 
 	if(NULL != pConfig)
 	{
-		pConfig->addSection(name);
+		//so that we do not overwrite
+		if(Config::SECTION_EXISTS != pConfig->addSection(name))
+		{
+			keyVal.push_back(std::make_pair("n", std::to_string(envVal)));
+			keyVal.push_back(std::make_pair("P_d0", std::to_string(powerAtRefDist)));
 
-		keyVal.push_back(std::make_pair("n", std::to_string(envVal)));
-		keyVal.push_back(std::make_pair("P_d0", std::to_string(powerAtRefDist)));
+			pConfig->write(name, keyVal);
+			pConfig->save();
+		}
 
-		pConfig->write(name, keyVal);
-		pConfig->save();
+
 
 		noConfig = false;
 	}

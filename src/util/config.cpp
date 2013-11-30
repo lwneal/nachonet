@@ -197,19 +197,28 @@ int Config::fillMap(std::string section)
  *
  *Description:	Add a section to the configuration file. fillMap is used to
  *							check if the section exists in the file already. If this is
- *							the case, we happily return nothing because it shouldn't
- *							matter
+ *							the case, we return an appropriate error code
  *
  *Parameters:		section - the section header to be added to the file
  *
- *Returned:			None
+ *Returned:			int - NO_ERROR, SECTION_EXISTS
  *****************************************************************************/
-void Config::addSection(std::string section)
+int Config::addSection(std::string section)
 {
-	if(SECTION_NOT_FOUND == fillMap(section))
+	int returnVal = NO_ERROR;
+
+	returnVal = fillMap(section);
+
+	if(SECTION_NOT_FOUND == returnVal)
 	{
 		fileText.push_back('[' + section + ']');
 	}
+	else
+	{
+		returnVal = SECTION_EXISTS;
+	}
+
+	return returnVal;
 }
 
 /******************************************************************************

@@ -27,16 +27,17 @@ class Config
 
 		int save();
 
-		void addSection(std::string section);
+		int addSection(std::string section);
 
 		std::string getFileName() const;
 		bool isCorrupt() const;
 
 		typedef enum Errors
 		{
-			BAD_FILE = -3,
+			BAD_FILE = -4,
 			SECTION_NOT_FOUND,
 			BAD_OBJECT,
+			SECTION_EXISTS,
 			NO_ERROR
 		}Errors ;
 

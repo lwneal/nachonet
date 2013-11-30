@@ -22,7 +22,7 @@ struct DeviceEntry
 class AdminTools
 {
 public:
-	~AdminTools();
+	~AdminTools() {};
 
 	typedef enum Menus { MAIN = 0,
 											 TEST,
@@ -48,13 +48,15 @@ public:
 														CALIBRATE
 												} ManageMenu;
 
+
 	//int startNachoNet();
 	//int stopNachoNet();
 	//void listDevices();
 
 	//int testDataCollect();
-	int testDist();
-	int configDist();
+	void setDistEqn(int eqnType);
+	void testDist();
+	void configDist();
 	//int testDataEx();
 	//int testLocalize();
 

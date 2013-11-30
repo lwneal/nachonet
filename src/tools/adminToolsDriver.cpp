@@ -11,6 +11,8 @@ Purpose:		Provides the menu structure for testing modules, managing nodes, and
 #include <string.h>
 #include <iostream>
 #include <stdlib.h>
+#include <unistd.h>
+#include <getopt.h>
 
 
 const int BACK = -1;
@@ -87,10 +89,27 @@ int menu(int menuID)
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
 	int menuID = AdminTools::MAIN;
 	int menuSelection;
+	int option_char, eqnType;
+	AdminTools adminTools;
+
+	while ((option_char = getopt (argc, argv, "d:")) != -1)
+	{
+	 switch (option_char)
+		 {
+		 case 'd':
+			 eqnType = std::stoi(optarg);
+			 break;
+		 case '?':
+
+			 break;
+		 }
+	}
+
+	adminTools.setDistEqn(eqnType);
 
 	while (AdminTools::EXIT != menuSelection || AdminTools::MAIN != menuID)
 	{
@@ -135,7 +154,7 @@ int main()
 						break;
 
 					case AdminTools::DIST_MEASUREMENT:
-						//adminTools.testDistMeasurement()
+						adminTools.testDist();
 						break;
 
 					case AdminTools::DATA_EXCHANGE:
@@ -166,7 +185,7 @@ int main()
 						break;
 
 					case AdminTools::CALIBRATE:
-						//adminTools.calibrate();
+						adminTools.configDist();
 						break;
 
 					case BACK:

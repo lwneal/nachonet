@@ -19,19 +19,28 @@ all: bin/adminTools bin/prototype bin/distDriver bin/configDriver
 ########################ADMIN TOOLS###############################
 
 bin/adminTools: bin/adminTools.o bin/adminToolsDriver.o \
-include/tools/adminTools.h 
+bin/adminDistMeasure.o bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o \
+bin/dist.o bin/config.o include/tools/adminTools.h 
 	${CC} ${CFLAGS} -o bin/adminTools bin/adminTools.o bin/adminToolsDriver.o \
-	-lcurl
+	bin/adminDistMeasure.o bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o \
+	bin/dist.o bin/config.o -lcurl
 
 bin/prototype: bin/prototype.o include/tools/adminTools.h
 	${CC} ${CLFAGS} -o bin/prototype bin/prototype.o -lcurl
 
-bin/adminTools.o: src/tools/adminTools.cpp include/tools/adminTools.h 
+bin/adminTools.o: src/tools/adminTools.cpp include/tools/adminTools.h \
+src/tools/adminDistMeasure.cpp include/tools/adminDistMeasure.h 
 	${CC} ${CFLAGS} -o bin/adminTools.o -c src/tools/adminTools.cpp
 	
 bin/adminToolsDriver.o: src/tools/adminToolsDriver.cpp \
 include/tools/adminTools.h
 	${CC} ${CFLAGS} -o bin/adminToolsDriver.o -c src/tools/adminToolsDriver.cpp
+
+bin/adminDistMeasure.o: src/tools/adminDistMeasure.cpp \
+include/tools/adminDistMeasure.h src/dist/pathLoss.cpp src/dist/fsPathLoss.cpp \
+src/dist/logNormalShadow.cpp src/util/config.cpp include/util/config.h \
+src/dist/dist.cpp include/dist/dist.h
+	${CC} ${CFLAGS} -o bin/adminDistMeasure.o -c src/tools/adminDistMeasure.cpp
 	
 bin/prototype.o: src/prototype.cpp include/tools/adminTools.h
 	${CC} ${CFLAGS} -o bin/prototype.o -c src/prototype.cpp
@@ -45,6 +54,9 @@ bin/logNormalShadow.o bin/config.o
 	
 bin/distDriver.o: src/dist/distDriver.cpp include/dist/dist.h
 	${CC} ${CFLAGS} -o bin/distDriver.o -c src/dist/distDriver.cpp
+	
+bin/dist.o: src/dist/dist.cpp include/dist/dist.h
+	${CC} ${CFLAGS} -o bin/dist.o -c src/dist/dist.cpp	
 	
 bin/pathLoss.o: include/dist/pathLoss.h include/dist/dist.h \
 src/dist/pathLoss.cpp

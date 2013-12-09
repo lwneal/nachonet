@@ -164,7 +164,7 @@ int Config::fillMap(std::string section)
 					break;
 
 				default:
-					if(sectionFound)
+					if(sectionFound && '\n' != line[0])
 					{
 						position = line.find("=");
 						key = line.substr(0, position);

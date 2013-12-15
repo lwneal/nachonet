@@ -9,6 +9,7 @@ Purpose:		Defines all of the useful constants and structures used by the
 
 #pragma once
 #include "adminDistMeasure.h"
+#include "adminLocalization.h"
 
 /*
 struct DeviceEntry
@@ -58,13 +59,13 @@ public:
 	void testDist();
 	void configDist();
 	//int testDataEx();
-	//int testLocalize();
+	void testLocalize();
 
 private:
 	//DataCollectionTest dataCollectTest;
 	adminDistMeasure	distAdmin;
 	//DataExchangeTest dataExTest;
-	//LocalizationTest localizeTest;
+	adminLocalization locAdmin;
 	bool debug;
 
 };

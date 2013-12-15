@@ -34,6 +34,8 @@ typedef struct refMeasurement
 class localization
 {
   public:
+		localization(bool debug = false);
     location localize(refMeasurement, refMeasurement, refMeasurement);
   private:
+    bool debug;
 };

@@ -9,6 +9,11 @@ Purpose:		Implements the functionality of the localization class with the
 
 #include "../../include/loc/loc.h"
 
+localization::localization(bool debug)
+{
+	this->debug = debug;
+}
+
 /*****************************************************************************
  * Method: 			localize
  *
@@ -64,6 +69,21 @@ location localization::localize(refMeasurement ref1, refMeasurement ref2,
  					ref3.nodeLocation.y * X_21);
 
   returnLocation.theID = ref1.devDist.devID;
+
+  if(debug)
+  {
+  	std::cout << "(X_1, Y_2):d_1  (X_2, Y_2):d_2  (X_3, Y_3):d_3  (X, Y)\n";
+  	std::cout << "--------------  --------------  --------------  ------\n";
+  	std::cout << std::setprecision(3) << std::setw(14) << "("
+  						<< ref1.nodeLocation.x << ", " << ref1.nodeLocation.y
+  						<< "):" << ref1.devDist.dist;
+  	std::cout << std::setw(16) << "(" << ref2.nodeLocation.x << ", "
+  						<< ref2.nodeLocation.y << "):" << ref2.devDist.dist;
+  	std::cout << std::setw(16) << "(" << ref3.nodeLocation.x << ", "
+  						<< ref3.nodeLocation.y << "):" << ref3.devDist.dist;
+  	std::cout << std::setw(8) << "(" << returnLocation.x << ", "
+  						<< returnLocation.y << ")\n";
+  }
 
 
 	return returnLocation;

@@ -61,27 +61,27 @@ location localization::localize(refMeasurement ref1, refMeasurement ref2,
 	Y_21 = ref2.nodeLocation.y - ref1.nodeLocation.y;
 
 	returnLocation.x = (A * Y_32 + B * Y_13 + C * Y_21) /
-  		2 * (ref1.nodeLocation.x * Y_32 + ref2.nodeLocation.x * Y_13 +
-  				ref3.nodeLocation.x * Y_21);
+  		(2 * (ref1.nodeLocation.x * Y_32 + ref2.nodeLocation.x * Y_13 +
+  				ref3.nodeLocation.x * Y_21));
 
   returnLocation.y = (A * X_32 + B * X_13 + C * X_21) /
- 			2 * (ref1.nodeLocation.y * X_32 + ref2.nodeLocation.y * X_13 +
- 					ref3.nodeLocation.y * X_21);
+ 			(2 * (ref1.nodeLocation.y * X_32 + ref2.nodeLocation.y * X_13 +
+ 					ref3.nodeLocation.y * X_21));
 
-  returnLocation.theID = ref1.devDist.devID;
+  returnLocation.theID.strID = ref1.devDist.devID;
 
   if(debug)
   {
   	std::cout << "(X_1, Y_2):d_1  (X_2, Y_2):d_2  (X_3, Y_3):d_3  (X, Y)\n";
   	std::cout << "--------------  --------------  --------------  ------\n";
-  	std::cout << std::setprecision(3) << std::setw(14) << "("
+  	std::cout << std::setprecision(3) << "("
   						<< ref1.nodeLocation.x << ", " << ref1.nodeLocation.y
   						<< "):" << ref1.devDist.dist;
-  	std::cout << std::setw(16) << "(" << ref2.nodeLocation.x << ", "
+  	std::cout << "       " << "(" << ref2.nodeLocation.x << ", "
   						<< ref2.nodeLocation.y << "):" << ref2.devDist.dist;
-  	std::cout << std::setw(16) << "(" << ref3.nodeLocation.x << ", "
+  	std::cout << "       " << "(" << ref3.nodeLocation.x << ", "
   						<< ref3.nodeLocation.y << "):" << ref3.devDist.dist;
-  	std::cout << std::setw(8) << "(" << returnLocation.x << ", "
+  	std::cout << "       (" << returnLocation.x << ", "
   						<< returnLocation.y << ")\n";
   }
 

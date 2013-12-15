@@ -55,6 +55,8 @@ void AdminTools::testLocalize()
 	std::string inFileName, outFileName;
 	char choice;
 
+	locAdmin.setDebug(false);
+
 	std::cout << "Please enter an input file: ";
 	std::cin >> inFileName;
 

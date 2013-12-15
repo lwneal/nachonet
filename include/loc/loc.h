@@ -12,7 +12,7 @@ Purpose:		Defines the interface to the localization module. This module
 #pragma once
 #include "../dist/dist.h"
 
-typedef struct id
+struct id
 {
 	int intID;
 	std::string strID;

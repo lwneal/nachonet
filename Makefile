@@ -20,10 +20,11 @@ all: bin/adminTools bin/prototype bin/distDriver bin/configDriver
 
 bin/adminTools: bin/adminTools.o bin/adminToolsDriver.o \
 bin/adminDistMeasure.o bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o \
-bin/dist.o bin/config.o include/tools/adminTools.h 
+bin/dist.o bin/config.o bin/loc.o bin/adminLocalization.o \
+include/tools/adminTools.h 
 	${CC} ${CFLAGS} -o bin/adminTools bin/adminTools.o bin/adminToolsDriver.o \
 	bin/adminDistMeasure.o bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o \
-	bin/dist.o bin/config.o -lcurl
+	bin/dist.o bin/config.o bin/loc.o bin/adminLocalization.o -lcurl
 
 bin/prototype: bin/prototype.o include/tools/adminTools.h
 	${CC} ${CLFAGS} -o bin/prototype bin/prototype.o -lcurl
@@ -41,6 +42,11 @@ include/tools/adminDistMeasure.h src/dist/pathLoss.cpp src/dist/fsPathLoss.cpp \
 src/dist/logNormalShadow.cpp src/util/config.cpp include/util/config.h \
 src/dist/dist.cpp include/dist/dist.h
 	${CC} ${CFLAGS} -o bin/adminDistMeasure.o -c src/tools/adminDistMeasure.cpp
+	
+bin/adminLocalization.o: src/tools/adminLocalization.cpp \
+include/tools/adminLocalization.h include/loc/loc.h src/loc/loc.cpp
+	${CC} ${CFLAGS} -o bin/adminLocalization.o -c \
+	src/tools/adminLocalization.cpp
 	
 bin/prototype.o: src/prototype.cpp include/tools/adminTools.h
 	${CC} ${CFLAGS} -o bin/prototype.o -c src/prototype.cpp
@@ -70,6 +76,10 @@ bin/logNormalShadow.o: include/dist/logNormalShadow.h include/dist/dist.h\
 src/dist/logNormalShadow.cpp
 	${CC} ${CFLAGS} -o bin/logNormalShadow.o -c src/dist/logNormalShadow.cpp \
 	-lm
+
+##########################Localization###############################
+bin/loc.o: include/loc/loc.h src/loc/loc.cpp
+	${CC} ${CFLAGS} -o bin/loc.o -c src/loc/loc.cpp -lm
 
 ##########################Utilities###############################
 

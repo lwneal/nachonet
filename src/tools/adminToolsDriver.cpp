@@ -162,7 +162,7 @@ int main(int argc, char** argv)
 						break;
 
 					case AdminTools::LOCALIZATION:
-						//adminTools.testLocalization()
+						adminTools.testLocalize();
 						break;
 
 					case BACK:

@@ -144,12 +144,13 @@ int Config::fillMap(std::string section)
 	int returnVal = NO_ERROR, lineNum = 0;
 	std::string line, currentSection, key, value;
 	std::vector<std::string>::iterator iter = fileText.begin();
-	bool sectionFound = false;
+	bool sectionFound = false, sectionComplete = false;
 
 	if(!corruptObject)
 	{
+		sectionMap.clear();
 		//search for the correct section and fill map
-		while(fileText.end() != iter)
+		while(fileText.end() != iter && !sectionComplete)
 		{
 			line = *iter;
 
@@ -157,18 +158,25 @@ int Config::fillMap(std::string section)
 			{
 				case '[':
 
-					for(unsigned int i = 1; i < line.length() - 1; i++)
+					if(sectionFound)
 					{
-						currentSection += line[i];
+						sectionComplete = true;
 					}
-
-					if(0 == currentSection.compare(section))
+					else
 					{
-						sectionFound = true;
-						sectionStart = lineNum;
-					}
+						for(unsigned int i = 1; i < line.length() - 1; i++)
+						{
+							currentSection += line[i];
+						}
 
-					currentSection.clear();
+						if(0 == currentSection.compare(section))
+						{
+							sectionFound = true;
+							sectionStart = lineNum;
+						}
+
+						currentSection.clear();
+					}
 
 					break;
 
@@ -362,11 +370,12 @@ int Config::write(std::string section,
 std::map<std::string, std::string> Config::read(std::string section)
 {
 	std::map<std::string, std::string> keyVals;
-	std::map<std::string, std::pair<int, std::string>>::iterator iter =
-																												sectionMap.begin();
+	std::map<std::string, std::pair<int, std::string>>::iterator iter;
 
 	if(SECTION_NOT_FOUND != fillMap(section))
 	{
+		iter = sectionMap.begin();
+
 		while(sectionMap.end() != iter)
 		{
 			keyVals[(*iter).first] = (*iter).second.second;

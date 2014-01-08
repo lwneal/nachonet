@@ -51,6 +51,12 @@ Config::Config(std::string fileName)
 				fileText.push_back(line);
 			}
 
+			//Check to see if first line is empty
+			if("" == fileText[0])
+			{
+				fileText.erase(fileText.begin());
+			}
+
 			sectionStart = -1;
 
 			configFile.close();
@@ -104,8 +110,14 @@ int Config::save()
 
 		while(fileText.end() != iter)
 		{
-			configFile << *iter << std::endl;
+			configFile << *iter;
 			++iter;
+
+			if(fileText.end() != iter)
+			{
+				configFile << std::endl;
+			}
+
 		}
 
 		configFile.close();

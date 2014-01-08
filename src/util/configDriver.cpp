@@ -137,6 +137,142 @@ int main()
 		}
 	}
 
+	delete pConfig;
+
+	//Test writing to and reading from the file.
+
+	pConfig = new Config("testfiles/writeTest.conf");
+
+	pConfig->addSection("SectionOne");
+
+	if(Config::NO_ERROR != pConfig->fillMap("SectionOne"))
+	{
+		failure ("Did not find newly added section");
+	}
+
+	values.clear();
+
+	values.push_back(std::make_pair("a", "1"));
+	values.push_back(std::make_pair("b", "2"));
+	values.push_back(std::make_pair("c", "3"));
+
+	if(Config::NO_ERROR != pConfig->write("SectionOne", values))
+	{
+		failure ("Failed to write data to section");
+	}
+
+	delete pConfig;
+
+	pConfig = new Config("testfiles/writeTest.conf");
+
+	if(Config::NO_ERROR != pConfig->fillMap("SectionOne"))
+	{
+		failure ("Did not find section");
+	}
+
+	keyVals = pConfig->read("SectionOne");
+
+	if(1 != std::stoi(keyVals["a"]) || 2 != std::stoi(keyVals["b"])
+		|| 3 != std::stof(keyVals["c"]))
+	{
+		failure("read failed to return the correct values from writeTest.conf");
+
+		if(1 != std::stoi(keyVals["a"]))
+		{
+			std::cout << "a" << "=" << keyVals["a"] << std::endl;
+		}
+
+		if(2 != std::stoi(keyVals["b"]))
+		{
+			std::cout << "b" << "=" << keyVals["b"] << std::endl;
+		}
+
+		if(3 != std::stoi(keyVals["c"]))
+		{
+			std::cout << "c" << "=" << keyVals["c"] << std::endl;
+		}
+	}
+
+	pConfig->addSection("SectionTwo");
+
+	if(Config::NO_ERROR != pConfig->fillMap("SectionTwo"))
+	{
+		failure ("Did not find newly added section");
+	}
+
+	values.clear();
+
+	values.push_back(std::make_pair("d", "4"));
+	values.push_back(std::make_pair("e", "5"));
+	values.push_back(std::make_pair("f", "6"));
+
+	if(Config::NO_ERROR != pConfig->write("SectionTwo", values))
+	{
+		failure ("Failed to write data to section");
+	}
+
+	delete pConfig;
+
+	pConfig = new Config("testfiles/writeTest.conf");
+
+	if(Config::NO_ERROR != pConfig->fillMap("SectionTwo"))
+	{
+		failure ("Did not find section");
+	}
+
+	keyVals = pConfig->read("SectionTwo");
+
+	if(4 != std::stoi(keyVals["d"]) || 5 != std::stoi(keyVals["e"])
+		|| 6 != std::stof(keyVals["f"]))
+	{
+		failure("read failed to return the correct values from writeTest.conf");
+
+		if(4 != std::stoi(keyVals["d"]))
+		{
+			std::cout << "d" << "=" << keyVals["d"] << std::endl;
+		}
+
+		if(5 != std::stoi(keyVals["e"]))
+		{
+			std::cout << "e" << "=" << keyVals["e"] << std::endl;
+		}
+
+		if(6 != std::stoi(keyVals["f"]))
+		{
+			std::cout << "f" << "=" << keyVals["f"] << std::endl;
+		}
+	}
+
+	if(Config::NO_ERROR != pConfig->fillMap("SectionOne"))
+	{
+		failure ("Did not find section");
+	}
+
+	keyVals = pConfig->read("SectionOne");
+
+	if(1 != std::stoi(keyVals["a"]) || 2 != std::stoi(keyVals["b"])
+		|| 3 != std::stof(keyVals["c"]))
+	{
+		failure("read failed to return the correct values from writeTest.conf");
+
+		if(1 != std::stoi(keyVals["a"]))
+		{
+			std::cout << "a" << "=" << keyVals["a"] << std::endl;
+		}
+
+		if(2 != std::stoi(keyVals["b"]))
+		{
+			std::cout << "b" << "=" << keyVals["b"] << std::endl;
+		}
+
+		if(3 != std::stoi(keyVals["c"]))
+		{
+			std::cout << "c" << "=" << keyVals["c"] << std::endl;
+		}
+	}
+
+	delete pConfig;
+
 	return 0;
 }
 

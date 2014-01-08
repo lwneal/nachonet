@@ -29,6 +29,9 @@ class Config
 
 		int addSection(std::string section);
 
+		//int clearSection(std::string section);
+		//int removeSection(std::string section);
+
 		std::string getFileName() const;
 		bool isCorrupt() const;
 

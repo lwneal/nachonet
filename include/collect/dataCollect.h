@@ -1,19 +1,26 @@
 /*******************************************************************************
 File:				dataCollect
 Author: 		Josh Siva
-Date:				1/26/13
+Date:				1/26/14
 Project:		NachoNet
 Purpose:		The file defines the interface to the data collection module
 *******************************************************************************/
 
 #pragma once
 #include <string>
+#include <vector>
+#include <map>
 
 typedef struct ssMeasurement
 {
   std::string devID;
   int ss;
 } ssMeasurement;
+
+typedef struct recent
+{
+	int data[5];
+} recent;
 
 class dataCollect
 {
@@ -36,7 +43,7 @@ class dataCollect
   private:
     bool debug;
     bool readyToRead;
-    std::map<std::string, int[CONTAINER_SIZE]> buffer;//holds 5 most recent
+    std::map<std::string, recent> buffer;//holds 5 most recent
 																											//measurements
 };
 

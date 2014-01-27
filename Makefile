@@ -1,12 +1,12 @@
 ##############################################################################
 #File: 		Makefile
 #Author: 	Joshua Siva
-#Date:		10/21/13
+#Date:		1/27/14
 #Project:	NachoNet
 #Purpose:	This is the makefile for the NachoNet project
 ##############################################################################
 
-CC=g++ -std=gnu++11
+CC=g++-4.7 -std=gnu++11
 
 CFLAGS=-g -Wall
 
@@ -14,7 +14,8 @@ VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 
 .PHONY: all clean package zeus
 
-all: bin/adminTools bin/prototype bin/distDriver bin/configDriver
+all: bin/adminTools bin/prototype bin/distDriver bin/configDriver \
+bin/collectDriver
 
 ########################ADMIN TOOLS###############################
 
@@ -80,6 +81,23 @@ src/dist/logNormalShadow.cpp
 ##########################Localization###############################
 bin/loc.o: include/loc/loc.h src/loc/loc.cpp
 	${CC} ${CFLAGS} -o bin/loc.o -c src/loc/loc.cpp -lm
+	
+##########################Data Collection###############################
+bin/collectDriver: bin/dataCollectDriver.o bin/stdCollect.o bin/dataCollect.o
+	${CC} ${CFLAGS} -o bin/collectDriver bin/dataCollectDriver.o bin/stdCollect.o\
+	 bin/dataCollect.o
+	 
+bin/dataCollectDriver.o: src/collect/dataCollectDriver.cpp \
+include/collect/dataCollect.h include/collect/stdCollect.h
+	${CC} ${CFLAGS} -o bin/dataCollectDriver.o -c \
+	src/collect/dataCollectDriver.cpp
+	
+bin/stdCollect.o: src/collect/stdCollect.cpp include/collect/stdCollect.h \
+include/collect/dataCollect.h
+	${CC} ${CFLAGS} -o bin/stdCollect.o -c src/collect/stdCollect.cpp
+	
+bin/dataCollect.o: src/collect/dataCollect.cpp include/collect/dataCollect.h
+	${CC} ${CFLAGS} -o bin/dataCollect.o -c src/collect/dataCollect.cpp
 
 ##########################Utilities###############################
 

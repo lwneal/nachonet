@@ -1,7 +1,7 @@
 /*******************************************************************************
 File:				dataCollect.cpp
 Author: 		Josh Siva
-Date:				1/26/13
+Date:				1/26/14
 Project:		NachoNet
 Purpose:		Implements the behavior of the data collection module
 *******************************************************************************/
@@ -39,17 +39,16 @@ std::vector<ssMeasurement> dataCollect::getSS () const
 {
 	ssMeasurement temp;
 	std::vector<ssMeasurement>  returnVector;
-	std::map<std::string, int[CONTAINER_SIZE]>::iterator bufferIter =
-			buffer.begin();
+	std::map<std::string, recent>::iterator bufferIter =	buffer.begin();
 	std::vector<int> sort;
 
-	while (buffer.end() != bufferIter)
+	for (bufferIter = buffer.begin (); buffer.end () != bufferIter; ++bufferIter)
 	{
 		temp.devID = bufferIter->first;
 
 		for (int i = 0; i < CONTAINER_SIZE; i++)
 		{
-			sort.push_back((bufferIter->second)[i]);
+			sort.push_back((bufferIter->second).data[i]);
 		}
 
 		std::sort (sort.begin(), sort.end());
@@ -148,23 +147,28 @@ void dataCollect::clearBuffer ()
  ******************************************************************************/
 void dataCollect::update(std::string id, int ss)
 {
-	std::map<std::string, int[CONTAINER_SIZE]>::iterator bufferIter;
+	std::map<std::string, recent>::iterator bufferIter;
 
 	bufferIter = buffer.find (id);
 
 	if (buffer.end() == bufferIter) // this is the first measurement for this dev
 	{
-		buffer [id] = {ss, INT_MIN, INT_MIN, INT_MIN, INT_MIN};
+		buffer [id].data[0] = ss;
+
+		for (int i = 1; i < CONTAINER_SIZE; i++)
+		{
+			buffer [id].data[i] = 0;
+		}
 
 	}
 	else // we need to update a dev
 	{
 		for (int i = CONTAINER_SIZE - 1; i > 0; i--)
 		{
-			bufferIter->second[i] = bufferIter->second[i - 1];
+			(bufferIter->second).data[i] = (bufferIter->second).data[i - 1];
 		}
 
-		bufferIter->second [0] = ss;
+		(bufferIter->second).data[0] = ss;
 	}
 }
 

@@ -8,6 +8,7 @@ Purpose:		Defines the behavior of the stdCollect module which utilizes
 *******************************************************************************/
 
 #include "../../include/collect/stdCollect.h"
+#include "../../extern/radiotapParser/radiotap-parser.h"
 #include <pcap.h>
 #include <iostream>
 
@@ -19,8 +20,12 @@ stdCollect::stdCollect (std::string interface, bool debug) : dataCollect (debug)
 void stdCollect::readFromNetwork ()
 {
 	pcap_t * pHandle;
+	pcap_pkthdr * header;
+	const u_char * packet;
+	struct ieee80211_radiotap_iterator radiotapIter;
+	struct ieee80211_radiotap_header * radiotapHeader;
 	char errorBuffer[PCAP_ERRBUF_SIZE];
-	int status;
+	int status, returnVal, channel, ss;
 
 	pHandle = pcap_create (interface.c_str(), errorBuffer);
 	if (NULL != pHandle)
@@ -56,6 +61,38 @@ void stdCollect::readFromNetwork ()
 		{
 			std::cout << "something else\n";
 		}
+
+		status = pcap_next_ex (pHandle, &header, &packet);
+		std::cout << "status of pcap_next_ex: " << status << std::endl;
+		radiotapHeader = (struct ieee80211_radiotap_header * ) packet;
+
+		returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, radiotapHeader,
+								radiotapHeader->it_len);
+		do
+		{
+			returnVal = ieee80211_radiotap_iterator_next (&radiotapIter);
+			std::cout << "radiotap_iterator_next return val: " << returnVal << "\n";
+
+			if (returnVal >= 0)
+			{
+				switch (radiotapIter.this_arg_index)
+				{
+					case IEEE80211_RADIOTAP_CHANNEL:
+						channel = le16_to_cpu (* (uint16_t *)radiotapIter.this_arg);
+						std::cout << "my channel: " << channel << "\n";
+						break;
+
+					case IEEE80211_RADIOTAP_DBM_ANTSIGNAL:
+						ss = (int)((signed char)*radiotapIter.this_arg);
+						std::cout << "my ss: " << ss << "dBm\n";
+						break;
+
+					default:
+						break;
+				}
+			}
+
+		} while (returnVal >= 0);
 
 		pcap_close (pHandle);
 	}

@@ -83,9 +83,10 @@ bin/loc.o: include/loc/loc.h src/loc/loc.cpp
 	${CC} ${CFLAGS} -o bin/loc.o -c src/loc/loc.cpp -lm
 	
 ##########################Data Collection###############################
-bin/collectDriver: bin/dataCollectDriver.o bin/stdCollect.o bin/dataCollect.o
+bin/collectDriver: bin/dataCollectDriver.o bin/stdCollect.o bin/dataCollect.o \
+bin/radiotap-parser.o
 	${CC} ${CFLAGS} -o bin/collectDriver bin/dataCollectDriver.o bin/stdCollect.o\
-	 bin/dataCollect.o -lpcap
+	 bin/dataCollect.o bin/radiotap-parser.o -lpcap
 	 
 bin/dataCollectDriver.o: src/collect/dataCollectDriver.cpp \
 include/collect/dataCollect.h include/collect/stdCollect.h
@@ -93,7 +94,7 @@ include/collect/dataCollect.h include/collect/stdCollect.h
 	src/collect/dataCollectDriver.cpp
 	
 bin/stdCollect.o: src/collect/stdCollect.cpp include/collect/stdCollect.h \
-include/collect/dataCollect.h
+include/collect/dataCollect.h extern/radiotapParser/radiotap-parser.h
 	${CC} ${CFLAGS} -o bin/stdCollect.o -c src/collect/stdCollect.cpp
 	
 bin/dataCollect.o: src/collect/dataCollect.cpp include/collect/dataCollect.h
@@ -109,6 +110,14 @@ bin/configDriver.o: src/util/configDriver.cpp include/util/config.h
 
 bin/config.o: include/util/config.h src/util/config.cpp
 	${CC} ${CFLAGS} -o bin/config.o -c src/util/config.cpp
+	
+########################External Resources###################################
+
+bin/radiotap-parser.o: extern/radiotapParser/radiotap-parser.c \
+extern/radiotapParser/radiotap-parser.h
+	gcc ${CFLAGS} -o bin/radiotap-parser.o -c \
+	extern/radiotapParser/radiotap-parser.c
+
 
 package:
 	tar czf NachoNet.tar.gz bin/ include/ src/ Makefile;

@@ -39,16 +39,16 @@ std::vector<ssMeasurement> dataCollect::getSS () const
 {
 	ssMeasurement temp;
 	std::vector<ssMeasurement>  returnVector;
-	std::map<std::string, recent>::iterator bufferIter =	buffer.begin();
 	std::vector<int> sort;
 
-	for (bufferIter = buffer.begin (); buffer.end () != bufferIter; ++bufferIter)
+
+	for (auto &item : buffer)
 	{
-		temp.devID = bufferIter->first;
+		temp.devID = item.first;
 
 		for (int i = 0; i < CONTAINER_SIZE; i++)
 		{
-			sort.push_back((bufferIter->second).data[i]);
+			sort.push_back((item.second).data[i]);
 		}
 
 		std::sort (sort.begin(), sort.end());
@@ -147,9 +147,7 @@ void dataCollect::clearBuffer ()
  ******************************************************************************/
 void dataCollect::update(std::string id, int ss)
 {
-	std::map<std::string, recent>::iterator bufferIter;
-
-	bufferIter = buffer.find (id);
+	std::map<std::string, recent>::iterator bufferIter = buffer.find (id);
 
 	if (buffer.end() == bufferIter) // this is the first measurement for this dev
 	{

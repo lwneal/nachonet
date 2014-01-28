@@ -85,7 +85,7 @@ bin/loc.o: include/loc/loc.h src/loc/loc.cpp
 ##########################Data Collection###############################
 bin/collectDriver: bin/dataCollectDriver.o bin/stdCollect.o bin/dataCollect.o
 	${CC} ${CFLAGS} -o bin/collectDriver bin/dataCollectDriver.o bin/stdCollect.o\
-	 bin/dataCollect.o
+	 bin/dataCollect.o -lpcap
 	 
 bin/dataCollectDriver.o: src/collect/dataCollectDriver.cpp \
 include/collect/dataCollect.h include/collect/stdCollect.h

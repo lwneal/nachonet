@@ -20,20 +20,49 @@ void stdCollect::readFromNetwork ()
 {
 	pcap_t * pHandle;
 	char errorBuffer[PCAP_ERRBUF_SIZE];
+	int status;
 
-	pHandle = pcap_open_live (interface.c_str(), BUFSIZ, 1, 1000, errorBuffer);
-
-	if (pcap_datalink (pHandle) == DLT_IEEE802_11)
+	pHandle = pcap_create (interface.c_str(), errorBuffer);
+	if (NULL != pHandle)
 	{
-		std::cout << "DLT_IEEE802_11\n";
-	}
+		if (pcap_can_set_rfmon (pHandle))
+		{
+			std::cout << "Can use monitor mode\n";
 
-	if (pcap_datalink (pHandle) == DLT_IEEE802_11_RADIO)
+			if (0 == pcap_set_rfmon (pHandle, 1))
+			{
+				std::cout << "Monitor mode enabled\n";
+			}
+		}
+
+		pcap_set_snaplen (pHandle, 2048);
+		pcap_set_promisc (pHandle, 0);
+		pcap_set_timeout (pHandle, 512);
+		status = pcap_activate (pHandle);
+
+		if (pcap_datalink (pHandle) == DLT_IEEE802_11)
+		{
+			std::cout << "DLT_IEEE802_11\n";
+		}
+		else if (pcap_datalink (pHandle) == DLT_IEEE802_11_RADIO)
+		{
+			std::cout << "DLT_IEEE802_11_RADIO\n";
+		}
+		else if (pcap_datalink (pHandle) == DLT_EN10MB)
+		{
+			std::cout << "DLT_EN10MB\n";
+		}
+		else
+		{
+			std::cout << "something else\n";
+		}
+
+		pcap_close (pHandle);
+	}
+	else
 	{
-		std::cout << "DLT_IEEE802_11_RADIO\n";
+		std::cout << "Failed to open device: " << errorBuffer << std::endl;
 	}
-
-	pcap_close (pHandle);
 }
 
 

@@ -120,7 +120,7 @@ extern/radiotapParser/radiotap-parser.h
 
 
 package:
-	tar czf NachoNet.tar.gz bin/ include/ src/ Makefile;
+	tar czf NachoNet.tar.gz bin/ include/ src/ extern/ Makefile;
 
 zeus:
 	cd ../ ; tar czf NachoNet.tar.gz NachoNet ; \

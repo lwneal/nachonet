@@ -11,6 +11,7 @@ Purpose:		Defines the behavior of the stdCollect module which utilizes
 #include "../../extern/radiotapParser/radiotap-parser.h"
 #include <pcap.h>
 #include <iostream>
+#include <cstring>
 
 stdCollect::stdCollect (std::string interface, bool debug) : dataCollect (debug)
 , interface ("wlan0")
@@ -20,10 +21,13 @@ stdCollect::stdCollect (std::string interface, bool debug) : dataCollect (debug)
 void stdCollect::readFromNetwork ()
 {
 	pcap_t * pHandle;
-	pcap_pkthdr * header;
-	const u_char * packet;
+	pcap_pkthdr * pHeader;
+	const u_char * pPacket;
 	struct ieee80211_radiotap_iterator radiotapIter;
-	struct ieee80211_radiotap_header * radiotapHeader;
+	struct ieee80211_radiotap_header * pRadiotapHeader;
+	const u_char * pAddr;
+	char converted [(ETHERNET_ADDR_LEN * 2) + 1];
+	u_char addr [ETHERNET_ADDR_LEN];
 	char errorBuffer[PCAP_ERRBUF_SIZE];
 	int status, returnVal, channel, ss;
 
@@ -62,12 +66,12 @@ void stdCollect::readFromNetwork ()
 			std::cout << "something else\n";
 		}
 
-		status = pcap_next_ex (pHandle, &header, &packet);
+		status = pcap_next_ex (pHandle, &pHeader, &pPacket);
 		std::cout << "status of pcap_next_ex: " << status << std::endl;
-		radiotapHeader = (struct ieee80211_radiotap_header * ) packet;
+		pRadiotapHeader = (struct ieee80211_radiotap_header * ) pPacket;
 
-		returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, radiotapHeader,
-								radiotapHeader->it_len);
+		returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
+								pRadiotapHeader->it_len);
 		do
 		{
 			returnVal = ieee80211_radiotap_iterator_next (&radiotapIter);
@@ -83,7 +87,7 @@ void stdCollect::readFromNetwork ()
 						break;
 
 					case IEEE80211_RADIOTAP_DBM_ANTSIGNAL:
-						ss = (int)((signed char)*radiotapIter.this_arg);
+						ss = (int) ((signed char)*radiotapIter.this_arg);
 						std::cout << "my ss: " << ss << "dBm\n";
 						break;
 
@@ -93,6 +97,16 @@ void stdCollect::readFromNetwork ()
 			}
 
 		} while (returnVal >= 0);
+		pAddr = (pPacket + pRadiotapHeader->it_len + 10);
+		memcpy (addr, pAddr, sizeof (addr));
+
+		for (int i = 0; i < ETHERNET_ADDR_LEN; i++)
+		{
+			sprintf (&converted[i * 2], "%02X", addr[i]);
+		}
+
+		std::cout << "from: " << converted << "\n";
+
 
 		pcap_close (pHandle);
 	}

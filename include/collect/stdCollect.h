@@ -11,6 +11,8 @@ Purpose:		Defines the interface to the stdCollect class which uses libpcap
 #include "dataCollect.h"
 #include <string>
 
+#define ETHERNET_ADDR_LEN 6
+
 class stdCollect : public dataCollect
 {
 	public:

@@ -9,6 +9,7 @@ Purpose:		Implements the behavior of the data collection module
 #include "../../include/collect/dataCollect.h"
 #include <climits>
 #include <algorithm>
+#include <iostream>
 
 
 /*******************************************************************************
@@ -29,7 +30,8 @@ dataCollect::dataCollect (bool debug)
 /*******************************************************************************
  * Method: 			getSS
  *
- * Description: Returns a vector of ssMeasurements
+ * Description: Returns a vector of ssMeasurements but excludes the devices
+ * 							for which there are fewer than CONTAINER_SIZE measurements
  *
  * Parameters:	None
  *
@@ -55,7 +57,12 @@ std::vector<ssMeasurement> dataCollect::getSS () const
 
 		temp.ss = sort[MEDIAN];
 
-		returnVector.push_back(temp);
+		sort.clear();
+
+		if (0 != (item.second).data[CONTAINER_SIZE - 1])
+		{
+			returnVector.push_back(temp);
+		}
 	}
 
 	return returnVector;
@@ -76,33 +83,38 @@ void dataCollect::setDebug (bool debug)
 }
 
 /*******************************************************************************
- * Method: 			setReadyToRead
- *
- * Description: Sets the readyToRead member variable which is used to indicate
- * 							when it's okay to grab ssMeasurements
- *
- * Parameters:	ready - true if it's okay to start reading, false otherwise
- *
- * Returned: 		None
- ******************************************************************************/
-void dataCollect::setReadyToRead (bool ready)
-{
-	this->readyToRead = ready;
-}
-
-/*******************************************************************************
  * Method: 			isReadyToRead
  *
  * Description: Checks to see if it's okay to start reading ssMeasurements from
- * 							the buffer
+ * 							the buffer. Once 3/4 of the devices have 5 measurements then
+ * 							they are considered ready to be read
  *
  * Parameters:	None
  *
  * Returned: 		True if it's okay to start reading, false otherwise
  ******************************************************************************/
-bool dataCollect::isReadyToRead () const
+bool dataCollect::isReadyToRead ()
 {
-	return this->readyToRead;
+	unsigned int numReadyToRead = 0;
+
+	if (!readyToRead)
+	{
+		for (auto &item : buffer)
+		{
+			if (0 != item.second.data[CONTAINER_SIZE - 1])
+			{
+				numReadyToRead++;
+			}
+		}
+
+		if (numReadyToRead >= (3 / 4) * buffer.size())
+		{
+			readyToRead = true;
+		}
+	}
+
+
+	return readyToRead;
 }
 
 /*******************************************************************************
@@ -131,6 +143,7 @@ bool dataCollect::isDebug() const
 void dataCollect::clearBuffer ()
 {
 	buffer.clear ();
+	readyToRead = false;
 }
 
 /*******************************************************************************
@@ -141,7 +154,8 @@ void dataCollect::clearBuffer ()
  * 							does exist then the new measurement is added to the measurement
  * 							array at 0, shifting the other values down.
  *
- * Parameters:	None
+ * Parameters:	id - the MAC address of the device
+ * 							ss - the signal strength from the device
  *
  * Returned: 		None
  ******************************************************************************/
@@ -167,6 +181,16 @@ void dataCollect::update(std::string id, int ss)
 		}
 
 		(bufferIter->second).data[0] = ss;
+
+	}
+
+	if (isDebug ())
+	{
+		std::cout << "-----recent: " << (bufferIter->second).data[0] << " "
+							<< (bufferIter->second).data[1] << " "
+							<< (bufferIter->second).data[2] << " "
+							<< (bufferIter->second).data[3] << " "
+							<< (bufferIter->second).data[4] << "\n";
 	}
 }
 

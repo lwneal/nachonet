@@ -28,17 +28,16 @@ class dataCollect
     dataCollect(bool debug);
     virtual ~dataCollect () {}
     std::vector<ssMeasurement> getSS() const;
-    virtual void readFromNetwork() = 0;
+    virtual void readFromNetwork() = 0; //must set readyToRead
     void setDebug(bool);
     bool isDebug() const;
-    void setReadyToRead (bool);
-    bool isReadyToRead () const;
+    bool isReadyToRead ();
     void clearBuffer();
     const int CONTAINER_SIZE = 5;
     const int MEDIAN = 2;
 
   protected:
-    void update(std::string id, int ss);
+   void update(std::string id, int ss);
 
   private:
     bool debug;

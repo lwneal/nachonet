@@ -10,6 +10,8 @@ Purpose:		Defines the interface to the stdCollect class which uses libpcap
 #pragma once
 #include "dataCollect.h"
 #include <string>
+#include <functional>
+#include <pcap.h>
 
 #define ETHERNET_ADDR_LEN 6
 
@@ -18,19 +20,15 @@ class stdCollect : public dataCollect
 	public:
 		stdCollect (std::string interface, bool debug = false);
 		virtual void readFromNetwork ();
-		void packetHandler (u_char *args,
-												const struct pcap_pkthdr * pPacketHeader,
-												const u_char* pPacket);
+
 
 		const int CAPTURE_LENGTH = 2048;
 		const int PACKETS_TO_GRAB = 512;
-		const int DEBUG_PACKETS_TO_GRAB = 128;
+		const int DEBUG_PACKETS_TO_GRAB = 5;
 		const int TIMEOUT = 512;
 
 	private:
-		static void packetHandlerWrapper (u_char *args,
-																		  const struct pcap_pkthdr * pPacketHeader,
-																		  const u_char* pPacket);
+		void packetLoop (pcap_t *pHandler, int numPackets);
 
 		std::string interface;
 };

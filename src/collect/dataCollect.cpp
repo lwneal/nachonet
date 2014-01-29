@@ -162,35 +162,42 @@ void dataCollect::clearBuffer ()
 void dataCollect::update(std::string id, int ss)
 {
 	std::map<std::string, recent>::iterator bufferIter = buffer.find (id);
+	recent tmp;
 
 	if (buffer.end() == bufferIter) // this is the first measurement for this dev
 	{
-		buffer [id].data[0] = ss;
+		tmp.data[0] = ss;
 
 		for (int i = 1; i < CONTAINER_SIZE; i++)
 		{
-			buffer [id].data[i] = 0;
+			tmp.data[i] = 0;
 		}
+
+		buffer[id] = tmp;
 
 	}
 	else // we need to update a dev
 	{
+		tmp = bufferIter->second;
+
 		for (int i = CONTAINER_SIZE - 1; i > 0; i--)
 		{
-			(bufferIter->second).data[i] = (bufferIter->second).data[i - 1];
+			tmp.data[i] = tmp.data[i - 1];
 		}
 
-		(bufferIter->second).data[0] = ss;
+		tmp.data[0] = ss;
+
+		bufferIter->second = tmp;
 
 	}
 
 	if (isDebug ())
 	{
-		std::cout << "-----recent: " << (bufferIter->second).data[0] << " "
-							<< (bufferIter->second).data[1] << " "
-							<< (bufferIter->second).data[2] << " "
-							<< (bufferIter->second).data[3] << " "
-							<< (bufferIter->second).data[4] << "\n";
+		std::cout << "-----recent: " << tmp.data[0] << " "
+							<< tmp.data[1] << " "
+							<< tmp.data[2] << " "
+							<< tmp.data[3] << " "
+							<< tmp.data[4] << "\n";
 	}
 }
 

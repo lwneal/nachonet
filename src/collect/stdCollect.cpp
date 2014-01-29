@@ -9,11 +9,9 @@ Purpose:		Defines the behavior of the stdCollect module which utilizes
 
 #include "../../include/collect/stdCollect.h"
 #include "../../extern/radiotapParser/radiotap-parser.h"
-#include <pcap.h>
 #include <iostream>
 #include <cstring>
 
-void * pgObject;
 
 /******************************************************************************
  * Constructor: stdCollect
@@ -46,7 +44,7 @@ stdCollect::stdCollect (std::string interface, bool debug) : dataCollect (debug)
  *
  * Returned:		None
  *****************************************************************************/
-void stdCollect::packetHandler (u_char *args,
+/*void stdCollect::packetHandler (u_char *args,
 																const struct pcap_pkthdr * pPacketHeader,
 																const u_char* pPacket)
 {
@@ -80,6 +78,13 @@ void stdCollect::packetHandler (u_char *args,
 					break;
 
 				default:
+					channel = 0;
+					ss = 1;
+					if (isDebug ())
+					{
+						std::cout << "\n-----arg: " << returnVal << "\n";
+					}
+
 					break;
 			}
 		}
@@ -107,7 +112,7 @@ void stdCollect::packetHandler (u_char *args,
 		lastDevID.assign (currentDevID);
 	}
 
-}
+}*/
 
 /******************************************************************************
  * Method: 		packetHandlerWrapper
@@ -123,13 +128,134 @@ void stdCollect::packetHandler (u_char *args,
  *
  * Returned:		None
  *****************************************************************************/
-void stdCollect::packetHandlerWrapper(u_char *args,
-																const struct pcap_pkthdr * pPacketHeader,
-																const u_char* pPacket)
+void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 {
-	stdCollect * pSelf = (stdCollect *)pgObject;
+	const u_char * pPacket;
+	struct pcap_pkthdr *pPacketHeader;
+	struct ieee80211_radiotap_iterator radiotapIter;
+	struct ieee80211_radiotap_header * pRadiotapHeader;
+	const u_char * pAddr;
+	char converted [(ETHERNET_ADDR_LEN * 2) + 1];
+	u_char addr [ETHERNET_ADDR_LEN];
+	std::string lastDevID ("000000000000");
+	std::string currentDevID;
+	int returnVal, channel = 0, ss = 1;
 
-	pSelf->packetHandler (args, pPacketHeader, pPacket);
+	for (int i = 0; i < numPackets; i++)
+	{
+		if (0 <= pcap_next_ex (pHandle, &pPacketHeader, &pPacket))
+		{
+			pRadiotapHeader = (struct ieee80211_radiotap_header * ) pPacket;
+
+			if (isDebug ())
+			{
+				returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
+							pRadiotapHeader->it_len);
+
+				std::cout << "available fields: ";
+				do
+				{
+					returnVal = ieee80211_radiotap_iterator_next (&radiotapIter);
+					std::cout << radiotapIter.this_arg_index << " ";
+
+				} while (returnVal >= 0);
+
+				std::cout << "\n";
+			}
+
+			returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
+									pRadiotapHeader->it_len);
+			do
+			{
+				returnVal = ieee80211_radiotap_iterator_next (&radiotapIter);
+
+				if (returnVal >= 0)
+				{
+					switch (radiotapIter.this_arg_index)
+					{
+						case IEEE80211_RADIOTAP_CHANNEL:
+							channel = le16_to_cpu (* (uint16_t *)radiotapIter.this_arg);
+
+							if (isDebug ())
+							{
+								std::cout << "\nhit channel\n";
+							}
+
+							break;
+
+						case IEEE80211_RADIOTAP_DBM_ANTSIGNAL:
+							ss = (int) ((signed char)*radiotapIter.this_arg);
+
+							if (isDebug ())
+							{
+								std::cout << "\nhit ss\n";
+							}
+							break;
+
+						default:
+							if (isDebug ())
+							{
+								std::cout << "\n-----arg: " << returnVal << "\n";
+							}
+
+							break;
+					}
+				}
+
+			} while (returnVal >= 0);
+
+			pAddr = (pPacket + pRadiotapHeader->it_len + 10);
+			memcpy (addr, pAddr, sizeof (addr));
+
+			for (int i = 0; i < ETHERNET_ADDR_LEN; i++)
+			{
+				sprintf (&converted[i * 2], "%02X", addr[i]);
+			}
+
+			currentDevID.assign(converted);
+
+			if (0 != currentDevID.compare(lastDevID))
+			{
+				if (isDebug ())
+				{
+					std::cout << channel << "   " << ss << "   " << currentDevID << "\n";
+				}
+
+				update (currentDevID, ss);
+				lastDevID.assign (currentDevID);
+			}
+		}
+	}
+
+	/*stdCollect * pSelf = (stdCollect *)pgObject;
+
+	if (true)
+	{
+		struct ieee80211_radiotap_iterator radiotapIter;
+		struct ieee80211_radiotap_header * pRadiotapHeader;
+		int returnVal;
+		pRadiotapHeader = (struct ieee80211_radiotap_header * ) pPacket;
+
+		returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
+							pRadiotapHeader->it_len);
+
+		std::cout << "available fields: ";
+		do
+		{
+			returnVal = ieee80211_radiotap_iterator_next (&radiotapIter);
+			std::cout << returnVal << " ";
+
+		} while (returnVal >= 0);
+
+		std::cout << "\n";
+
+
+	}
+
+
+	pSelf->packetHandler (args, pPacketHeader, pPacket);*/
+
+
 }
 
 /******************************************************************************
@@ -145,11 +271,11 @@ void stdCollect::packetHandlerWrapper(u_char *args,
 void stdCollect::readFromNetwork ()
 {
 	pcap_t * pHandle;
-	u_char * pArgs = NULL;
+	//u_char * pArgs = NULL;
 	char errorBuffer[PCAP_ERRBUF_SIZE];
 	int numPackets;
 
-	pgObject = (void *)this;
+	//pgObject = (void *)this;
 
 	pHandle = pcap_create (interface.c_str(), errorBuffer);
 	if (NULL != pHandle)
@@ -195,18 +321,17 @@ void stdCollect::readFromNetwork ()
 			}
 		}
 
-			if (isDebug ())
-			{
-				numPackets = DEBUG_PACKETS_TO_GRAB;
-			}
-			else
-			{
-				numPackets = PACKETS_TO_GRAB;
-			}
+		if (isDebug ())
+		{
+			numPackets = DEBUG_PACKETS_TO_GRAB;
+		}
+		else
+		{
+			numPackets = PACKETS_TO_GRAB;
+		}
 
 
-		pcap_loop (pHandle, numPackets, stdCollect::packetHandlerWrapper,
-																					pArgs);
+		packetLoop (pHandle, numPackets);
 
 
 		pcap_close (pHandle);

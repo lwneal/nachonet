@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 	int option_char, eqnType, collectMode;
 	AdminTools adminTools;
 
-	while ((option_char = getopt (argc, argv, "d:")) != -1)
+	while ((option_char = getopt (argc, argv, "d:c:")) != -1)
 	{
 		switch (option_char)
 		{
@@ -121,8 +121,6 @@ int main(int argc, char** argv)
 			 break;
 		 }
 	}
-
-	adminTools.setCollectDebug (true);
 
 	adminTools.setDistEqn(eqnType);
 	adminTools.setCollectMode(collectMode);

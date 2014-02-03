@@ -41,9 +41,9 @@ void AdminTools::testCollect ()
 	}
 	else
 	{
-		std::cout << "about to test\n";
+		std::cout << "Collection has begun...\n";
 		collectAdmin.test(std::cout);
-		std::cout << "done testing\n";
+		std::cout << "Done collecting!\n";
 	}
 }
 

@@ -53,7 +53,7 @@ void adminDataCollect::test(std::ostream & os)
 	do
 	{
 		pDataCollect->readFromNetwork();
-	} while (pDataCollect->isReadyToRead());
+	} while (!pDataCollect->isReadyToRead());
 
 
 	values = pDataCollect->getSS ();

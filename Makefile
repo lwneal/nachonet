@@ -21,11 +21,13 @@ bin/collectDriver
 
 bin/adminTools: bin/adminTools.o bin/adminToolsDriver.o \
 bin/adminDistMeasure.o bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o \
-bin/dist.o bin/config.o bin/loc.o bin/adminLocalization.o \
+bin/dist.o bin/config.o bin/loc.o bin/adminLocalization.o bin/dataCollect.o \
+bin/stdCollect.o bin/radiotap-parser.o bin/adminDataCollect.o \
 include/tools/adminTools.h 
 	${CC} ${CFLAGS} -o bin/adminTools bin/adminTools.o bin/adminToolsDriver.o \
 	bin/adminDistMeasure.o bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o \
-	bin/dist.o bin/config.o bin/loc.o bin/adminLocalization.o -lcurl
+	bin/dist.o bin/config.o bin/loc.o bin/adminLocalization.o bin/dataCollect.o \
+	bin/stdCollect.o bin/radiotap-parser.o bin/adminDataCollect.o -lcurl -lpcap
 
 bin/prototype: bin/prototype.o include/tools/adminTools.h
 	${CC} ${CLFAGS} -o bin/prototype bin/prototype.o -lcurl
@@ -48,6 +50,12 @@ bin/adminLocalization.o: src/tools/adminLocalization.cpp \
 include/tools/adminLocalization.h include/loc/loc.h src/loc/loc.cpp
 	${CC} ${CFLAGS} -o bin/adminLocalization.o -c \
 	src/tools/adminLocalization.cpp
+	
+bin/adminDataCollect.o: src/tools/adminDataCollect.cpp \
+include/tools/adminDataCollect.h include/collect/dataCollect.h \
+include/collect/stdCollect.h src/collect/dataCollect.cpp \
+src/collect/stdCollect.cpp
+	${CC} ${CFLAGS} -o bin/adminDataCollect.o -c src/tools/adminDataCollect.cpp
 	
 bin/prototype.o: src/prototype.cpp include/tools/adminTools.h
 	${CC} ${CFLAGS} -o bin/prototype.o -c src/prototype.cpp

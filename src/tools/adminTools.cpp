@@ -8,6 +8,45 @@ Purpose:		Implements the methods of the adminTools object
 
 #include "../../include/tools/adminTools.h"
 
+void AdminTools::setCollectDebug (bool debug)
+{
+	collectAdmin.setDebug(debug);
+}
+
+void AdminTools::setCollectMode (int collectMode)
+{
+	collectAdmin.setCollectMode(collectMode);
+}
+
+void AdminTools::testCollect ()
+{
+	std::ofstream outFile;
+	std::string outFileName;
+	char choice;
+
+	do
+	{
+		std::cout << "Would you like to capture the output in a file? (y/n): ";
+		std::cin >> choice;
+	} while('y' != choice && 'n' != choice);
+
+	if('y' == choice)
+	{
+		std::cout << "Please enter an output file name: ";
+		std::cin >> outFileName;
+
+		outFile.open(outFileName.c_str());
+
+		collectAdmin.test(outFile);
+	}
+	else
+	{
+		std::cout << "about to test\n";
+		collectAdmin.test(std::cout);
+		std::cout << "done testing\n";
+	}
+}
+
 void AdminTools::setDistEqn(int eqnType)
 {
 	distAdmin.setEqn(eqnType);

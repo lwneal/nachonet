@@ -10,6 +10,7 @@ Purpose:		Defines all of the useful constants and structures used by the
 #pragma once
 #include "adminDistMeasure.h"
 #include "adminLocalization.h"
+#include "adminDataCollect.h"
 
 /*
 struct DeviceEntry
@@ -54,7 +55,9 @@ public:
 	//int stopNachoNet();
 	//void listDevices();
 
-	//int testDataCollect();
+	void setCollectDebug (bool debug);
+	void setCollectMode (int collectMode);
+	void testCollect();
 	void setDistEqn(int eqnType);
 	void testDist();
 	void configDist();
@@ -62,7 +65,7 @@ public:
 	void testLocalize();
 
 private:
-	//DataCollectionTest dataCollectTest;
+	adminDataCollect collectAdmin;
 	adminDistMeasure	distAdmin;
 	//DataExchangeTest dataExTest;
 	adminLocalization locAdmin;

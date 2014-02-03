@@ -93,23 +93,39 @@ int main(int argc, char** argv)
 {
 	int menuID = AdminTools::MAIN;
 	int menuSelection;
-	int option_char, eqnType;
+	int option_char, eqnType, collectMode;
 	AdminTools adminTools;
 
 	while ((option_char = getopt (argc, argv, "d:")) != -1)
 	{
-	 switch (option_char)
-		 {
-		 case 'd':
+		switch (option_char)
+		{
+			case 'c':
+				collectMode = std::stoi(optarg);
+				break;
+			case 'd':
 			 eqnType = std::stoi(optarg);
 			 break;
-		 case '?':
-
+			case '?':
+			 std::cout << "\nHELP\n";
+			 std::cout << "Due to the libpcap integration, this must be run with "
+								 <<	"sudo\n";
+			 std::cout << "Options\n";
+			 std::cout << "d - specify the equation type\n";
+			 std::cout << "    1 - path loss\n";
+			 std::cout << "    2 - free space path loss\n";
+			 std::cout << "    3 - log normal shadow model\n";
+			 std::cout << "c - specify the collection mode\n";
+			 std::cout << "    1 - standard\n";
+			 std::cout << "    2 - experimental [not functional]\n";
 			 break;
 		 }
 	}
 
+	adminTools.setCollectDebug (true);
+
 	adminTools.setDistEqn(eqnType);
+	adminTools.setCollectMode(collectMode);
 
 	while (AdminTools::EXIT != menuSelection || AdminTools::MAIN != menuID)
 	{
@@ -150,7 +166,7 @@ int main(int argc, char** argv)
 				switch(menu(menuID))
 				{
 					case AdminTools::DATA_COLLECTION:
-						//adminTools.testDataCollect()
+						adminTools.testCollect();
 						break;
 
 					case AdminTools::DIST_MEASUREMENT:

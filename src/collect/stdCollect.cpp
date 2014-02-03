@@ -115,16 +115,14 @@ stdCollect::stdCollect (std::string interface, bool debug) : dataCollect (debug)
 }*/
 
 /******************************************************************************
- * Method: 		packetHandlerWrapper
+ * Method: 		  packetLoop
  *
- * Description: This is a wrapper for the callback function needed by pcap_loop
- * 							because the function needs to fit the parameters of the pcap
- * 							function but also needs to be able to call update.
+ * Description: This method grabs numPackets packets and analyzes them. The
+ * 							signal strength and MAC address from the packets will be saved
+ * 							in a data structure
  *
- * Parameters:	args 					- any arguments passed to the callback function
- * 							pPacketHeader - a pointer to a struct that contains the packet
- * 															header
- * 							pPacket       - the packet
+ * Parameters:	pHandle - the pcap handle to the network device
+ * 							numPackets - the number of packets to capture,
  *
  * Returned:		None
  *****************************************************************************/
@@ -227,35 +225,6 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 		}
 	}
 
-	/*stdCollect * pSelf = (stdCollect *)pgObject;
-
-	if (true)
-	{
-		struct ieee80211_radiotap_iterator radiotapIter;
-		struct ieee80211_radiotap_header * pRadiotapHeader;
-		int returnVal;
-		pRadiotapHeader = (struct ieee80211_radiotap_header * ) pPacket;
-
-		returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
-							pRadiotapHeader->it_len);
-
-		std::cout << "available fields: ";
-		do
-		{
-			returnVal = ieee80211_radiotap_iterator_next (&radiotapIter);
-			std::cout << returnVal << " ";
-
-		} while (returnVal >= 0);
-
-		std::cout << "\n";
-
-
-	}
-
-
-	pSelf->packetHandler (args, pPacketHeader, pPacket);*/
-
-
 }
 
 /******************************************************************************
@@ -317,7 +286,7 @@ void stdCollect::readFromNetwork ()
 			}
 			else
 			{
-				std::cout << "something else\n";
+				std::cout << "something else: " << pcap_datalink (pHandle) << "\n";
 			}
 		}
 

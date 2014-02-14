@@ -27,92 +27,8 @@ Purpose:		Defines the behavior of the stdCollect module which utilizes
 stdCollect::stdCollect (std::string interface, bool debug) : dataCollect (debug)
 , interface ("wlan0")
 {
+	this->interface = interface;
 }
-
-/******************************************************************************
- * Method: 		packetHandler
- *
- * Description: Callback function that is used on each packet grabbed from the
- * 							network. The packet headers are parsed to pick out the signal
- * 							strength of the received packet and the MAC address of the
- * 							sender.
- *
- * Parameters:	args 					- any arguments passed to the callback function
- * 							pPacketHeader - a pointer to a struct that contains the packet
- * 															header
- * 							pPacket       - the packet
- *
- * Returned:		None
- *****************************************************************************/
-/*void stdCollect::packetHandler (u_char *args,
-																const struct pcap_pkthdr * pPacketHeader,
-																const u_char* pPacket)
-{
-	struct ieee80211_radiotap_iterator radiotapIter;
-	struct ieee80211_radiotap_header * pRadiotapHeader;
-	const u_char * pAddr;
-	char converted [(ETHERNET_ADDR_LEN * 2) + 1];
-	u_char addr [ETHERNET_ADDR_LEN];
-	static std::string lastDevID ("000000000000");
-	std::string currentDevID;
-	int returnVal, channel, ss;
-
-	pRadiotapHeader = (struct ieee80211_radiotap_header * ) pPacket;
-
-	returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
-							pRadiotapHeader->it_len);
-	do
-	{
-		returnVal = ieee80211_radiotap_iterator_next (&radiotapIter);
-
-		if (returnVal >= 0)
-		{
-			switch (radiotapIter.this_arg_index)
-			{
-				case IEEE80211_RADIOTAP_CHANNEL:
-					channel = le16_to_cpu (* (uint16_t *)radiotapIter.this_arg);
-					break;
-
-				case IEEE80211_RADIOTAP_DBM_ANTSIGNAL:
-					ss = (int) ((signed char)*radiotapIter.this_arg);
-					break;
-
-				default:
-					channel = 0;
-					ss = 1;
-					if (isDebug ())
-					{
-						std::cout << "\n-----arg: " << returnVal << "\n";
-					}
-
-					break;
-			}
-		}
-
-	} while (returnVal >= 0);
-
-	pAddr = (pPacket + pRadiotapHeader->it_len + 10);
-	memcpy (addr, pAddr, sizeof (addr));
-
-	for (int i = 0; i < ETHERNET_ADDR_LEN; i++)
-	{
-		sprintf (&converted[i * 2], "%02X", addr[i]);
-	}
-
-	currentDevID.assign(converted);
-
-	if (0 != currentDevID.compare(lastDevID))
-	{
-		if (isDebug ())
-		{
-			std::cout << channel << "   " << ss << "   " << currentDevID << "\n";
-		}
-
-		update (currentDevID, ss);
-		lastDevID.assign (currentDevID);
-	}
-
-}*/
 
 /******************************************************************************
  * Method: 		  packetLoop
@@ -202,7 +118,7 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 
 			} while (returnVal >= 0);
 
-			pAddr = (pPacket + pRadiotapHeader->it_len + 10);
+			pAddr = (pPacket + pRadiotapHeader->it_len + MAC_ADDR_OFFSET);
 			memcpy (addr, pAddr, sizeof (addr));
 
 			for (int i = 0; i < ETHERNET_ADDR_LEN; i++)

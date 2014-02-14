@@ -107,7 +107,7 @@ bool dataCollect::isReadyToRead ()
 			}
 		}
 
-		if (numReadyToRead >= (3 / 4) * buffer.size())
+		if (numReadyToRead >= READY_CUTOFF * buffer.size())
 		{
 			readyToRead = true;
 		}
@@ -161,8 +161,8 @@ void dataCollect::clearBuffer ()
  ******************************************************************************/
 void dataCollect::update(std::string id, int ss)
 {
-	std::map<std::string, recent>::iterator bufferIter = buffer.find (id);
-	recent tmp;
+	std::map<std::string, recentData>::iterator bufferIter = buffer.find (id);
+	recentData tmp;
 
 	if (buffer.end() == bufferIter) // this is the first measurement for this dev
 	{
@@ -170,7 +170,7 @@ void dataCollect::update(std::string id, int ss)
 
 		for (int i = 1; i < CONTAINER_SIZE; i++)
 		{
-			tmp.data[i] = 0;
+			tmp.data[i] = EMPTY;
 		}
 
 		buffer[id] = tmp;
@@ -193,11 +193,15 @@ void dataCollect::update(std::string id, int ss)
 
 	if (isDebug ())
 	{
-		std::cout << "-----recent: " << tmp.data[0] << " "
-							<< tmp.data[1] << " "
-							<< tmp.data[2] << " "
-							<< tmp.data[3] << " "
-							<< tmp.data[4] << "\n";
+		std::cout << "-----recent: ";
+
+		for (int i = 0; i < CONTAINER_SIZE; i++)
+		{
+			std::cout << tmp.data[i] << " ";
+		}
+
+		std::cout << "\n";
+
 	}
 }
 

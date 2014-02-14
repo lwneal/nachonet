@@ -26,6 +26,7 @@ class stdCollect : public dataCollect
 		const int PACKETS_TO_GRAB = 512;
 		const int DEBUG_PACKETS_TO_GRAB = 5;
 		const int TIMEOUT = 512;
+		const int MAC_ADDR_OFFSET = 10;
 
 	private:
 		void packetLoop (pcap_t *pHandler, int numPackets);

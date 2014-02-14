@@ -11,16 +11,18 @@ Purpose:		The file defines the interface to the data collection module
 #include <vector>
 #include <map>
 
+#define CONTAINER_SIZE 5
+
 typedef struct ssMeasurement
 {
   std::string devID;
   int ss;
 } ssMeasurement;
 
-typedef struct recent
+typedef struct recentData
 {
-	int data[5];
-} recent;
+	int data[CONTAINER_SIZE];
+} recentData;
 
 class dataCollect
 {
@@ -33,8 +35,9 @@ class dataCollect
     bool isDebug() const;
     bool isReadyToRead ();
     void clearBuffer();
-    const int CONTAINER_SIZE = 5;
     const int MEDIAN = 2;
+    const int EMPTY = 0;
+    const float READY_CUTOFF = .75;
 
   protected:
    void update(std::string id, int ss);
@@ -42,7 +45,7 @@ class dataCollect
   private:
     bool debug;
     bool readyToRead;
-    std::map<std::string, recent> buffer;//holds 5 most recent
+    std::map<std::string, recentData> buffer;//holds 5 most recent
 																											//measurements
 };
 

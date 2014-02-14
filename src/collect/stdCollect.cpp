@@ -53,7 +53,7 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 	u_char addr [ETHERNET_ADDR_LEN];
 	std::string lastDevID ("000000000000");
 	std::string currentDevID;
-	int returnVal, channel = 0, ss = 1;
+	int returnVal, channel = 0, ss = ERROR;
 
 	for (int i = 0; i < numPackets; i++)
 	{
@@ -63,7 +63,7 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 
 			if (isDebug ())
 			{
-				returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
+				ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
 							pRadiotapHeader->it_len);
 
 				std::cout << "available fields: ";
@@ -77,7 +77,7 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 				std::cout << "\n";
 			}
 
-			returnVal = ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
+			ieee80211_radiotap_iterator_init (&radiotapIter, pRadiotapHeader,
 									pRadiotapHeader->it_len);
 			do
 			{
@@ -119,7 +119,7 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 			} while (returnVal >= 0);
 
 			pAddr = (pPacket + pRadiotapHeader->it_len + MAC_ADDR_OFFSET);
-			memcpy (addr, pAddr, sizeof (addr));
+			memcpy (addr, pAddr, ETHERNET_ADDR_LEN);
 
 			for (int i = 0; i < ETHERNET_ADDR_LEN; i++)
 			{

@@ -10,19 +10,23 @@ Purpose:		Defines the interface for the json object which is used to parse
 #pragma once
 #include "jsonParser.h"
 #include <map>
+#include <string>
+
+struct jsonData;
 
 class JSON
 {
 	public:
     JSON ();
     ~JSON ();
-    jsonVal getData(std::string key);
-    void setValue (std::string key, jsonVal value);
+    jsonData getData(std::string key);
+    void setValue (std::string key, jsonData value);
+    void clear ();
 
-    std::string writeJSON ();
+    std::string writeJSON (std::string prevData);
 
   private:
-
-    std::map<std::string, jsonVal> keyVal;
+    std::string writeValue (jsonData data);
+    std::map<std::string, jsonData> keyVal;
 
 };

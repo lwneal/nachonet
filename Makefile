@@ -1,7 +1,7 @@
 ##############################################################################
 #File: 		Makefile
 #Author: 	Joshua Siva
-#Date:		1/27/14
+#Date:		2/25/14
 #Project:	NachoNet
 #Purpose:	This is the makefile for the NachoNet project
 ##############################################################################
@@ -15,7 +15,7 @@ VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 .PHONY: all clean package zeus
 
 all: bin/adminTools bin/prototype bin/distDriver bin/configDriver \
-bin/collectDriver
+bin/collectDriver bin/jsonDriver
 
 ########################ADMIN TOOLS###############################
 
@@ -118,7 +118,23 @@ bin/configDriver.o: src/util/configDriver.cpp include/util/config.h
 
 bin/config.o: include/util/config.h src/util/config.cpp
 	${CC} ${CFLAGS} -o bin/config.o -c src/util/config.cpp
+
+
+bin/jsonDriver: bin/jsonDriver.o bin/json.o bin/jsonParser.o
+	${CC} ${CFLAGS} -o bin/jsonDriver bin/jsonDriver.o bin/json.o bin/jsonParser.o
+ 	
+bin/jsonDriver.o: src/util/jsonDriver.cpp include/util/json.h \
+include/util/jsonParser.h
+	${CC} ${CFLAGS} -o bin/jsonDriver.o -c src/util/jsonDriver.cpp
 	
+bin/json.o: src/util/json.cpp include/util/json.h src/util/jsonParser.cpp \
+include/util/jsonParser.h
+	${CC} ${CFLAGS} -o bin/json.o -c src/util/json.cpp
+	
+bin/jsonParser.o: src/util/json.cpp include/util/json.h src/util/jsonParser.cpp \
+include/util/jsonParser.h
+	${CC} ${CFLAGS} -o bin/jsonParser.o -c src/util/jsonParser.cpp
+		
 ########################External Resources###################################
 
 bin/radiotap-parser.o: extern/radiotapParser/radiotap-parser.c \

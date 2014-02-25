@@ -8,28 +8,26 @@ Purpose:		Defines an object that parses json text into a std::map
 
 #pragma once
 #include "json.h"
+#include <string>
+#include <vector>
 
-/*enum DataType
-    {
-    	INT_TYPE,
-    	FLT_TYPE,
-    	STR_TYPE,
-    	OBJ_TYPE,
-    	VEC_TYPE,
-    	BOOL_TYPE
-    } DataType;*/
+class JSON;
 
-typedef union jsonVal
+typedef struct jsonData
 {
-	/*DataType type;
-	void * pData;*/
-	int intVal;
-	std::string strVal;
-	float floatVal;
-	JSON object;
-	std::vector<jsonVal> array;
-	bool boolVal;
-} jsonVal;
+	typedef struct jsonVal
+	{
+		int intVal;
+		std::string strVal;
+		float floatVal;
+		JSON *pObject;
+		std::vector<jsonData> array;
+		bool boolVal;
+	} jsonVal;
+
+	int type;
+	jsonVal value;
+} jsonData;
 
 typedef struct Token
 {
@@ -53,17 +51,16 @@ class jsonParser
     bool object ();
     bool members ();
     bool pair ();
-    bool array (jsonVal *pVal);
-    bool elements (jsonVal *pVal);
-    bool value (jsonVal *pVal);
-    bool string (jsonVal *pVal);
-    bool num (jsonVal *pVal);
-    bool frac (jsonVal *pVal);
+    bool array (jsonData *pVal);
+    bool elements (jsonData *pVal);
+    bool value (jsonData *pVal);
+    bool string (jsonData *pVal);
+    bool num (jsonData *pVal);
 
     const char * TRUE = "true";
     const char * FALSE = "false";
 
-		enum NonTerminals
+		static enum NonTerminals
     {
     	OBJECT = 0,
     	MEMBERS,
@@ -75,7 +72,7 @@ class jsonParser
     	NUM
     } NonTerminals;
 
-    enum TokenClass
+    static enum TokenClass
     {
     	L_BRACE = 0,
     	R_BRACE,
@@ -89,18 +86,28 @@ class jsonParser
     	INT,
     	NEG,
     	BOOL,
-    	NULL
+    	EMPTY
     } TokenClass;
 
+    static enum DataType
+		{
+			INT_TYPE,
+			FLT_TYPE,
+			STR_TYPE,
+			OBJ_TYPE,
+			VEC_TYPE,
+			BOOL_TYPE
+		} DataType;
 
 
-    const int MAX_NONTERMINALS = 8;
-    const int MAX_FIRSTS = 11;
+
+    static const int MAX_NONTERMINALS = 8;
+    static const int MAX_FIRSTS = 12;
 
 	private:
     std::string getObjectString (int index);
 
-		JSON json;
+		JSON * pJSON;
     bool validJSON;
     std::string rawJSON;
     int strPos;

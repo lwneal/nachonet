@@ -13,7 +13,7 @@ Purpose:
 #define IS_LETTER(c) (((c >= 'a') && (c <= 'z')) ||\
                          ((c >= 'A') && (c <= 'Z')))
 #define IS_OTHER_VALID_CHAR(c) ((c == '_') || (c == '\"') || (c == '\\') || \
-															 (c == '\/') || (c == '\b') || (c == '\f') || \
+															 (c == '\b') || (c == '\f') || \
 															 (c == 'n') || (c == '\r') || (c == '\t'))
 #define IS_VALID_START_STR(c) (IS_LETTER(c) || IS_OTHER_VALID_CHAR(c))
 
@@ -32,21 +32,28 @@ static int gFirsts[jsonParser::MAX_NONTERMINALS][jsonParser::MAX_FIRSTS] =
 
 jsonParser::jsonParser (std::string rawJSON)
 {
+	pJSON = new JSON;
 	init (rawJSON);
 }
+
 jsonParser::~jsonParser ()
 {
-
+	delete pJSON;
 }
 
 void jsonParser::init (std::string rawJSON)
 {
+	this->rawJSON = rawJSON;
+	validJSON = true;
+	strPos = 0;
+	currentTok.tokenClass = EMPTY;
+
 	object ();
 }
 
 JSON jsonParser::getObject ()
 {
-	return json;
+	return *pJSON;
 }
 
 void jsonParser::getNextToken ()
@@ -87,7 +94,7 @@ void jsonParser::getNextToken ()
 				break;
 
 			case '"':
-				returnTok.tokenClass = R_BRKT;
+				returnTok.tokenClass = QUOTE;
 				returnTok.lexeme.push_back(ch);
 				tokenNotFound = false;
 				break;
@@ -196,15 +203,15 @@ bool jsonParser::match (int tokenClass)
 {
 	bool isMatch = false;
 
-	if (NULL == currentTok.tokenClass)
+	if (EMPTY == currentTok.tokenClass)
 	{
 		getNextToken();
 	}
 
-	if(tokenClass == currentTok)
+	if(tokenClass == currentTok.tokenClass)
 	{
 		isMatch = true;
-		currentTok.tokenClass = NULL;
+		currentTok.tokenClass = EMPTY;
 	}
 
 	return isMatch;
@@ -265,14 +272,14 @@ bool jsonParser::members ()
 
 bool jsonParser::pair ()
 {
-	jsonVal newVal;
+	jsonData newVal;
 	std::string key;
 
 	if (validJSON)
 	{
 		string (&newVal);
 
-		key = newVal.strVal;
+		key = newVal.value.strVal;
 
 		if (match (COLON))
 		{
@@ -282,7 +289,7 @@ bool jsonParser::pair ()
 			{
 				value (&newVal);
 
-				json.setValue(key, newVal);
+				pJSON->setValue(key, newVal);
 			}
 			else
 			{
@@ -297,7 +304,7 @@ bool jsonParser::pair ()
 
 	return validJSON;
 }
-bool jsonParser::array (jsonVal *pVal)
+bool jsonParser::array (jsonData *pVal)
 {
 	if (validJSON)
 	{
@@ -327,15 +334,15 @@ bool jsonParser::array (jsonVal *pVal)
 
 	return validJSON;
 }
-bool jsonParser::elements (jsonVal *pVal)
+bool jsonParser::elements (jsonData *pVal)
 {
-	jsonVal element;
+	jsonData element;
 
 	if (validJSON)
 	{
 		value (&element);
 
-		pVal->array.push_back(element);
+		pVal->value.array.push_back(element);
 
 		if (match (COMMA))
 		{
@@ -355,7 +362,7 @@ bool jsonParser::elements (jsonVal *pVal)
 	return validJSON;
 }
 
-bool jsonParser::value (jsonVal *pVal)
+bool jsonParser::value (jsonData *pVal)
 {
 	jsonParser * pNewParser;
 
@@ -363,31 +370,37 @@ bool jsonParser::value (jsonVal *pVal)
 	{
 		if (peek (STRING))
 		{
+			pVal->type = STR_TYPE;
 			string (pVal);
 		}
 		else if (peek (NUM))
 		{
+			pVal->type = INT_TYPE;
 			num (pVal);
 		}
 		else if (peek (OBJECT))
 		{
+			pVal->type = OBJ_TYPE;
 			pNewParser = new jsonParser (getObjectString (currentTok.firstCharPos));
-			pVal->object = pNewParser->getObject();
+			*(pVal->value.pObject) = pNewParser->getObject();
 			delete pNewParser;
 		}
 		else if (peek (ARRAY))
 		{
+			pVal->type = VEC_TYPE;
 			array (pVal);
 		}
 		else if (BOOL == currentTok.tokenClass)
 		{
+			pVal->type = BOOL_TYPE;
+
 			if (currentTok.lexeme.compare (TRUE))
 			{
-				pVal->boolVal = true;
+				pVal->value.boolVal = true;
 			}
 			else
 			{
-				pVal->boolVal = false;
+				pVal->value.boolVal = false;
 			}
 
 			match (BOOL);
@@ -402,7 +415,7 @@ bool jsonParser::value (jsonVal *pVal)
 
 	return validJSON;
 }
-bool jsonParser::string (jsonVal *pVal)
+bool jsonParser::string (jsonData *pVal)
 {
 	if (validJSON)
 	{
@@ -410,7 +423,7 @@ bool jsonParser::string (jsonVal *pVal)
 		{
 			if (STR == currentTok.tokenClass)
 			{
-				pVal->strVal = currentTok.lexeme;
+				pVal->value.strVal = currentTok.lexeme;
 				match (STR);
 			}
 
@@ -428,7 +441,7 @@ bool jsonParser::string (jsonVal *pVal)
 	return validJSON;
 }
 
-bool jsonParser::num (jsonVal *pVal)
+bool jsonParser::num (jsonData *pVal)
 {
 	std::string numStr;
 
@@ -446,6 +459,8 @@ bool jsonParser::num (jsonVal *pVal)
 
 			if (match (DECIMAL))
 			{
+				pVal->type = FLT_TYPE;
+
 				numStr.push_back('.');
 
 				if (INT == currentTok.tokenClass)
@@ -456,11 +471,11 @@ bool jsonParser::num (jsonVal *pVal)
 
 				numStr.push_back('0');
 
-				pVal->floatVal = atof (numStr.c_str());
+				pVal->value.floatVal = atof (numStr.c_str());
 			}
 			else
 			{
-				pVal->intVal = atoi (numStr.c_str());
+				pVal->value.intVal = atoi (numStr.c_str());
 			}
 
 		}

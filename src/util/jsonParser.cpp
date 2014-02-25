@@ -9,7 +9,6 @@ Purpose:
 
 #include "../../include/util/jsonParser.h"
 
-#define IS_START_DIGIT(c) ((c > '0') && (c <= '9'))
 #define IS_DIGIT(c) ((c >= '0') && (c<= '9'))
 #define IS_LETTER(c) (((c >= 'a') && (c <= 'z')) ||\
                          ((c >= 'A') && (c <= 'Z')))
@@ -27,8 +26,7 @@ static int gFirsts[jsonParser::MAX_NONTERMINALS][jsonParser::MAX_FIRSTS] =
 		{1,0,1,0,1,0,0,0,0,1,1,1},
 		{1,0,1,0,1,0,0,0,0,1,1,1},
 		{0,0,0,0,1,0,0,0,0,0,0,0},
-		{0,0,0,0,0,0,0,0,0,1,1,0},
-		{0,0,0,0,0,0,0,1,0,0,0,0}
+		{0,0,0,0,0,0,0,0,0,1,1,0}
 };
 
 
@@ -124,7 +122,7 @@ void jsonParser::getNextToken ()
 				break;
 
 			default:
-				if (IS_START_DIGIT (ch))
+				if (IS_DIGIT (ch))
 				{
 					returnTok.tokenClass = INT;
 
@@ -429,24 +427,52 @@ bool jsonParser::string (jsonVal *pVal)
 
 	return validJSON;
 }
+
 bool jsonParser::num (jsonVal *pVal)
 {
+	std::string numStr;
 
 	if (validJSON)
 	{
+		if (match (NEG))
+		{
+			numStr.push_back ('-');
+		}
+
+		if (INT == currentTok.tokenClass)
+		{
+			numStr += currentTok.lexeme;
+			match (INT);
+
+			if (match (DECIMAL))
+			{
+				numStr.push_back('.');
+
+				if (INT == currentTok.tokenClass)
+				{
+					numStr += currentTok.lexeme;
+					match (INT);
+				}
+
+				numStr.push_back('0');
+
+				pVal->floatVal = atof (numStr.c_str());
+			}
+			else
+			{
+				pVal->intVal = atoi (numStr.c_str());
+			}
+
+		}
+		else
+		{
+			validJSON = false;
+		}
 
 	}
 
 	return validJSON;
 }
-bool jsonParser::frac (jsonVal *pVal)
-{
-	if (validJSON)
-	{
 
-	}
-
-	return validJSON;
-}
 
 

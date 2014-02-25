@@ -72,8 +72,7 @@ class jsonParser
     	ELEMENTS,
     	VALUE,
     	STRING,
-    	NUM,
-    	FRAC
+    	NUM
     } NonTerminals;
 
     enum TokenClass
@@ -95,7 +94,7 @@ class jsonParser
 
 
 
-    const int MAX_NONTERMINALS = 9;
+    const int MAX_NONTERMINALS = 8;
     const int MAX_FIRSTS = 11;
 
 	private:

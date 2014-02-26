@@ -26,7 +26,14 @@ JSON::JSON ()
 /*******************************************************************************
  * Destroyer!:	~JSON
  *
- * Description: Clears the data cleanly before exiting
+ * Description: Does nothing. There is a damn good reason why clear is not
+ * 							called here. JSON objects jump out of scope during parsing so
+ * 							when we parse a JSON object as a value we want to keep that
+ * 							bit of dynamic memory hanging around. When getObject() is called
+ * 							on the jsonParser, a copy of the JSON object is created, and if
+ * 							clear() is in the destroyer! this copy will fall out of scope,
+ * 							clear() will be called, and we'll end up deleting our dynamic
+ * 							memory.
  *
  * Parameters:  None
  *
@@ -34,7 +41,7 @@ JSON::JSON ()
  ******************************************************************************/
 JSON::~JSON ()
 {
-	clear ();
+
 }
 
 /*******************************************************************************
@@ -70,7 +77,13 @@ void JSON::setValue (std::string key, jsonData value)
 /*******************************************************************************
  * Method:			clear
  *
- * Description: Clear out the key-values
+ * Description: Clear out the key-values and dispose of any dynamic data.
+ *
+ * 							***************************************************************
+ * 							*IF YOU FILLED THIS OBJECT WITH PARSED JSON THAT MAY INCLUDE  *
+ * 							*AN OBJECT AS A VALUE YOU MUST CALL THIS FUNCTION TO FREE THE *
+ * 							*DYNAMIC MEMORY.                                              *
+ * 							***************************************************************
  *
  * Parameters:  None
  *

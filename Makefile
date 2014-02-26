@@ -12,7 +12,7 @@ CFLAGS=-g -Wall
 
 VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 
-.PHONY: all clean package zeus
+.PHONY: all clean package zeus jsonDriver_valgrind
 
 all: bin/adminTools bin/prototype bin/distDriver bin/configDriver \
 bin/collectDriver bin/jsonDriver
@@ -134,6 +134,9 @@ include/util/jsonParser.h
 bin/jsonParser.o: src/util/json.cpp include/util/json.h src/util/jsonParser.cpp \
 include/util/jsonParser.h
 	${CC} ${CFLAGS} -o bin/jsonParser.o -c src/util/jsonParser.cpp
+	
+jsonDriver_valgrind: bin/jsonDriver
+	valgrind ${VALGRIND_OPTIONS} bin/jsonDriver
 		
 ########################External Resources###################################
 

@@ -9,6 +9,7 @@ Purpose:
 
 #include "../../include/util/jsonParser.h"
 
+//Helpful things for the lexer portion
 #define IS_DIGIT(c) ((c >= '0') && (c<= '9'))
 #define IS_LETTER(c) (((c >= 'a') && (c <= 'z')) ||\
                          ((c >= 'A') && (c <= 'Z')))
@@ -29,18 +30,44 @@ static int gFirsts[jsonParser::MAX_NONTERMINALS][jsonParser::MAX_FIRSTS] =
 		{0,0,0,0,0,0,0,0,0,1,1,0}
 };
 
-
+/*******************************************************************************
+ * Constructor:	jsonParser
+ *
+ * Description: Initializes the JSON object and initializes the raw JSON string
+ *
+ * Parameters:  rawJSON - a string bursting with delicious JSON flavor
+ *
+ * Returned:		None
+ ******************************************************************************/
 jsonParser::jsonParser (std::string rawJSON)
 {
 	pJSON = new JSON;
 	init (rawJSON);
 }
 
+/*******************************************************************************
+ * Method:			~pJSON
+ *
+ * Description:	Deletes the JSON object
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
 jsonParser::~jsonParser ()
 {
 	delete pJSON;
 }
 
+/*******************************************************************************
+ * Method:			init
+ *
+ * Description: Initializes the parser and starts parsing
+ *
+ * Parameters:	rawJSON - the JSON string to be parsed
+ *
+ * Returned:		None
+ ******************************************************************************/
 void jsonParser::init (std::string rawJSON)
 {
 	this->rawJSON = rawJSON;
@@ -51,11 +78,30 @@ void jsonParser::init (std::string rawJSON)
 	object ();
 }
 
+/*******************************************************************************
+ * Method:			getObject
+ *
+ * Description:	Return the JSON object created from the parsed text
+ *
+ * Parameters:	None
+ *
+ * Returned:		JSON - the object from the text
+ ******************************************************************************/
 JSON jsonParser::getObject ()
 {
 	return *pJSON;
 }
 
+/*******************************************************************************
+ * Method:			getNextToken
+ *
+ * Description:	Incrementally breaks the JSON string up into tokens which can be
+ * 						 	used later by the parser. The currentToken member is updated
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
 void jsonParser::getNextToken ()
 {
 	Token returnTok;
@@ -171,6 +217,17 @@ void jsonParser::getNextToken ()
 	currentTok = returnTok;
 }
 
+/*******************************************************************************
+ * Method:			getObjectString
+ *
+ * Description:	Given the index of a left curly brace, creates a substring until
+ * 							the matching right curly brace. This is used to extract and
+ * 							parse a JSON object that is a value.
+ *
+ * Parameters:	index - the index of the left curly brace
+ *
+ * Returned:		string - the substring that contains a whole object's text
+ ******************************************************************************/
 std::string jsonParser::getObjectString (int index)
 {
 	int objectCount = 0;
@@ -194,11 +251,33 @@ std::string jsonParser::getObjectString (int index)
 	return objectString;
 }
 
+/*******************************************************************************
+ * Method:			peek
+ *
+ * Description:	Checks the table of firsts to see if the given non terminal
+ * 							can have the current token as the first terminal along some
+ * 							expansion
+ *
+ * Parameters:	nonTerminal - an int that stands for the non terminal to check
+ *
+ * Returned:		true if the current token is in the First, false otherwise
+ ******************************************************************************/
 bool jsonParser::peek (int nonTerminal)
 {
 	return gFirsts[nonTerminal][currentTok.tokenClass];
 }
 
+/*******************************************************************************
+ * Method:			match
+ *
+ * Description:	Try to match the current token with the argument. If there is no
+ * 							current token then get a new one.
+ *
+ * Parameters:	tokenClass - an int that represents the class of the token we
+ * 													 want to match
+ *
+ * Returned:		true if there is a match, false otherwise
+ ******************************************************************************/
 bool jsonParser::match (int tokenClass)
 {
 	bool isMatch = false;
@@ -217,7 +296,15 @@ bool jsonParser::match (int tokenClass)
 	return isMatch;
 }
 
-
+/*******************************************************************************
+ * Method:			object
+ *
+ * Description:	object -> { } | { members }
+ *
+ * Parameters:	None
+ *
+ * Returned:		true if JSON text is valid, false otherwise
+ ******************************************************************************/
 bool jsonParser::object ()
 {
 	if (validJSON)
@@ -248,6 +335,15 @@ bool jsonParser::object ()
 	return validJSON;
 }
 
+/*******************************************************************************
+ * Method:			members
+ *
+ * Description:	members -> pair | pair , members
+ *
+ * Parameters:	None
+ *
+ * Returned:		true if JSON text is valid, false otherwise
+ ******************************************************************************/
 bool jsonParser::members ()
 {
 	if (validJSON)
@@ -270,6 +366,15 @@ bool jsonParser::members ()
 	return validJSON;
 }
 
+/*******************************************************************************
+ * Method:			pair
+ *
+ * Description:	pair -> string : value
+ *
+ * Parameters:	None
+ *
+ * Returned:		true if JSON text is valid, false otherwise
+ ******************************************************************************/
 bool jsonParser::pair ()
 {
 	jsonData newVal;
@@ -304,6 +409,16 @@ bool jsonParser::pair ()
 
 	return validJSON;
 }
+
+/*******************************************************************************
+ * Method:			array
+ *
+ * Description:	array -> [ ] | [ elements ]
+ *
+ * Parameters:	pVal - pointer to the jsonData we are constructing
+ *
+ * Returned:		true if JSON text is valid, false otherwise
+ ******************************************************************************/
 bool jsonParser::array (jsonData *pVal)
 {
 	if (validJSON)
@@ -334,6 +449,16 @@ bool jsonParser::array (jsonData *pVal)
 
 	return validJSON;
 }
+
+/*******************************************************************************
+ * Method:			elements
+ *
+ * Description:	elements -> value | value , elements
+ *
+ * Parameters:	pVal - pointer to the jsonData we are constructing
+ *
+ * Returned:		true if JSON text is valid, false otherwise
+ ******************************************************************************/
 bool jsonParser::elements (jsonData *pVal)
 {
 	jsonData element;
@@ -362,9 +487,19 @@ bool jsonParser::elements (jsonData *pVal)
 	return validJSON;
 }
 
+/*******************************************************************************
+ * Method:			value
+ *
+ * Description:	value -> string | num | object | array | bool
+ *
+ * Parameters:	pVal - pointer to the jsonData we are constructing
+ *
+ * Returned:		true if JSON text is valid, false otherwise
+ ******************************************************************************/
 bool jsonParser::value (jsonData *pVal)
 {
 	jsonParser * pNewParser;
+	std::string objString;
 
 	if (validJSON)
 	{
@@ -381,9 +516,12 @@ bool jsonParser::value (jsonData *pVal)
 		else if (peek (OBJECT))
 		{
 			pVal->type = OBJ_TYPE;
-			pNewParser = new jsonParser (getObjectString (currentTok.firstCharPos));
+			objString = getObjectString (currentTok.firstCharPos);
+			pNewParser = new jsonParser (objString);
 			*(pVal->value.pObject) = pNewParser->getObject();
 			delete pNewParser;
+
+			this->strPos += objString.length();
 		}
 		else if (peek (ARRAY))
 		{
@@ -415,6 +553,16 @@ bool jsonParser::value (jsonData *pVal)
 
 	return validJSON;
 }
+
+/*******************************************************************************
+ * Method:			string
+ *
+ * Description: string -> "" | "chars"
+ *
+ * Parameters:	pVal - pointer to the jsonData we are constructing
+ *
+ * Returned:		true if JSON text is valid, false otherwise
+ ******************************************************************************/
 bool jsonParser::string (jsonData *pVal)
 {
 	if (validJSON)
@@ -441,6 +589,16 @@ bool jsonParser::string (jsonData *pVal)
 	return validJSON;
 }
 
+/*******************************************************************************
+ * Method:			num
+ *
+ * Description: num -> number
+ * 							Does not handle scientific notation
+ *
+ * Parameters:	pVal - pointer to the jsonData we are constructing
+ *
+ * Returned:		true if JSON text is valid, false otherwise
+ ******************************************************************************/
 bool jsonParser::num (jsonData *pVal)
 {
 	std::string numStr;

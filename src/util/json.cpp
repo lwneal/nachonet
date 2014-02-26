@@ -9,32 +9,87 @@ Purpose:		Implements the behavior of the JSON object
 #include "../../include/util/json.h"
 #include <string>
 
-
+/*******************************************************************************
+ * Constructor:	JSON
+ *
+ * Description: Does nothing
+ *
+ * Parameters:  None
+ *
+ * Returned:		None
+ ******************************************************************************/
 JSON::JSON ()
 {
 
 }
 
+/*******************************************************************************
+ * Destroyer!:	~JSON
+ *
+ * Description: Does nothing
+ *
+ * Parameters:  None
+ *
+ * Returned:		None
+ ******************************************************************************/
 JSON::~JSON ()
 {
 
 }
 
+/*******************************************************************************
+ * Method:			getData
+ *
+ * Description: Return the value for the given key
+ *
+ * Parameters:  key - the key to search for
+ *
+ * Returned:		jsonData
+ ******************************************************************************/
 jsonData JSON::getData (std::string key)
 {
 	return keyVal[key];
 }
 
+/*******************************************************************************
+ * Method:			setValue
+ *
+ * Description: Set the value for a given key. If the key exists it is updated,
+ *  						and if it doesn't exist it is added.
+ *
+ * Parameters:  key - the key to search for
+ * 							value - the new json data for the key
+ *
+ * Returned:		None
+ ******************************************************************************/
 void JSON::setValue (std::string key, jsonData value)
 {
 	keyVal[key] = value;
 }
 
+/*******************************************************************************
+ * Method:			clear
+ *
+ * Description: Clear out the key-values
+ *
+ * Parameters:  None
+ *
+ * Returned:		jsonData
+ ******************************************************************************/
 void JSON::clear ()
 {
 	this->keyVal.clear ();
 }
 
+/*******************************************************************************
+ * Method:			writeJSON
+ *
+ * Description: Turns the map into proper JSON.
+ *
+ * Parameters:	prevData - used for recursive calls to writeJSON
+ *
+ * Returned:		string - JSON string
+ ******************************************************************************/
 std::string JSON::writeJSON (std::string prevData)
 {
 	std::string returnString;
@@ -62,6 +117,15 @@ std::string JSON::writeJSON (std::string prevData)
 	return returnString;
 }
 
+/*******************************************************************************
+ * Method:			writeValue
+ *
+ * Description:	Outputs the correct JSON value given a piece of data
+ *
+ * Parameters:	data - the data to be turned into JSON
+ *
+ * Returned:		string - the value as JSON
+ ******************************************************************************/
 std::string JSON::writeValue (jsonData data)
 {
 	std::string returnString;

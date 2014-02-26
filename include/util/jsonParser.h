@@ -112,6 +112,7 @@ class jsonParser
     std::string rawJSON;
     int strPos;
     Token currentTok;
+    Token prevTok;
 
 
 

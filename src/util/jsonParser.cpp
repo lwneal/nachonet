@@ -74,6 +74,7 @@ void jsonParser::init (std::string rawJSON)
 	validJSON = true;
 	strPos = 0;
 	currentTok.tokenClass = EMPTY;
+	prevTok.tokenClass = EMPTY;
 
 	object ();
 }
@@ -105,8 +106,10 @@ JSON jsonParser::getObject ()
 void jsonParser::getNextToken ()
 {
 	Token returnTok;
-	bool tokenNotFound = true;
+	bool tokenNotFound = true, isString, validChar = true;
 	char ch;
+
+	prevTok = currentTok;
 
 	while (tokenNotFound)
 	{
@@ -114,6 +117,9 @@ void jsonParser::getNextToken ()
 
 		switch (ch)
 		{
+			case '\0':
+				tokenNotFound = false;
+				break;
 			case '{':
 				returnTok.tokenClass = L_BRACE;
 				returnTok.lexeme.push_back(ch);
@@ -185,20 +191,40 @@ void jsonParser::getNextToken ()
 						ch = rawJSON[strPos++];
 					} while (IS_DIGIT (ch));
 
+					strPos--;
+
 					tokenNotFound = false;
 				}
 				else if (IS_VALID_START_STR (ch))
 				{
 					returnTok.tokenClass = STR;
 
+					//If the previous token was a quote then this text must be a string
+					//otherwise we are probably looking at a bool
+					if (QUOTE == prevTok.tokenClass)
+					{
+						isString = true;
+					}
+					else
+					{
+						isString = false;
+					}
+
 					do
 					{
 						returnTok.lexeme.push_back(ch);
 						ch = rawJSON[strPos++];
-					} while ('"' != ch && '\\' != ch);
 
-					if (returnTok.lexeme.compare(TRUE) ||
-							returnTok.lexeme.compare(FALSE))
+						if (!isString && !IS_LETTER(ch))
+						{
+							validChar = false;
+						}
+					} while ('"' != ch && '\\' != ch && validChar);
+
+					strPos--;
+
+					if (0 == returnTok.lexeme.compare(TRUE) ||
+							0 == returnTok.lexeme.compare(FALSE))
 					{
 						returnTok.tokenClass = BOOL;
 					}
@@ -532,7 +558,7 @@ bool jsonParser::value (jsonData *pVal)
 		{
 			pVal->type = BOOL_TYPE;
 
-			if (currentTok.lexeme.compare (TRUE))
+			if (0 == currentTok.lexeme.compare (TRUE))
 			{
 				pVal->value.boolVal = true;
 			}
@@ -569,6 +595,7 @@ bool jsonParser::string (jsonData *pVal)
 	{
 		if (match (QUOTE))
 		{
+			getNextToken ();
 			if (STR == currentTok.tokenClass)
 			{
 				pVal->value.strVal = currentTok.lexeme;

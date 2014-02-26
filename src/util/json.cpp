@@ -110,7 +110,10 @@ std::string JSON::writeJSON (std::string prevData)
 		returnString.push_back (',');
 	}
 
-	returnString.pop_back ();
+	if (0 != returnString.compare ("{"))
+	{
+		returnString.pop_back ();
+	}
 
 	returnString.push_back ('}');
 

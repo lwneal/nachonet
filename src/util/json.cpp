@@ -26,7 +26,7 @@ JSON::JSON ()
 /*******************************************************************************
  * Destroyer!:	~JSON
  *
- * Description: Does nothing
+ * Description: Clears the data cleanly before exiting
  *
  * Parameters:  None
  *
@@ -34,7 +34,7 @@ JSON::JSON ()
  ******************************************************************************/
 JSON::~JSON ()
 {
-
+	clear ();
 }
 
 /*******************************************************************************
@@ -78,6 +78,15 @@ void JSON::setValue (std::string key, jsonData value)
  ******************************************************************************/
 void JSON::clear ()
 {
+	for (auto entry : keyVal)
+	{
+		if (jsonParser::OBJ_TYPE == entry.second.type
+				&& 0x0 != entry.second.value.pObject)
+		{
+			delete entry.second.value.pObject;
+		}
+	}
+
 	this->keyVal.clear ();
 }
 

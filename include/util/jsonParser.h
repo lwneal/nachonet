@@ -17,6 +17,14 @@ typedef struct jsonData
 {
 	typedef struct jsonVal
 	{
+		jsonVal ()
+		{
+			pObject = 0x0;
+			intVal = 0;
+			floatVal = 0.0;
+			boolVal = false;
+		}
+
 		int intVal;
 		std::string strVal;
 		float floatVal;

@@ -109,8 +109,6 @@ void jsonParser::getNextToken ()
 	bool tokenNotFound = true, isString, validChar = true;
 	char ch;
 
-	prevTok = currentTok;
-
 	while (tokenNotFound)
 	{
 		ch = rawJSON[strPos++];
@@ -316,6 +314,7 @@ bool jsonParser::match (int tokenClass)
 	if(tokenClass == currentTok.tokenClass)
 	{
 		isMatch = true;
+		prevTok = currentTok;
 		currentTok.tokenClass = EMPTY;
 	}
 
@@ -544,10 +543,14 @@ bool jsonParser::value (jsonData *pVal)
 			pVal->type = OBJ_TYPE;
 			objString = getObjectString (currentTok.firstCharPos);
 			pNewParser = new jsonParser (objString);
+			pVal->value.pObject = new JSON;
+
 			*(pVal->value.pObject) = pNewParser->getObject();
 			delete pNewParser;
 
 			this->strPos += objString.length();
+			this->strPos--;
+			getNextToken ();
 		}
 		else if (peek (ARRAY))
 		{

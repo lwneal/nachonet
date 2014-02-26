@@ -377,6 +377,8 @@ bool jsonParser::members ()
 
 		if (match (COMMA))
 		{
+			getNextToken ();
+
 			if(peek (MEMBERS))
 			{
 				members ();
@@ -638,6 +640,7 @@ bool jsonParser::num (jsonData *pVal)
 		if (match (NEG))
 		{
 			numStr.push_back ('-');
+			getNextToken ();
 		}
 
 		if (INT == currentTok.tokenClass)
@@ -650,6 +653,8 @@ bool jsonParser::num (jsonData *pVal)
 				pVal->type = FLT_TYPE;
 
 				numStr.push_back('.');
+
+				getNextToken ();
 
 				if (INT == currentTok.tokenClass)
 				{

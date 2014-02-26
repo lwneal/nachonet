@@ -107,7 +107,7 @@ std::string JSON::writeJSON (std::string prevData)
 
 	returnString.push_back ('{');
 
-	for (auto entry : keyVal)
+	for (auto & entry : keyVal)
 	{
 		returnString.push_back ('\"');
 		returnString += entry.first;

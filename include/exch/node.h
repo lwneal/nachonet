@@ -21,6 +21,7 @@ class node
     void setID (int id);
     location getLocation () const;
     void setLocation (location loc);
+    void setMeasurement (std::string devID, float dist);
     refMeasurement getMeasurement (std::string devID) const;
     std::vector<refMeasurement> getAllMeasurements ();
     void clearMeasurements ();

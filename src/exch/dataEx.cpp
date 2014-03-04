@@ -107,6 +107,7 @@ int dataEx::getID () const
 std::string dataEx::getDevForUpdate ()
 {
 	//hash devID vs num nodes in network
+	//use hashed devID as a key for a std::map
 }
 
 /*******************************************************************************

@@ -10,6 +10,14 @@ Purpose:		Defines the interface to the data exchange module on the couch. This
 #pragma once
 #include "dataEx.h"
 
+#define IP_ADDR_SIZE 4
+
+typedef struct ip
+{
+  unsigned char addr[IP_ADDR_SIZE];
+} ip;
+
+
 class dataExOnTheCouch : public dataEx
 {
 	public:
@@ -26,6 +34,14 @@ class dataExOnTheCouch : public dataEx
     virtual void pushUpdates ();
     virtual void pullUpdates ();
 	private:
+    void updateNodeFromCouch ();
+    void updateDevFromCouch ();
+    void updateCouchFromNode ();
+    void updateCouchFromDev ();
+
+    std::map<int, ip> nodeIPAddr;
+    ip myIP;
+
 
 
 };

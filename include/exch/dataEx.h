@@ -40,8 +40,8 @@ class dataEx
 
     virtual void pingAll (Message message) = 0; //send msg to everyone in net
     virtual void ping (Message message) = 0; //push msg and pull to check
-    virtual void pushUpdates () = 0;
-    virtual void pullUpdates () = 0;
+    virtual void pushUpdates (int flag) = 0;//id what flag will be needed but
+    virtual void pullUpdates (int flag) = 0;//some data needs to get passed
 
     static const int NO_ID = -1;
 

@@ -151,6 +151,20 @@ void dataEx::updateDevLocation (std::string id, location loc)
 }
 
 /*******************************************************************************
+ * Method:			updateDevMeasurement
+ *
+ * Description:	Adds or updates a measurement for the current node
+ *
+ * Parameters:	devDist - the distance measurement by this node for a device
+ *
+ * Returned:		None
+ ******************************************************************************/
+void dataEx::updateDevMeasurement (distMeasurement devDist)
+{
+	nodes[myID].setMeasurement(devDist);
+}
+
+/*******************************************************************************
  * Method:			clearDevices
  *
  * Description:	Remove all devices: stop tracking them

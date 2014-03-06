@@ -13,7 +13,7 @@ Purpose:		Defines the abstract data exchange object that is responsible for
 
 typedef struct Message
 {
-  std::vector<int> dest;
+  std::vector<int> dest; //we can specify multiple destinations here
   std::string msg;
 } Message;
 
@@ -30,6 +30,7 @@ class dataEx
     std::string getDevForUpdate ();
     std::vector<refMeasurement> getMeasurements (std::string id);
     void updateDevLocation (std::string id, location loc);
+    void updateDevMeasurement (distMeasurement dist);
     void clearDevices ();
     void clearNodes ();
 
@@ -38,7 +39,6 @@ class dataEx
     virtual void addDevice (device newDev);
     virtual void dropDevice (std::string id);
 
-    virtual void pingAll (Message message) = 0; //send msg to everyone in net
     virtual void ping (Message message) = 0; //push msg and pull to check
     virtual void pushUpdates (int flag) = 0;//id what flag will be needed but
     virtual void pullUpdates (int flag) = 0;//some data needs to get passed

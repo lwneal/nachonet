@@ -100,14 +100,13 @@ void node::setLocation (location loc)
  *
  * Description:	Set a measurement for a given device
  *
- * Parameters:	devID - the id of the device
- * 							dist  - the new distance (in meters)
+ * Parameters:	devDist - the distance measurement of a particular device
  *
  * Returned:		None
  ******************************************************************************/
-void node::setMeasurement (std::string devID, float dist)
+void node::setMeasurement (distMeasurement devDist)
 {
-	measurements[devID] = dist;
+	measurements[devDist.devID] = devDist;
 }
 
 /*******************************************************************************
@@ -123,8 +122,7 @@ refMeasurement node::getMeasurement (std::string devID) const
 {
 	refMeasurement ref;
 	ref.nodeLocation = loc;
-	ref.devDist.devID = devID;
-	ref.devDist.dist = measurements[devID];
+	ref.devDist = measurements[devID];
 
 	return ref;
 }

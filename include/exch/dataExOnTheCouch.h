@@ -31,16 +31,20 @@ class dataExOnTheCouch : public dataEx
 		dataExOnTheCouch ();
 		virtual ~dataExOnTheCouch ();
 
-    virtual void pingAll (Message message); //send msg to everyone in net
+		void setIP (ip newIP);
+		ip getIP () const;
+
     virtual void ping (Message message); //push msg and pull to check
     virtual void pushUpdates (int flag);
     virtual void pullUpdates (int flag);
 
     static const int DEFAULT_COUCH_PORT = 5984;
+    static const std::string LOCALHOST = "127.0.0.1";
 
     static enum DB {ADMIN, NODES, DEVICES, ALL};
     static const std::string TARGET_DB[] = {"admin_db", "node_db", "dev_db"};
 
+    //these are the keys for all of the JSON pairs we need to use
     static const std::string LOCATION = "location";
     static const std::string ID = "_id";
     static const std::string X_COOR = "x";
@@ -53,6 +57,9 @@ class dataExOnTheCouch : public dataEx
     static const std::string TARGET = "target";
     static const std::string REPLICATE = "_replicate";
     static const std::string DOC_IDS = "doc_ids";
+    static const std::string MESSAGE = "message";
+    static const std::string MSG_TEXT = "msg";
+    static const std::string MSG_SRC = "src";
 
 	private:
     void updateNodeFromCouch ();
@@ -66,6 +73,12 @@ class dataExOnTheCouch : public dataEx
     CURLcode curlPost(const std::string& url, const std::string& json);
 
     std::map<int, ip> nodeIPAddr;
+
+    //We need to track the current revision number of each document
+    std::map<int, std::string> nodeDBRevisions;
+    //std::map<int, std::string> adminDBRevisions;
+    std::map<std::string, std::string> devDBRevisions;
+
     ip myIP;
 
 

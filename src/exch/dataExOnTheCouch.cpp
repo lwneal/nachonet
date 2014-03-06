@@ -1,34 +1,34 @@
 /*******************************************************************************
- File:				dataExOnTheCouch.cpp
- Author: 		Josh Siva
- Date:				3/5/14
- Project:		NachoNet
- Purpose:		Implements the behavior of the CouchDB data exchange module. This
- module will need to communicate with three CouchDB databases per
- node:	node_db, dev_db, and admin_db.
+ File:		dataExOnTheCouch.cpp
+ Author: 	Josh Siva
+ Date:		3/5/14
+ Project:	NachoNet
+ Purpose:	Implements the behavior of the CouchDB data exchange module. This
+				  module will need to communicate with three CouchDB databases per
+				  node:	node_db, dev_db, and admin_db.
 
  A document in the node_db looks like this:
  {
- "_id" : nodeID,
- "_rev" : [auto],
- "location" : {"x" : x, "y" : y},
- "measurements" : [{"devID" : devID, "dist" : dist}, ...]
+	 "_id" : nodeID,
+	 "_rev" : [auto],
+	 "location" : {"x" : x, "y" : y},
+	 "measurements" : [{"devID" : devID, "dist" : dist}, ...]
  }
 
  A document in the dev_db looks like this:
  {
- "_id" : devID,
- "_rev" : [auto],
- "location" : {"x" : x, "y" : y}
+	 "_id" : devID,
+	 "_rev" : [auto],
+	 "location" : {"x" : x, "y" : y}
  }
 
  A document in the admin_db looks like this:
  {
- "_id" : nodeID,
- "_rev" : [auto],
- "ip" : ipAddr,
- "state" : state,
- "message" : {"msg" : message, "src" : ipAddr}
+	 "_id" : nodeID,
+	 "_rev" : [auto],
+	 "ip" : ipAddr,
+	 "state" : state,
+	 "message" : {"msg" : message, "src" : ipAddr}
  }
  *******************************************************************************/
 
@@ -69,31 +69,85 @@ virtual dataExOnTheCouch::~dataExOnTheCouch ()
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			setIP
  *
- * Description:
+ * Description:	Set the IP address of the current node
  *
- * Parameters:
+ * Parameters:	newIP - the new IP address
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
-virtual void dataExOnTheCouch::pingAll (Message message)
+void dataExOnTheCouch::setIP (ip newIP)
 {
-
+	this->myIP = newIP;
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			getIP
  *
- * Description:
+ * Description:	Get the IP address of the current node
  *
- * Parameters:
+ * Parameters:	None
  *
- * Returned:
+ * Returned:		ip - the IP address
+ ******************************************************************************/
+ip dataExOnTheCouch::getIP () const
+{
+	return this->myIP;
+}
+
+/*******************************************************************************
+ * Method:			ping
+ *
+ * Description: Send a message to node. This amounts to changing the message
+ * 							field in a specified node's admin document and checking back to
+ * 							see if there is a response.
+ *
+ * Parameters: 	message - the message text and the destination(s)
+ *
+ * Returned:		None
  ******************************************************************************/
 virtual void dataExOnTheCouch::ping (Message message)
 {
+	std::string url = "";
+	std::ostringstream oss;
+	JSON json, msgField;
+	jsonData data;
+	jsonParser parser;
 
+	data.type = jsonParser::STR_TYPE;
+	data.value.strVal = message.msg;
+	msgField.setValue (MSG_TEXT, data);
+
+	data.value.strVal = std::to_string (myIP.addr);
+	msgField.setValue (MSG_SRC, data);
+
+	data.type = jsonParser::OBJ_TYPE;
+	data.value.pObject = &msgField;
+
+	for (int nodeID : message.dest)
+	{
+		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
+		url = url + TARGET_DB[ADMIN] + '/' + std::to_string (nodeID);
+
+		if(CURLE_OK == curl_read(url, oss))
+		{
+			// Web page successfully written to string
+			parser (oss.str());
+			json = parser.getObject();
+			oss.str("");
+
+			//adminDBRevisions[nodeID] = (json.getData(REVISION)).value.strVal;
+
+			json.setValue (MESSAGE, data);
+
+			curlPost (url, json.writeJSON(""));
+		}
+		else
+		{
+			std::cout << "Error reading from DB\n";
+		}
+	}
 }
 
 /*******************************************************************************
@@ -103,26 +157,34 @@ virtual void dataExOnTheCouch::ping (Message message)
  * 							other nodes in the network. Depending on the flag, different
  * 							databases or documents will be shared.
  *
- * Parameters:
+ * Parameters:	flag - an int that is used to influence the behavior of the
+ * 										 function
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
 virtual void dataExOnTheCouch::pushUpdates (int flag)
 {
 	JSON json;
-	jsonData data;
-	switch (flag)
+	jsonData data, entry;
+
+
+	for (auto & host : nodeIPAddr)
 	{
-		case ADMIN:
-			for (auto & entry : nodeIPAddr)
-			{
-				data.type = jsonParser::STR_TYPE;
-				data.value.strVal.clear ();
-				data.value.strVal.append ("http://");
-				data.value.strVal.append (std::to_string (entry.second));
-				data.value.strVal.push_back (':');
-				data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
-				data.value.strVal.push_back ('/');
+		data.type = jsonParser::STR_TYPE;
+		data.value.strVal.clear ();
+		data.value.strVal.append ("http://");
+		data.value.strVal.append (std::to_string (host.second));
+		data.value.strVal.push_back (':');
+		data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
+		data.value.strVal.push_back ('/');
+
+		switch (flag)
+		{
+			/*
+			 * We'll need to update each document in each db. This should happen
+			 * very rarely, so we don't need to worry about conflicts
+			 */
+			case ADMIN:
 				data.value.strVal.append (TARGET_DB [ADMIN]);
 
 				json.setValue (TARGET, data);
@@ -131,72 +193,124 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 				data.value.strVal = TARGET_DB [ADMIN];
 
 				json.setValue (SOURCE, data);
+				break;
 
-				curlPost ('/' + REPLICATE, json.writeJSON(""));
-			}
+			/*
+			 * We only change our own node information in each db instance
+			 */
+			case NODES:
+				data.value.strVal.append (TARGET_DB [NODES]);
 
+				json.setValue (TARGET, data);
+
+				data.value.strVal.clear ();
+				data.value.strVal = TARGET_DB [NODES];
+
+				json.setValue (SOURCE, data);
+
+				entry.type = jsonParser::STR_TYPE;
+				entry.value.strVal = std::to_string (getID ());
+				data.type = jsonParser::VEC_TYPE;
+				entry.value.array.push_back(entry);
+
+				json.setValue (DOC_IDS, data);
+				break;
+
+			/*
+			 * Since each node can only update a particular device document,
+			 * we can safely replicate the whole database without conflicts.
+			 */
+			case DEVICES:
+				data.value.strVal.append (TARGET_DB [DEVICES]);
+
+				json.setValue (TARGET, data);
+
+				data.value.strVal.clear ();
+				data.value.strVal = TARGET_DB [DEVICES];
+
+				json.setValue (SOURCE, data);
+				break;
+
+			default:
+				break;
+		}
+
+
+		curlPost ('/' + REPLICATE, json.writeJSON(""));
+	}
+
+}
+
+/*******************************************************************************
+ * Method:			pullUpdates
+ *
+ * Description: Update the current node's databases based on the flag. When we
+ * 							pull updates we want to update all of the documents in every
+ * 							database, but we don't necessarily care where the data comes
+ * 							from. This leads to two results:
+ * 								1) The databases are eventually consistent
+ * 								2) We need to make sure that we don't pull from the same node
+ * 								   each time we want to update.
+ * 							The second result we solve by choosing a random node to pull
+ * 							from each time we want to pull updates.
+ *
+ * Parameters:	flag - an int that influences how we pull data from other nodes
+ *
+ * Returned:		None
+ ******************************************************************************/
+virtual void dataExOnTheCouch::pullUpdates (int flag)
+{
+	JSON json;
+	jsonData data;
+	std::map<int, ip>::iterator host = nodeIPAddr.begin ();
+	std::advance (host, (rand() % nodeIPAddr.size ()));
+
+	data.type = jsonParser::STR_TYPE;
+	data.value.strVal.clear ();
+	data.value.strVal.append ("http://");
+	data.value.strVal.append (std::to_string (host->second));
+	data.value.strVal.push_back (':');
+	data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
+	data.value.strVal.push_back ('/');
+
+	switch (flag)
+	{
+		case ADMIN:
+			data.value.strVal.append (TARGET_DB [ADMIN]);
+
+			json.setValue (SOURCE, data);
+
+			data.value.strVal.clear ();
+			data.value.strVal = TARGET_DB [ADMIN];
+
+			json.setValue (TARGET, data);
 			break;
 
 		case NODES:
-			data.type = jsonParser::STR_TYPE;
-			data.value.strVal.clear ();
-			data.value.strVal.append ("http://");
-			data.value.strVal.append (std::to_string (entry.second));
-			data.value.strVal.push_back (':');
-			data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
-			data.value.strVal.push_back ('/');
 			data.value.strVal.append (TARGET_DB [NODES]);
 
-			json.setValue (TARGET, data);
+			json.setValue (SOURCE, data);
 
 			data.value.strVal.clear ();
 			data.value.strVal = TARGET_DB [NODES];
 
+			json.setValue (TARGET, data);
+			break;
+
+		case DEVICES:
+			data.value.strVal.append (TARGET_DB [DEVICES]);
+
 			json.setValue (SOURCE, data);
 
-			data.type = jsonParser::INT_TYPE;
+			data.value.strVal.clear ();
+			data.value.strVal = TARGET_DB [DEVICES];
 
-			break;
-
-		case DEVICES:
-			break;
-
-		case ALL:
-			break;
-
-		default:
+			json.setValue (TARGET, data);
 			break;
 	}
-}
 
-/*******************************************************************************
- * Method:
- *
- * Description:
- *
- * Parameters:
- *
- * Returned:
- ******************************************************************************/
-virtual void dataExOnTheCouch::pullUpdates (int flag)
-{
-	switch (flag)
-	{
-		case ADMIN:
-			break;
+	curlPost ('/' + REPLICATE, json.writeJSON(""));
 
-		case NODES:
-			break;
-
-		case DEVICES:
-			break;
-
-		case ALL:
-			break;
-
-		default:
-			break;
-	}
 }
 
 /*******************************************************************************
@@ -210,7 +324,7 @@ virtual void dataExOnTheCouch::pullUpdates (int flag)
  ******************************************************************************/
 void dataExOnTheCouch::updateNodeFromCouch ()
 {
-
+	//store revision id
 }
 
 /*******************************************************************************
@@ -224,7 +338,7 @@ void dataExOnTheCouch::updateNodeFromCouch ()
  ******************************************************************************/
 void dataExOnTheCouch::updateDevFromCouch ()
 {
-
+	//store revision id
 }
 
 /*******************************************************************************
@@ -238,7 +352,7 @@ void dataExOnTheCouch::updateDevFromCouch ()
  ******************************************************************************/
 void dataExOnTheCouch::updateCouchFromNode ()
 {
-
+	//use stored revision id
 }
 
 /*******************************************************************************
@@ -252,7 +366,7 @@ void dataExOnTheCouch::updateCouchFromNode ()
  ******************************************************************************/
 void dataExOnTheCouch::updateCouchFromDev ()
 {
-
+	//use stored revision id
 }
 
 /*******************************************************************************

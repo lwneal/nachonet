@@ -39,7 +39,7 @@ class dataExOnTheCouch : public dataEx
     static const int DEFAULT_COUCH_PORT = 5984;
 
     static enum DB {ADMIN, NODES, DEVICES, ALL};
-    static const std::string targetDB[] = {"admin_db", "node_db", "dev_db"};
+    static const std::string TARGET_DB[] = {"admin_db", "node_db", "dev_db"};
 
     static const std::string LOCATION = "location";
     static const std::string ID = "_id";
@@ -51,6 +51,7 @@ class dataExOnTheCouch : public dataEx
     static const std::string REVISION = "_rev";
     static const std::string SOURCE = "source";
     static const std::string TARGET = "target";
+    static const std::string REPLICATE = "_replicate";
 
 	private:
     void updateNodeFromCouch ();

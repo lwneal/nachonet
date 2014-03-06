@@ -110,24 +110,35 @@ virtual void dataExOnTheCouch::ping (Message message)
 virtual void dataExOnTheCouch::pushUpdates (int flag)
 {
 	JSON json;
-	std::string target;
+	jsonData data;
 	switch (flag)
 	{
 		case ADMIN:
 			for (auto & entry : nodeIPAddr)
 			{
-				target.clear ();
-				target.append ("http://");
-				target.append (entry.second);
-				target.push_back (':');
-				target.append (std::string)
+				data.type = jsonParser::STR_TYPE;
+				data.value.strVal.clear ();
+				data.value.strVal.append ("http://");
+				data.value.strVal.append (std::to_string (entry.second));
+				data.value.strVal.push_back (':');
+				data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
+				data.value.strVal.push_back ('/');
+				data.value.strVal.append (TARGET_DB [ADMIN]);
 
-				curl_post ("http://192.168.1.10:5984/_replicate");
+				json.setValue (TARGET, data);
+
+				data.value.strVal.clear ();
+				data.value.strVal = TARGET_DB [ADMIN];
+
+				json.setValue (SOURCE, data);
+
+				curlPost ('/' + REPLICATE, json.writeJSON(""));
 			}
 
 			break;
 
 		case NODES:
+
 			break;
 
 		case DEVICES:

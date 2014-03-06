@@ -3,19 +3,38 @@ File:				dataExOnTheCouch.cpp
 Author: 		Josh Siva
 Date:				3/5/14
 Project:		NachoNet
-Purpose:		Implements the behavior of the couchdb data exchange module
+Purpose:		Implements the behavior of the CouchDB data exchange module. This
+						module will need to communicate with two CouchDB databases per node,
+						node_db and dev_db.
+
+						A document in the node_db looks like this:
+						{
+							"_id" : nodeID,
+							"_rev" : [auto],
+							"location" : {"x" : x, "y" : y},
+							"measurements" : [{"devID" : devID, "dist" : dist}, ...]
+						}
+
+						A document in the dev_db looks like this:
+						{
+							"_id" : devID,
+							"_rev" : [auto],
+							"location" : {"x" : x, "y" : y}
+						}
 *******************************************************************************/
 
 #include "../../include/exch/dataExOnTheCouch.h"
 
 /*******************************************************************************
- * Constructor:
+ * Constructor:	dataExOnTheCouch
  *
- * Description:
+ * Description:	The constructor is responsible for the initial communication
+ * 							between this node and the rest of NachoNet. Initial
+ * 							synchronization and discovery happens at this point.
  *
- * Parameters:
+ * Parameters:	None
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
 dataExOnTheCouch::dataExOnTheCouch ()
 {
@@ -23,9 +42,9 @@ dataExOnTheCouch::dataExOnTheCouch ()
 }
 
 /*******************************************************************************
- * Destroyer!:
+ * Destroyer!:	~dataExOnTheCouch
  *
- * Description:
+ * Description:	Does nothing...
  *
  * Parameters:
  *
@@ -37,9 +56,9 @@ virtual dataExOnTheCouch::~dataExOnTheCouch ()
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			addNode
  *
- * Description:
+ * Description: Adds a node to NachoNet
  *
  * Parameters:
  *

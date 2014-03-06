@@ -138,6 +138,23 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 			break;
 
 		case NODES:
+			data.type = jsonParser::STR_TYPE;
+			data.value.strVal.clear ();
+			data.value.strVal.append ("http://");
+			data.value.strVal.append (std::to_string (entry.second));
+			data.value.strVal.push_back (':');
+			data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
+			data.value.strVal.push_back ('/');
+			data.value.strVal.append (TARGET_DB [NODES]);
+
+			json.setValue (TARGET, data);
+
+			data.value.strVal.clear ();
+			data.value.strVal = TARGET_DB [NODES];
+
+			json.setValue (SOURCE, data);
+
+			data.type = jsonParser::INT_TYPE;
 
 			break;
 

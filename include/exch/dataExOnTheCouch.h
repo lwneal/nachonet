@@ -52,6 +52,7 @@ class dataExOnTheCouch : public dataEx
     static const std::string SOURCE = "source";
     static const std::string TARGET = "target";
     static const std::string REPLICATE = "_replicate";
+    static const std::string DOC_IDS = "doc_ids";
 
 	private:
     void updateNodeFromCouch ();

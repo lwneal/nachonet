@@ -142,6 +142,8 @@ virtual void dataExOnTheCouch::ping (Message message)
 			json.setValue (MESSAGE, data);
 
 			curlPost (url, json.writeJSON(""));
+
+			pushUpdates (ADMIN);
 		}
 		else
 		{
@@ -151,16 +153,55 @@ virtual void dataExOnTheCouch::ping (Message message)
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			checkMessages
  *
- * Description:
+ * Description: Check the message field of the current node's CouchDB document
+ * 							and handle the message accordingly if there is one.
  *
- * Parameters:
+ * Parameters:	None
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
 virtual void dataExOnTheCouch::checkMessages ()
 {
+	std::string url = "";
+	std::ostringstream oss;
+	JSON json;
+	jsonData data;
+	jsonParser parser;
+
+	url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
+	url = url + TARGET_DB[ADMIN] + '/' + std::to_string (nodeID);
+
+	if(CURLE_OK == curl_read(url, oss))
+	{
+		// Web page successfully written to string
+		parser (oss.str());
+		json = parser.getObject();
+
+		data = json.getData(MESSAGE);
+
+		switch (data.value.pObject->getData(MSG_TEXT))
+		{
+			case HELLO:
+				//send ack then clear message
+				break;
+
+			case GOODBYE:
+				//remove node from map
+				break;
+
+			case STOP:
+				setIsAlive (false);
+				//clear message field
+				break;
+
+			case START:
+				setIsAlive (true);
+				//clear message field
+				break;
+		}
+	}
 
 }
 

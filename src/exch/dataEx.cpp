@@ -96,6 +96,35 @@ int dataEx::getID () const
 }
 
 /*******************************************************************************
+ * Method:			setIsAlive
+ *
+ * Description:	Set the sate of NachoNet. Alive means that measurements
+ * 							are being taken and localization is occurring.
+ *
+ * Parameters:	state - the new state of NachoNet on this node
+ *
+ * Returned:		None
+ ******************************************************************************/
+void dataEx::setIsAlive (bool state)
+{
+	this->isAlive = state;
+}
+
+/*******************************************************************************
+ * Method:			alive
+ *
+ * Description:	Returns whether NachoNet is running on this node
+ *
+ * Parameters:	None
+ *
+ * Returned:		true if NachoNet is running, false otherwise
+ ******************************************************************************/
+bool dataEx::alive () const
+{
+	return this->isAlive;
+}
+
+/*******************************************************************************
  * Method:			getDevForUpdate
  *
  * Description:	Gets the id of a device that this node is eligible to update.
@@ -162,6 +191,49 @@ void dataEx::updateDevLocation (std::string id, location loc)
 void dataEx::updateDevMeasurement (distMeasurement devDist)
 {
 	nodes[myID].setMeasurement(devDist);
+}
+
+/*******************************************************************************
+ * Method:			getDeviceLocations
+ *
+ * Description:	Returns the location of all of the devices currently being
+ * 							tracked by NachoNet
+ *
+ * Parameters:	None
+ *
+ * Returned:		vector of device locations
+ ******************************************************************************/
+std::vector<location> dataEx::getDeviceLocations () const
+{
+	std::vector<location> locations;
+
+	for (auto & dev : devices)
+	{
+		locations.push_back (dev.second.getLocation());
+	}
+
+	return locations;
+}
+
+/*******************************************************************************
+ * Method:			getNodeLocations
+ *
+ * Description:	Get the locations of all of the nodes in NachoNet
+ *
+ * Parameters:	None
+ *
+ * Returned:		vector of node locations
+ ******************************************************************************/
+std::vector<location> dataEx::getNodeLocations () const
+{
+	std::vector<location> locations;
+
+	for (auto & thisNode : nodes)
+	{
+		locations.push_back (thisNode.second.getLocation());
+	}
+
+	return locations;
 }
 
 /*******************************************************************************

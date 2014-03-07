@@ -151,6 +151,20 @@ virtual void dataExOnTheCouch::ping (Message message)
 }
 
 /*******************************************************************************
+ * Method:
+ *
+ * Description:
+ *
+ * Parameters:
+ *
+ * Returned:
+ ******************************************************************************/
+virtual void dataExOnTheCouch::checkMessages ()
+{
+
+}
+
+/*******************************************************************************
  * Method:			pushUpdates
  *
  * Description:	Synchronize the current node's version of the databases with the
@@ -314,15 +328,15 @@ virtual void dataExOnTheCouch::pullUpdates (int flag)
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			updateNodesFromCouch
  *
- * Description:
+ * Description:	Update the node objects from documents in CouchDB
  *
- * Parameters:
+ * Parameters:	None
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
-void dataExOnTheCouch::updateNodeFromCouch ()
+void dataExOnTheCouch::updateNodesFromCouch ()
 {
 	//store revision id
 }
@@ -336,7 +350,7 @@ void dataExOnTheCouch::updateNodeFromCouch ()
  *
  * Returned:
  ******************************************************************************/
-void dataExOnTheCouch::updateDevFromCouch ()
+void dataExOnTheCouch::updateDevsFromCouch ()
 {
 	//store revision id
 }
@@ -364,7 +378,7 @@ void dataExOnTheCouch::updateCouchFromNode ()
  *
  * Returned:
  ******************************************************************************/
-void dataExOnTheCouch::updateCouchFromDev ()
+void dataExOnTheCouch::updateCouchFromDevs ()
 {
 	//use stored revision id
 }

@@ -34,7 +34,8 @@ class dataExOnTheCouch : public dataEx
 		void setIP (ip newIP);
 		ip getIP () const;
 
-    virtual void ping (Message message); //push msg and pull to check
+    virtual void ping (Message message); //push msg
+    virtual void checkMessages ();
     virtual void pushUpdates (int flag);
     virtual void pullUpdates (int flag);
 
@@ -43,6 +44,7 @@ class dataExOnTheCouch : public dataEx
 
     static enum DB {ADMIN, NODES, DEVICES, ALL};
     static const std::string TARGET_DB[] = {"admin_db", "node_db", "dev_db"};
+    static const std::string ALL_DOCS_Q = "_all_docs";
 
     //these are the keys for all of the JSON pairs we need to use
     static const std::string LOCATION = "location";
@@ -60,12 +62,13 @@ class dataExOnTheCouch : public dataEx
     static const std::string MESSAGE = "message";
     static const std::string MSG_TEXT = "msg";
     static const std::string MSG_SRC = "src";
+    static const std::string ROWS = "rows"; //used to get at doc ids in a db
 
 	private:
-    void updateNodeFromCouch ();
-    void updateDevFromCouch ();
+    void updateNodesFromCouch ();
+    void updateDevsFromCouch ();
     void updateCouchFromNode ();
-    void updateCouchFromDev ();
+    void updateCouchFromDevs ();
 
     //from http://www.cplusplus.com/forum/unices/45878/
     CURLcode curlRead(const std::string& url, std::ostream& os,

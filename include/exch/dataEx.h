@@ -27,10 +27,15 @@ class dataEx
     int getNumDevs ();
     void setID (int id);
     int getID () const;
+    void setIsAlive (bool state);
+    bool alive () const;
+
     std::string getDevForUpdate ();
     std::vector<refMeasurement> getMeasurements (std::string id);
     void updateDevLocation (std::string id, location loc);
     void updateDevMeasurement (distMeasurement dist);
+    std::vector<location> getDeviceLocations () const;
+    std::vector<location> getNodeLocations () const;
     void clearDevices ();
     void clearNodes ();
 
@@ -39,7 +44,8 @@ class dataEx
     virtual void addDevice (device newDev);
     virtual void dropDevice (std::string id);
 
-    virtual void ping (Message message) = 0; //push msg and pull to check
+    virtual void ping (Message message) = 0; //push msg
+    virtual void checkMessages () = 0; //handles messages
     virtual void pushUpdates (int flag) = 0;//id what flag will be needed but
     virtual void pullUpdates (int flag) = 0;//some data needs to get passed
 
@@ -63,4 +69,5 @@ class dataEx
   private:
     int lastNodeUsed;
     int myID;
+    bool isAlive;
 };

@@ -29,6 +29,8 @@ class dataEx
     int getID () const;
     void setIsAlive (bool state);
     bool alive () const;
+    void setPingStatus (int nodeID, bool status);
+    bool lastPingResult (int nodeID) const;
 
     std::string getDevForUpdate ();
     std::vector<refMeasurement> getMeasurements (std::string id);
@@ -67,6 +69,7 @@ class dataEx
     std::map<int, node> nodes;
     std::map<std::string, device> devices;
   private:
+    std::map<int, bool> aliveOnLastPing;
     int lastNodeUsed;
     int myID;
     bool isAlive;

@@ -237,6 +237,37 @@ std::vector<location> dataEx::getNodeLocations () const
 }
 
 /*******************************************************************************
+ * Method:			setPingStatus
+ *
+ * Description:	This is used to track nodes that have acknowledged a HELLO from
+ * 							this node.
+ *
+ * Parameters:	nodeId - the node whose status we want to update
+ * 							status - the new status
+ *
+ * Returned:		None
+ ******************************************************************************/
+void dataEx::setPingStatus (int nodeID, bool status)
+{
+	aliveOnLastPing[nodeID] = status;
+}
+
+/*******************************************************************************
+ * Method:			lastPingResult
+ *
+ * Description:	Get the result of the last ping - did the given node ACK the
+ * 							last HELLO
+ *
+ * Parameters:	nodeID - the ID of the node to check
+ *
+ * Returned:		bool - true if the specified node ACK'd, false otherwise
+ ******************************************************************************/
+bool dataEx::lastPingResult (int nodeID) const
+{
+	return aliveOnLastPing[nodeID];
+}
+
+/*******************************************************************************
  * Method:			clearDevices
  *
  * Description:	Remove all devices: stop tracking them

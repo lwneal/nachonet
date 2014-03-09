@@ -28,7 +28,7 @@
 	 "_rev" : [auto],
 	 "ip" : ipAddr,
 	 "state" : state,
-	 "message" : {"msg" : message, "src" : ipAddr}
+	 "message" : [{"msg" : message, "src" : nodeID}, ...]
  }
  *******************************************************************************/
 
@@ -57,14 +57,31 @@ dataExOnTheCouch::dataExOnTheCouch ()
 /*******************************************************************************
  * Destroyer!:	~dataExOnTheCouch
  *
- * Description:	Does nothing...
+ * Description:	Clean up this node's presence in NachoNet. Send GOODBYE to other
+ * 							nodes and remove the documents relevant to this node.
  *
- * Parameters:
+ * Parameters:	None
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
 virtual dataExOnTheCouch::~dataExOnTheCouch ()
 {
+	Message message;
+
+	message.msg = GOODBYE;
+
+	for (auto & entry : nodeIPAddr)
+	{
+		message.dest.push_back (entry.first);
+	}
+
+	ping (message);
+
+	//remove node from node_db and admin_db
+
+
+
+
 
 }
 
@@ -112,21 +129,26 @@ virtual void dataExOnTheCouch::ping (Message message)
 	std::string url = "";
 	std::ostringstream oss;
 	JSON json, msgField;
-	jsonData data;
+	jsonData data, entry;
 	jsonParser parser;
 
 	data.type = jsonParser::STR_TYPE;
 	data.value.strVal = message.msg;
 	msgField.setValue (MSG_TEXT, data);
 
-	data.value.strVal = std::to_string (myIP.addr);
+	data.value.strVal = std::to_string (getID ());
 	msgField.setValue (MSG_SRC, data);
 
-	data.type = jsonParser::OBJ_TYPE;
-	data.value.pObject = &msgField;
+	entry.type = jsonParser::OBJ_TYPE;
+	entry.value.pObject = &msgField;
 
 	for (int nodeID : message.dest)
 	{
+		if (0 == msgField.getData (MSG_TEXT).value.strVal.compare (HELLO))
+		{
+			setPingStatus (nodeID, false);
+		}
+
 		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
 		url = url + TARGET_DB[ADMIN] + '/' + std::to_string (nodeID);
 
@@ -138,6 +160,9 @@ virtual void dataExOnTheCouch::ping (Message message)
 			oss.str("");
 
 			//adminDBRevisions[nodeID] = (json.getData(REVISION)).value.strVal;
+
+			data = json.getData(MESSAGE);
+			data.value.array.push_back (entry);
 
 			json.setValue (MESSAGE, data);
 
@@ -169,9 +194,10 @@ virtual void dataExOnTheCouch::checkMessages ()
 	JSON json;
 	jsonData data;
 	jsonParser parser;
+	Message returnMessage;
 
 	url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
-	url = url + TARGET_DB[ADMIN] + '/' + std::to_string (nodeID);
+	url = url + TARGET_DB[ADMIN] + '/' + std::to_string (getID ());
 
 	if(CURLE_OK == curl_read(url, oss))
 	{
@@ -181,26 +207,52 @@ virtual void dataExOnTheCouch::checkMessages ()
 
 		data = json.getData(MESSAGE);
 
-		switch (data.value.pObject->getData(MSG_TEXT))
+		//read all of the messages out of the message queue and handle accordingly
+		for (auto & entry : data.value.array)
 		{
-			case HELLO:
-				//send ack then clear message
-				break;
+			switch ((entry.value.pObject->getData(MSG_TEXT)).value.strVal)
+			{
+				case HELLO:
+					returnMessage.msg = ACK;
+					returnMessage.dest.push_back (
+							(entry.value.pObject->getData(MSG_SRC)).value.intVal);
 
-			case GOODBYE:
-				//remove node from map
-				break;
+					ping (returnMessage);
+					break;
 
-			case STOP:
-				setIsAlive (false);
-				//clear message field
-				break;
+				case GOODBYE:
+					nodeIPAddr.erase (nodeIPAddr.find (
+							(entry.value.pObject->getData(MSG_SRC)).value.intVal));
 
-			case START:
-				setIsAlive (true);
-				//clear message field
-				break;
+					nodeDBRevisions.erase (nodeDBRevisions.find (
+							(entry.value.pObject->getData(MSG_SRC)).value.intVal));
+
+					dropNode ((entry.value.pObject->getData(MSG_SRC)).value.intVal);
+					break;
+
+				case STOP:
+					setIsAlive (false);
+					break;
+
+				case START:
+					setIsAlive (true);
+					break;
+
+				case ACK:
+					setPingStatus (
+							(entry.value.pObject->getData(MSG_SRC)).value.intVal, true);
+					break;
+			}
 		}
+
+		//clear the message queue
+		data.value.array.clear ();
+		json.setValue (MESSAGE, data);
+
+		curlPost (url, json.writeJSON(""));
+
+		//update messages
+		pushUpdates (ADMIN);
 	}
 
 }
@@ -254,6 +306,7 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 			 * We only change our own node information in each db instance
 			 */
 			case NODES:
+				//nodeToCouch
 				data.value.strVal.append (TARGET_DB [NODES]);
 
 				json.setValue (TARGET, data);
@@ -276,6 +329,8 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 			 * we can safely replicate the whole database without conflicts.
 			 */
 			case DEVICES:
+				//deviceToCouch for all devices
+
 				data.value.strVal.append (TARGET_DB [DEVICES]);
 
 				json.setValue (TARGET, data);
@@ -365,6 +420,16 @@ virtual void dataExOnTheCouch::pullUpdates (int flag)
 	}
 
 	curlPost ('/' + REPLICATE, json.writeJSON(""));
+
+	switch (flag)
+	{
+		case NODES:
+			//couchToNodes
+			break;
+		case DEVICES:
+			//couchToDevices
+			break;
+	}
 
 }
 

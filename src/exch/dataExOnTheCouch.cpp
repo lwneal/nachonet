@@ -152,7 +152,7 @@ virtual void dataExOnTheCouch::ping (Message message)
 		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
 		url = url + TARGET_DB[ADMIN] + '/' + std::to_string (nodeID);
 
-		if(CURLE_OK == curl_read(url, oss))
+		if(CURLE_OK == curlRead(url, oss))
 		{
 			// Web page successfully written to string
 			parser (oss.str());
@@ -199,7 +199,7 @@ virtual void dataExOnTheCouch::checkMessages ()
 	url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
 	url = url + TARGET_DB[ADMIN] + '/' + std::to_string (getID ());
 
-	if(CURLE_OK == curl_read(url, oss))
+	if(CURLE_OK == curlRead(url, oss))
 	{
 		// Web page successfully written to string
 		parser (oss.str());
@@ -306,7 +306,8 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 			 * We only change our own node information in each db instance
 			 */
 			case NODES:
-				//nodeToCouch
+				updateCouchFromNode ();
+
 				data.value.strVal.append (TARGET_DB [NODES]);
 
 				json.setValue (TARGET, data);
@@ -329,7 +330,7 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 			 * we can safely replicate the whole database without conflicts.
 			 */
 			case DEVICES:
-				//deviceToCouch for all devices
+				updateCouchFromDevs ();
 
 				data.value.strVal.append (TARGET_DB [DEVICES]);
 
@@ -424,10 +425,10 @@ virtual void dataExOnTheCouch::pullUpdates (int flag)
 	switch (flag)
 	{
 		case NODES:
-			//couchToNodes
+			updateNodesFromCouch ();
 			break;
 		case DEVICES:
-			//couchToDevices
+			updateDevsFromCouch ();
 			break;
 	}
 
@@ -444,61 +445,228 @@ virtual void dataExOnTheCouch::pullUpdates (int flag)
  ******************************************************************************/
 void dataExOnTheCouch::updateNodesFromCouch ()
 {
-	//store revision id
+	std::string url = "";
+	std::ostringstream oss;
+	JSON json;
+	jsonData data;
+	jsonParser parser;
+	location loc;
+	distMeasurement dist;
+
+	for (auto & thisNode : nodes)
+	{
+		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
+		url = url + TARGET_DB[NODES] + '/' + std::to_string (thisNode.first);
+
+		if (CURLE_OK == curlRead(url, oss))
+		{
+			// Web page successfully written to string
+			parser (oss.str ());
+			json = parser.getObject ();
+
+			//store revision id
+			nodeDBRevisions[thisNode.first] = (json.getData (REVISION)).value.strVal;
+
+			data = json.getData (LOCATION);
+			loc.theID.intID = thisNode.first;
+			loc.x = data.value.pObject->getData (X_COOR).value.floatVal;
+			loc.y = data.value.pObject->getData (Y_COOR).value.floatVal;
+
+			thisNode.second.setLocation (loc);
+
+			data = json.getData (MEASUREMENTS);
+
+			for (auto & entry : data.value.array)
+			{
+				dist.devID = entry.value.pObject->getData (ID).value.strVal;
+				dist.dist = entry.value.pObject->getData (DISTANCE).value.floatVal;
+
+				thisNode.second.setMeasurement (dist);
+			}
+
+		}
+	}
+
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			updateDevsFromCouch
  *
- * Description:
+ * Description:	Update the device objects from documents in CouchDB
  *
- * Parameters:
+ * Parameters:	None
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
 void dataExOnTheCouch::updateDevsFromCouch ()
 {
-	//store revision id
+	std::string url = "";
+	std::ostringstream oss;
+	JSON json;
+	jsonData data;
+	jsonParser parser;
+	location loc;
+	distMeasurement dist;
+
+	for (auto & thisDev : devices)
+	{
+		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
+		url = url + TARGET_DB[DEVICES] + '/' + std::to_string (thisDev.first);
+
+		if (CURLE_OK == curlRead(url, oss))
+		{
+			// Web page successfully written to string
+			parser (oss.str ());
+			json = parser.getObject ();
+
+			//store revision id
+			devDBRevisions[thisDev.first] = (json.getData (REVISION)).value.strVal;
+
+			data = json.getData (LOCATION);
+			loc.theID.strID = thisDev.first;
+			loc.x = data.value.pObject->getData (X_COOR).value.floatVal;
+			loc.y = data.value.pObject->getData (Y_COOR).value.floatVal;
+
+			thisDev.second.setLocation (loc);
+
+		}
+	}
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			updateCouchFromNodes
  *
- * Description:
+ * Description:	Update the document in node_db corresponding to the current
+ * 							node. We will use the revision id we saved earlier.
  *
- * Parameters:
+ * Parameters:	None
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
 void dataExOnTheCouch::updateCouchFromNode ()
 {
-	//use stored revision id
+	std::string url = "";
+	JSON json, jsonLoc, jsonDist;
+	jsonData data, entry;
+	location loc;
+	std::vector<refMeasurement> nodeMeasurements;
+
+	url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
+	url = url + TARGET_DB[DEVICES] + '/' + std::to_string (getID ());
+
+	//set the ID
+	data.type = jsonParser::STR_TYPE;
+	data.value.strVal = std::to_string (getID ());
+	json.setValue (ID, data);
+
+	//use the revision ID from the last read
+	data.value.strVal = nodeDBRevisions[getID ()];
+	json.setValue (REVISION, data);
+
+	//set the location
+	loc = nodes[getID ()].getLocation ();
+	entry.type = jsonParser::FLT_TYPE;
+	entry.value.floatVal = loc.x;
+	jsonLoc.setValue (X_COOR, entry);
+	entry.value.floatVal = loc.y;
+	jsonLoc.setValue (Y_COOR, entry);
+
+	data.type = jsonParser::OBJ_TYPE;
+	data.value.pObject = &jsonLoc;
+	json.setValue (LOCATION, data);
+
+	//now start building up an array of device measurements because we don't know
+	//what is different between this and CouchDB we will just update everything
+	nodeMeasurements = nodes[getID ()].getAllMeasurements ();
+	data.type = jsonParser::VEC_TYPE;
+
+	for (auto & distEntry : nodeMeasurements)
+	{
+		entry.type = jsonParser::STR_TYPE;
+		entry.value.strVal = distEntry.devDist.devID;
+
+		jsonDist.setValue (ID, entry);
+
+		entry.type = jsonParser::FLT_TYPE;
+		entry.value.floatVal = distEntry.devDist.dist;
+
+		jsonDist.setValue (DISTANCE, entry);
+
+		entry.type = jsonParser::OBJ_TYPE;
+		entry.value.pObject = &jsonDist;
+
+		data.value.array.push_back (entry);
+	}
+
+	curlPost (url, json.writeJSON(""));
+
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			updateCouchFromDevs
  *
- * Description:
+ * Description:	Updates the documents in dev_db for all of the devices that
+ * 							this node updated since the last push.
  *
- * Parameters:
+ * Parameters:	None
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
 void dataExOnTheCouch::updateCouchFromDevs ()
 {
 	//use stored revision id
+	std::string url = "";
+	JSON json, jsonLoc;
+	jsonData data, entry;
+	location loc;
+	std::vector<refMeasurement> nodeMeasurements;
+
+	for (auto & thisDev : devsUpdatedSinceLastPush)
+	{
+		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
+		url = url + TARGET_DB[DEVICES] + '/' + thisDev.getID();
+
+		data.type = jsonParser::STR_TYPE;
+		data.value.strVal = thisDev.getID ();
+		json.setValue (ID, data);
+
+		//use the revision ID from the last read
+		data.value.strVal = devDBRevisions[thisDev.getID ()];
+		json.setValue (REVISION, data);
+
+		//set the location
+		loc = devices[thisDev.getID ()].getLocation ();
+		entry.type = jsonParser::FLT_TYPE;
+		entry.value.floatVal = loc.x;
+		jsonLoc.setValue (X_COOR, entry);
+		entry.value.floatVal = loc.y;
+		jsonLoc.setValue (Y_COOR, entry);
+
+		data.type = jsonParser::OBJ_TYPE;
+		data.value.pObject = &jsonLoc;
+		json.setValue (LOCATION, data);
+
+		curlPost (url, json.writeJSON(""));
+	}
+
+	//reset
+	devsUpdatedSinceLastPush.clear ();
+
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			dataWrite
  *
- * Description:
+ * Description: A write call-back function used by curl_easy_setup on curlRead
  *
- * Parameters:
+ * Parameters:	buf - the buffer of things to write
+ * 							size - the size of the items in the buffer
+ * 							nmemb - the number of items in the buffer
+ * 							userp - the stream to which we want to write
  *
- * Returned:
+ * Returned:		size_t - the size of the stream written
  ******************************************************************************/
-static size_t data_write (void* buf, size_t size, size_t nmemb, void* userp)
+static size_t dataWrite (void* buf, size_t size, size_t nmemb, void* userp)
 {
 	if (userp)
 	{
@@ -514,13 +682,15 @@ static size_t data_write (void* buf, size_t size, size_t nmemb, void* userp)
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			curlRead
  *
- * Description:
+ * Description:	Reads the contents located at the url into the output stream.
  *
- * Parameters:
+ * Parameters:	url - the page contents we are grabbing
+ * 							os - the output stream we are sending the data to
+ * 							timeout - the time we are willing to wait for our things
  *
- * Returned:
+ * Returned:		CURLcode - the result of running the read command
  ******************************************************************************/
 CURLcode dataExOnTheCouch::curlRead (const std::string& url, std::ostream& os,
 																		 long timeout = 30)
@@ -531,7 +701,7 @@ CURLcode dataExOnTheCouch::curlRead (const std::string& url, std::ostream& os,
 	if (curl)
 	{
 		if (CURLE_OK == (code =
-				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &data_write))
+				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &dataWrite))
 				&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L))
 				&& CURLE_OK == (code =
 						curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L))
@@ -548,13 +718,14 @@ CURLcode dataExOnTheCouch::curlRead (const std::string& url, std::ostream& os,
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			curlPost
  *
- * Description:
+ * Description:	Post the given json text to the given url.
  *
- * Parameters:
+ * Parameters:	url - the url to which we are sending our data
+ * 							json - the json we want posted
  *
- * Returned:
+ * Returned:		CURLcode - the result of running the post command
  ******************************************************************************/
 CURLcode dataExOnTheCouch::curlPost(const std::string& url,
 																		const std::string& json)

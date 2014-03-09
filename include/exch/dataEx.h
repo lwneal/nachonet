@@ -33,6 +33,7 @@ class dataEx
     bool lastPingResult (int nodeID) const;
 
     std::string getDevForUpdate ();
+
     std::vector<refMeasurement> getMeasurements (std::string id);
     void updateDevLocation (std::string id, location loc);
     void updateDevMeasurement (distMeasurement dist);
@@ -68,9 +69,10 @@ class dataEx
   protected:
     std::map<int, node> nodes;
     std::map<std::string, device> devices;
+    std::vector<device> devsUpdatedSinceLastPush;
   private:
     std::map<int, bool> aliveOnLastPing;
-    int lastNodeUsed;
+    int lastNodeUsed; //for reference measurements
     int myID;
     bool isAlive;
 };

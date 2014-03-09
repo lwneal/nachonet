@@ -128,6 +128,7 @@ bool dataEx::alive () const
  * Method:			getDevForUpdate
  *
  * Description:	Gets the id of a device that this node is eligible to update.
+ * 							Uses hashpjw (p.436, Aho, Sethi, Ullman) to grab device ids.
  *
  * Parameters:	None
  *
@@ -135,8 +136,39 @@ bool dataEx::alive () const
  ******************************************************************************/
 std::string dataEx::getDevForUpdate ()
 {
-	//hash devID vs num nodes in network
-	//use hashed devID as a key for a std::map
+	std::vector<std::string> myDevsToUpdate;
+	std::vector<std::string>::iterator dev;
+
+	char * p;
+	unsigned h = 0, g;
+
+	for (auto dev : devices)
+	{
+		for (p = dev.first.c_str(); *p != '\0'; p++)
+		{
+			h = (h << 4) * (*p);
+
+			if (g = h&0xf0000000)
+			{
+				h = h ^ (g >> 24);
+				h = h ^ g;
+			}
+		}
+
+		if (getID () == h % getNumNodes ())
+		{
+			myDevsToUpdate.push_back (dev.first);
+		}
+	}
+
+	//now choose a random element to update since we have no idea how much this
+	//vector has changed since the last time we called this function
+	dev = myDevsToUpdate.begin ();
+	std::advance (dev, (rand() % myDevsToUpdate.size ()));
+
+	//we need to track the updated devs so we throw them into a vector
+	devsUpdatedSinceLastPush.push_back (devices[*dev]);
+	return *dev;
 }
 
 /*******************************************************************************

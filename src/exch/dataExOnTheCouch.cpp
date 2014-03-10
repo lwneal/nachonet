@@ -33,6 +33,7 @@
  *******************************************************************************/
 
 #include "../../include/exch/dataExOnTheCouch.h"
+#include "../../include/util/config.h"
 
 /*******************************************************************************
  * Constructor:	dataExOnTheCouch
@@ -45,13 +46,47 @@
  * 							creates a new entry for itself in admin_db and node_db and
  * 							synchronizes with the rest of NachoNet.
  *
+ * 							###############################################################
+ * 							#       CouchDB must be running BEFORE the program begins     #
+ * 							###############################################################
+ *
  * Parameters:	None
  *
  * Returned:		None
  ******************************************************************************/
 dataExOnTheCouch::dataExOnTheCouch ()
 {
+	Config setup ("net.conf");
+	std::map<std::string, std::string> ipMap;
+	ip ipEntry;
 
+	if (!setup.isCorrupt ())
+	{
+		ipMap = setup.read ("My_IP");
+		setID (atoi (ipMap.begin ()->first.c_str()));
+
+		ipMap = setup.read("IP_Map");
+
+		for (auto & entry : ipMap)
+		{
+			ipEntry.addr = (unsigned char)(entry.second.c_str());
+			nodeIPAddr[atoi (entry.first.c_str())] = ipEntry;
+
+		}
+
+		//pick a random node and pull
+
+		//add documents to admin_db and node_db
+
+		//add node to node map
+
+		//push updates
+
+	}
+	else
+	{
+		//yell and shout and complain cuz shit went down
+	}
 }
 
 /*******************************************************************************

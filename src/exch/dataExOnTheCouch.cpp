@@ -56,23 +56,7 @@
  ******************************************************************************/
 dataExOnTheCouch::dataExOnTheCouch ()
 {
-	Config setup ("net.conf");
-	std::map<std::string, std::string> ipMap;
-	ip ipEntry;
-
-	if (!setup.isCorrupt ())
-	{
-		ipMap = setup.read ("My_IP");
-		setID (atoi (ipMap.begin ()->first.c_str()));
-
-		ipMap = setup.read("IP_Map");
-
-		for (auto & entry : ipMap)
-		{
-			ipEntry.addr = (unsigned char)(entry.second.c_str());
-			nodeIPAddr[atoi (entry.first.c_str())] = ipEntry;
-
-		}
+		//UDP broadcast
 
 		//pick a random node and pull
 
@@ -82,11 +66,6 @@ dataExOnTheCouch::dataExOnTheCouch ()
 
 		//push updates
 
-	}
-	else
-	{
-		//yell and shout and complain cuz shit went down
-	}
 }
 
 /*******************************************************************************
@@ -113,6 +92,7 @@ virtual dataExOnTheCouch::~dataExOnTheCouch ()
 	ping (message);
 
 	//remove node from node_db and admin_db
+	//add field {"_deleted" : true} to docs
 
 
 

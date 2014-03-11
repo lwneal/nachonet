@@ -17,13 +17,6 @@ Purpose:		Defines the interface to the data exchange module on the couch. This
 #include <stdlib.h>
 #include <fstream>
 
-#define IP_ADDR_SIZE 4
-
-typedef struct ip
-{
-  unsigned char addr[IP_ADDR_SIZE];
-} ip;
-
 
 class dataExOnTheCouch : public dataEx
 {
@@ -31,8 +24,8 @@ class dataExOnTheCouch : public dataEx
 		dataExOnTheCouch ();
 		virtual ~dataExOnTheCouch ();
 
-		void setIP (ip newIP);
-		ip getIP () const;
+		void setIP (std::string newIP);
+		std::string getIP () const;
 
     virtual void ping (Message message); //push msg
     virtual void checkMessages ();
@@ -75,14 +68,13 @@ class dataExOnTheCouch : public dataEx
     										long timeout = 30);
     CURLcode curlPost(const std::string& url, const std::string& json);
 
-    std::map<int, ip> nodeIPAddr;
+    std::map<int, std::string> nodeIPAddr;
 
     //We need to track the current revision number of each document
     std::map<int, std::string> nodeDBRevisions;
-    //std::map<int, std::string> adminDBRevisions;
     std::map<std::string, std::string> devDBRevisions;
 
-    ip myIP;
+    std::string myIP;
 
 
 

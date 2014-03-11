@@ -109,7 +109,7 @@ virtual dataExOnTheCouch::~dataExOnTheCouch ()
  *
  * Returned:		None
  ******************************************************************************/
-void dataExOnTheCouch::setIP (ip newIP)
+void dataExOnTheCouch::setIP (std::string newIP)
 {
 	this->myIP = newIP;
 }
@@ -123,7 +123,7 @@ void dataExOnTheCouch::setIP (ip newIP)
  *
  * Returned:		ip - the IP address
  ******************************************************************************/
-ip dataExOnTheCouch::getIP () const
+std::string dataExOnTheCouch::getIP () const
 {
 	return this->myIP;
 }
@@ -295,7 +295,7 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 		data.type = jsonParser::STR_TYPE;
 		data.value.strVal.clear ();
 		data.value.strVal.append ("http://");
-		data.value.strVal.append (std::to_string (host.second));
+		data.value.strVal.append (host.second);
 		data.value.strVal.push_back (':');
 		data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
 		data.value.strVal.push_back ('/');
@@ -388,13 +388,13 @@ virtual void dataExOnTheCouch::pullUpdates (int flag)
 {
 	JSON json;
 	jsonData data;
-	std::map<int, ip>::iterator host = nodeIPAddr.begin ();
+	std::map<int, std::string>::iterator host = nodeIPAddr.begin ();
 	std::advance (host, (rand() % nodeIPAddr.size ()));
 
 	data.type = jsonParser::STR_TYPE;
 	data.value.strVal.clear ();
 	data.value.strVal.append ("http://");
-	data.value.strVal.append (std::to_string (host->second));
+	data.value.strVal.append (host->second);
 	data.value.strVal.push_back (':');
 	data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
 	data.value.strVal.push_back ('/');

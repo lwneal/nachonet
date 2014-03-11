@@ -54,17 +54,158 @@
  *
  * Returned:		None
  ******************************************************************************/
-dataExOnTheCouch::dataExOnTheCouch ()
+dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 {
-		//UDP broadcast
+	struct ifaddrs * pIfaceAddr = NULL;
+	struct ipaddrs * pIface = NULL;
+	void * pTempAddr = NULL;
+	char addrBuffer[INET_ADDRSTRLEN];
+	char message[multicast::BUF_LENGTH];
+	std::string myAddress, url;
+	std::ostringstream oss;
+	JSON json;
+	jsonData data;
+	jsonParser parser;
+	std::clock_t startTimeout;
+	double duration;
+	int nextID = NO_ID;
+	location loc;
+	loc.x = 0;
+	loc.y = 0;
+	loc.theID.intID = NO_ID;
+	node newNode (NO_ID, loc);
 
-		//pick a random node and pull
+	//Let's go get our IP address
+	getifaddrs (&pIfaceAddr);
 
-		//add documents to admin_db and node_db
+	for (pIface = pIfaceAddr; pIface != NULL; pIface = pIface->ifa_next)
+	{
+		//check for IPv4 address
+		if (pIface->ifa_addr->sa_family == AF_INET)
+		{
+			pTempAddr = &((struct sockaddr_in *)pIface->ifa_addr)->sin_addr;
+			inet_ntop (AF_INET, pTempAddr, addrBuffer, INET_ADDRSTRLEN);
 
-		//add node to node map
+			myAddress = addrBuffer;
+			setIP (myAddress);
+		}
 
-		//push updates
+	}
+
+	if (NULL != pIfaceAddr)
+	{
+		freeifaddrs (pIfaceAddr);
+	}
+
+	//prepare our broadcast message
+	for (int i = 0; i < multicast::BUF_LENGTH; i++)
+	{
+		message[i] = '\0';
+	}
+
+	for (int i = 0; i < myAddress.length(); i++)
+	{
+		message[i] = myAddress[i];
+	}
+
+	//broadcast our IP address to anybody listening
+	nachoCast.transmit (message);
+
+	startTimeout = std::clock ();
+
+	//now we need to check if anyone got back to us or for the timeout to occur
+	url = "http://" + LOCALHOST + ':';
+	url.append (std::to_string (DEFAULT_COUCH_PORT));
+	url += '/' + TARGET_DB[ADMIN] + '/' + ALL_DOCS_Q;
+
+	do
+	{
+		if (CURLE_OK == curlRead (url, oss))
+		{
+			// Web page successfully written to string
+			parser (oss.str());
+			json = parser.getObject ();
+			oss.str ("");
+		}
+
+		duration = ( std::clock() - startTimeout ) / (double) CLOCKS_PER_SEC;
+
+	} while (0 >= json.getData (TOTAL_ROWS).value.intVal
+					 || TIMEOUT > duration);
+
+	//we heard back so we need to go through admin_db and set up our local data
+	//to prepare for the first full sync
+	if (0 < json.getData (TOTAL_ROWS).value.intVal)
+	{
+		for (auto & entry : json.getData (ROWS).value.array)
+		{
+			nodeIPAddr[entry.value.pObject->getData(ID).value.intVal]
+			           = entry.value.pObject->getData(IP).value.strVal;
+
+			nodes[entry.value.pObject->getData(ID).value.intVal] = newNode;
+
+			//figure out our ID
+			if (entry.value.pObject->getData(ID).value.intVal > nextID)
+			{
+				nextID = entry.value.pObject->getData(ID).value.intVal + 1;
+			}
+		}
+
+		pullUpdates (ADMIN);
+		pullUpdates (NODES);
+		pullUpdates (DEVICES);
+
+		setID (nextID);
+	}
+	else if (TIMEOUT < duration) //we didn't hear back so we are the first node
+	{
+		setID (0);
+	}
+
+	//now add our docs to the database
+	json.clear();
+	data.type = jsonParser::INT_TYPE;
+	data.value.intVal = std::to_string(getID ());
+	json.setValue(ID, data);
+
+	data.type = jsonParser::STR_TYPE;
+	data.value.strVal = getIP ();
+	json.setValue (IP, data);
+
+	data.value.strVal = DEAD;
+	json.setValue (STATE, data);
+
+	data.type = jsonParser::VEC_TYPE;
+	data.value.array.clear ();
+	json.setValue (MESSAGE, data);
+
+	url = "http://" + LOCALHOST + ':';
+	url.append (std::to_string (DEFAULT_COUCH_PORT));
+	url += '/' + TARGET_DB[ADMIN] + '/' + std::to_string(getID ());
+
+	curlPost (url, json.writeJSON(""));
+
+	json.clear ();
+	//we can put a mostly empty doc in for the node because this will get updated
+	//later
+	data.type = jsonParser::INT_TYPE;
+	data.value.intVal = std::to_string(getID ());
+	json.setValue(ID, data);
+
+	url = "http://" + LOCALHOST + ':';
+	url.append (std::to_string (DEFAULT_COUCH_PORT));
+	url += '/' + TARGET_DB[NODES] + '/' + std::to_string(getID ());
+
+	curlPost (url, json.writeJSON(""));
+
+	//Share our updates with everyone else
+	pushUpdates (ADMIN);
+	pushUpdates (NODES);
+
+	//now set up our greeter for future new nodes
+	stillGreetingNodes = true;
+	pGreeter = new std::thread (&dataExOnTheCouch::greetNewNode,
+															dataExOnTheCouch ());
 
 }
 
@@ -72,7 +213,8 @@ dataExOnTheCouch::dataExOnTheCouch ()
  * Destroyer!:	~dataExOnTheCouch
  *
  * Description:	Clean up this node's presence in NachoNet. Send GOODBYE to other
- * 							nodes and remove the documents relevant to this node.
+ * 							nodes and remove the documents relevant to this node. Also stop
+ * 							the greeter.
  *
  * Parameters:	None
  *
@@ -81,6 +223,13 @@ dataExOnTheCouch::dataExOnTheCouch ()
 virtual dataExOnTheCouch::~dataExOnTheCouch ()
 {
 	Message message;
+	std::string url;
+	std::ostringstream oss;
+	JSON json;
+	jsonData data;
+	jsonParser parser;
+
+	stillGreetingNodes = false;
 
 	message.msg = GOODBYE;
 
@@ -93,10 +242,49 @@ virtual dataExOnTheCouch::~dataExOnTheCouch ()
 
 	//remove node from node_db and admin_db
 	//add field {"_deleted" : true} to docs
+	url = "http://" + LOCALHOST + ':';
+	url.append (std::to_string (DEFAULT_COUCH_PORT));
+	url += '/' + TARGET_DB[ADMIN] + '/' + std::to_string(getID ());
 
+	if (CURLE_OK == curlRead (url, oss))
+	{
+		// Web page successfully written to string
+		parser (oss.str());
+		json = parser.getObject ();
+		oss.str ("");
 
+		data.type = jsonParser::BOOL_TYPE;
+		data.value.boolVal = true;
+		json.setValue (DELETED, data);
 
+		curlPost (url, json.writeJSON(""));
+	}
 
+	url = "http://" + LOCALHOST + ':';
+	url.append (std::to_string (DEFAULT_COUCH_PORT));
+	url += '/' + TARGET_DB[NODES] + '/' + std::to_string(getID ());
+
+	if (CURLE_OK == curlRead (url, oss))
+	{
+		// Web page successfully written to string
+		parser (oss.str());
+		json = parser.getObject ();
+		oss.str ("");
+
+		data.type = jsonParser::BOOL_TYPE;
+		data.value.boolVal = true;
+		json.setValue (DELETED, data);
+
+		curlPost (url, json.writeJSON(""));
+	}
+
+	pushUpdates (ADMIN);
+	pushUpdates (NODES);
+
+	stillGreetingNodes = false;
+
+	pGreeter->join ();
+	delete pGreeter;
 
 }
 
@@ -126,6 +314,76 @@ void dataExOnTheCouch::setIP (std::string newIP)
 std::string dataExOnTheCouch::getIP () const
 {
 	return this->myIP;
+}
+
+/*******************************************************************************
+ * Method:			greetNewNode
+ *
+ * Description:	Reads from the socket and looks for nodes that are just entering
+ * 							the network and shouting their ip addresses at everyone on the
+ * 							multicast. If we get an ip address we add dummy place holders
+ * 							for the new node into nodeIPAddr and nodes and we send all of
+ * 							the admin docs to the new node. This is meant to be run as a
+ * 							thread in the background
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
+void dataExOnTheCouch::greetNewNode ()
+{
+	std::string message;
+	JSON json;
+	jsonData data;
+	int nextID = NO_ID;
+	location loc;
+	loc.x = 0;
+	loc.y = 0;
+	loc.theID.intID = NO_ID;
+	node newNode (NO_ID, loc);
+
+	while (stillGreetingNodes)
+	{
+		message = nachoCast.receive ();
+
+		//the message should at least be a null terminator
+		if ('/0' != message[0])
+		{
+			//let's go find the next available ID for the new guy
+			for (auto & entry : nodeIPAddr)
+			{
+				if (entry.first > nextID)
+				{
+					nextID = entry.first + 1;
+				}
+			}
+
+			//add this new node
+			nodeIPAddr[nextID] = message;
+			newNode.setID(nextID);
+			nodes[nextID] = newNode;
+
+			//now send admin docs to the new guy
+			data.type = jsonParser::STR_TYPE;
+			data.value.strVal.clear ();
+			data.value.strVal.append ("http://");
+			data.value.strVal.append (message);
+			data.value.strVal.push_back (':');
+			data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
+			data.value.strVal.push_back ('/');
+
+			data.value.strVal.append (TARGET_DB [ADMIN]);
+
+			json.setValue (TARGET, data);
+
+			data.value.strVal.clear ();
+			data.value.strVal = TARGET_DB [ADMIN];
+
+			json.setValue (SOURCE, data);
+
+			curlPost ('/' + REPLICATE, json.writeJSON("")); //admin docs sent
+		}
+	}
 }
 
 /*******************************************************************************
@@ -335,7 +593,7 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 				entry.type = jsonParser::STR_TYPE;
 				entry.value.strVal = std::to_string (getID ());
 				data.type = jsonParser::VEC_TYPE;
-				entry.value.array.push_back(entry);
+				data.value.array.push_back(entry);
 
 				json.setValue (DOC_IDS, data);
 				break;
@@ -388,8 +646,13 @@ virtual void dataExOnTheCouch::pullUpdates (int flag)
 {
 	JSON json;
 	jsonData data;
-	std::map<int, std::string>::iterator host = nodeIPAddr.begin ();
-	std::advance (host, (rand() % nodeIPAddr.size ()));
+	std::map<int, std::string>::iterator host;
+	do
+	{
+		host = nodeIPAddr.begin ();
+		std::advance (host, (rand() % nodeIPAddr.size ()));
+	} while (getID () == host->first);
+
 
 	data.type = jsonParser::STR_TYPE;
 	data.value.strVal.clear ();

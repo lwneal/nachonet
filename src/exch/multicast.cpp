@@ -12,8 +12,22 @@ Purpose:		Implements the behavior of the multicast object whose job it is to
 
 #include "../../include/exch/multicast.h"
 
-multicast::multicast (int port, std::string localIface,
-											std::string multicastGroup)
+/*******************************************************************************
+ * Constructor:	multicast
+ *
+ * Description:	Prepares for a multicast  by opening up a socket and setting up
+ * 							the appropriate socket options for reading from and writing to
+ * 							the socket
+ *
+ * Parameters:	port - the port to which we want to bind the socket
+ * 							localIfaceAddr - the local interface we want associated with the
+ * 															 multicast
+ * 							multicastGroupAddr - the address of the multicast group
+ *
+ * Returned:		None
+ ******************************************************************************/
+multicast::multicast (int port, std::string localIfaceAddr,
+											std::string multicastGroupAddr)
 {
 	char loopBack = 0;
 
@@ -37,16 +51,18 @@ multicast::multicast (int port, std::string localIface,
   {
   	//error
   	problem = true;
+  	close (sd);
   }
 
-  group.imr_multiaddr.s_addr = inet_addr(multicastGroup.c_str());
-  group.imr_interface.s_addr = inet_addr(localIface.c_str());
+  group.imr_multiaddr.s_addr = inet_addr(multicastGroupAddr.c_str());
+  group.imr_interface.s_addr = inet_addr(localIfaceAddr.c_str());
 
   if (setsockopt (sd, IPPROTO_IP, IP_ADD_MEMBERSHIP,(char *)&group,
   								sizeof(group)) < 0)
   {
   	//error
   	problem = true;
+  	close (sd);
   }
 
 
@@ -54,7 +70,7 @@ multicast::multicast (int port, std::string localIface,
 	//Configure the transmitter side
 	memset((char *) &groupSock, 0, sizeof(groupSock));
   groupSock.sin_family = AF_INET;
-  groupSock.sin_addr.s_addr = inet_addr(multicastGroup.c_str());
+  groupSock.sin_addr.s_addr = inet_addr(multicastGroupAddr.c_str());
   groupSock.sin_port = htons(port);
 
   if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_LOOP,
@@ -62,23 +78,44 @@ multicast::multicast (int port, std::string localIface,
   {
     //error
   	problem = true;
+  	close (sd);
   }
 
-  localInterface.s_addr = inet_addr(localIface.c_str ());
+  localInterface.s_addr = inet_addr(localIfaceAddr.c_str ());
   if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_IF,
                  (char *)&localInterface,
                  sizeof(localInterface)) < 0)
   {
   	//error
   	problem = true;
+  	close (sd);
   }
 }
 
+/*******************************************************************************
+ * Destroyer!:	~multicast
+ *
+ * Description:	Close the socket
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
 multicast::~multicast ()
 {
-
+	close (sd);
 }
 
+/*******************************************************************************
+ * Method:			transmit
+ *
+ * Description:	Send data of BUF_LENGTH that is padded to the length to
+ * 							everyone listening on the multicast.
+ *
+ * Parameters:	data - the data to send
+ *
+ * Returned:		None
+ ******************************************************************************/
 void multicast::transmit (char data[BUF_LENGTH])
 {
 	if (!problem)
@@ -88,30 +125,45 @@ void multicast::transmit (char data[BUF_LENGTH])
 		{
 			//error
 			problem = true;
+			close (sd);
 		}
 	}
-
-
 }
 
+/*******************************************************************************
+ * Method:			receive
+ *
+ * Description:	Read BUF_LENGTH from the socket.
+ *
+ * Parameters:	None
+ *
+ * Returned:		string - the contents of socket
+ ******************************************************************************/
 std::string multicast::receive ()
 {
+	char dataBuf[BUF_LENGTH];
 	std::string message;
+
+	//fill the buffer with null terminators so that we know what an empty message
+	//looks like
+	for (int i; i < BUF_LENGTH; i++)
+	{
+		dataBuf[i] = '\0';
+	}
 
 	if (!problem)
 	{
-		if (read(sd, databuf, datalen) < 0)
+		if (read(sd, dataBuf, BUF_LENGTH) < 0)
 		{
 			//error
+			problem = true;
+			close (sd);
 		}
+
+		message = dataBuf;
 	}
 
 	return message;
-}
-
-void shutdown ()
-{
-
 }
 
 

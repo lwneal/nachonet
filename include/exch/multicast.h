@@ -26,8 +26,8 @@ class multicast
 		static const int BUF_LENGTH = 64;
 
 		multicast (int port = DEFAULT_PORT,
-							 std::string localIface = LOCAL_INTERFACE,
-							 std::string multicastGroup = MULTICAST_GROUP);
+							 std::string localIfaceAddr = LOCAL_INTERFACE,
+							 std::string multicastGroupAddr = MULTICAST_GROUP);
 		~multicast ();
 		void transmit (char data[BUF_LENGTH]);
 		std::string multicast::receive ();

@@ -14,12 +14,24 @@ Purpose:		Defines the interface to the localization module. This module
 
 struct id
 {
+	id ()
+	{
+		intID = -1;
+		strID = "";
+	}
+
 	int intID;
 	std::string strID;
 };
 
 typedef struct location
 {
+	location ()
+	{
+		x = 0.0;
+		y = 0.0;
+	}
+
   id theID;
   float x;
   float y;

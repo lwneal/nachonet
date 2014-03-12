@@ -16,12 +16,14 @@ Purpose:		Defines the multicast class which is used to broadcast and receive
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstring>
+#include <unistd.h>
 
 class multicast
 {
 	public:
-		static const char * MULTICAST_GROUP = "225.1.1.1";
-		static const char * LOCAL_INTERFACE = "9.5.1.1";
+		static const std::string MULTICAST_GROUP;
+		static const std::string LOCAL_INTERFACE;
 		static const int DEFAULT_PORT = 55555;
 		static const int BUF_LENGTH = 64;
 
@@ -30,7 +32,7 @@ class multicast
 							 std::string multicastGroupAddr = MULTICAST_GROUP);
 		~multicast ();
 		void transmit (char data[BUF_LENGTH]);
-		std::string multicast::receive ();
+		std::string receive ();
 		void shutdown ();
 
 	private:

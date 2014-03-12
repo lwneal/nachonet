@@ -8,6 +8,19 @@ Purpose:		Defines the behavior of the data exchange abstract class
 
 #include "../../include/exch/dataEx.h"
 
+//MESSAGES TO SEND
+const std::string dataEx::HELLO = "HELLO";			//check if node is alive
+const std::string dataEx::GOODBYE = "GOODBYE";  //tell other nodes I'm
+																							 //leaving
+const std::string dataEx::ACK = "ACK";					//acknowledge a HELLO
+const std::string dataEx::STOP = "STOP";				//tell other nodes to stop
+const std::string dataEx::START = "START";			//tell other nodes to start
+
+//STATES
+const std::string dataEx::RUNNING = "RUNNING";  //state of running node
+const std::string dataEx::DEAD = "DEAD";				//state of dead node
+
+
 /*******************************************************************************
  * Constructor:	dataEx
  *
@@ -33,7 +46,7 @@ dataEx::dataEx ()
  *
  * Returned:		None
  ******************************************************************************/
-virtual dataEx::~dataEx ()
+dataEx::~dataEx ()
 {
 
 }
@@ -143,7 +156,7 @@ std::string dataEx::getDevForUpdate ()
 
 	for (auto dev : devices)
 	{
-		for (p = dev.first.c_str(); *p != '\0'; p++)
+		for (p = (char *)dev.first.c_str(); *p != '\0'; p++)
 		{
 			h = (h << 4) * (*p);
 
@@ -154,7 +167,7 @@ std::string dataEx::getDevForUpdate ()
 			}
 		}
 
-		if (getID () == h % getNumNodes ())
+		if ((unsigned)getID () == h % getNumNodes ())
 		{
 			myDevsToUpdate.push_back (dev.first);
 		}
@@ -185,13 +198,17 @@ std::vector<refMeasurement> dataEx::getMeasurements (std::string id)
 	std::vector<refMeasurement> measurements;
 	refMeasurement entry;
 	int miss = 0;
+	std::map<int, node>::iterator thisNode;
+
 	srand (time (0));
 
 	for (int i = 0; i < REQ_NODES; i++)
 	{
 		do
 		{
-			entry = nodes[rand () % getNumNodes ()].getMeasurement (id);
+			thisNode = nodes.begin ();
+			std::advance (thisNode,(rand() % nodes.size ()));
+			entry = thisNode->second.getMeasurement (id);
 
 			if ("" == entry.devDist.devID)
 			{
@@ -253,7 +270,7 @@ void dataEx::updateDevMeasurement (distMeasurement devDist)
  *
  * Returned:		vector of device locations
  ******************************************************************************/
-std::vector<location> dataEx::getDeviceLocations () const
+std::vector<location> dataEx::getDeviceLocations ()
 {
 	std::vector<location> locations;
 
@@ -274,7 +291,7 @@ std::vector<location> dataEx::getDeviceLocations () const
  *
  * Returned:		vector of node locations
  ******************************************************************************/
-std::vector<location> dataEx::getNodeLocations () const
+std::vector<location> dataEx::getNodeLocations ()
 {
 	std::vector<location> locations;
 
@@ -312,7 +329,7 @@ void dataEx::setPingStatus (int nodeID, bool status)
  *
  * Returned:		bool - true if the specified node ACK'd, false otherwise
  ******************************************************************************/
-bool dataEx::lastPingResult (int nodeID) const
+bool dataEx::lastPingResult (int nodeID)
 {
 	return aliveOnLastPing[nodeID];
 }
@@ -355,7 +372,7 @@ void dataEx::clearNodes ()
  *
  * Returned:		None
  ******************************************************************************/
-virtual void dataEx::addNode (node newNode)
+void dataEx::addNode (node newNode)
 {
 	nodes [newNode.getID()] = newNode;
 }
@@ -369,7 +386,7 @@ virtual void dataEx::addNode (node newNode)
  *
  * Returned:		None
  ******************************************************************************/
-virtual void dataEx::dropNode (int id)
+void dataEx::dropNode (int id)
 {
 	std::map<int, node>::iterator it;
 	it = nodes.find (id);
@@ -390,7 +407,7 @@ virtual void dataEx::dropNode (int id)
  *
  * Returned:		None
  ******************************************************************************/
-virtual void dataEx::addDevice (device newDev)
+void dataEx::addDevice (device newDev)
 {
 	devices [newDev.getID()] = newDev;
 }
@@ -404,7 +421,7 @@ virtual void dataEx::addDevice (device newDev)
  *
  * Returned:		None
  ******************************************************************************/
-virtual void dataEx::dropDevice (std::string id)
+void dataEx::dropDevice (std::string id)
 {
 	std::map<std::string, device>::iterator it;
 	it = devices.find (id);

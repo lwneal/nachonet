@@ -46,33 +46,33 @@ class dataExOnTheCouch : public dataEx
     static const long CURL_TIMEOUT = 30;
 
     static const int DEFAULT_COUCH_PORT = 5984;
-    static const std::string LOCALHOST = "127.0.0.1";
+    static const std::string LOCALHOST;
 
     static enum DB {ADMIN, NODES, DEVICES, ALL};
     static const std::string TARGET_DB[] = {"admin_db", "node_db", "dev_db"};
     static const std::string ALL_DOCS_Q = "_all_docs";
 
     //these are the keys for all of the JSON pairs we need to use
-    static const std::string LOCATION = "location";
-    static const std::string ID = "_id";
-    static const std::string IP = "ip";
-    static const std::string X_COOR = "x";
-    static const std::string Y_COOR = "y";
-    static const std::string MEASUREMENTS = "measurements";
-    static const std::string DEV_ID = "devID";
-    static const std::string DISTANCE = "dist";
-    static const std::string REVISION = "_rev";
-    static const std::string SOURCE = "source";
-    static const std::string TARGET = "target";
-    static const std::string REPLICATE = "_replicate";
-    static const std::string DOC_IDS = "doc_ids";
-    static const std::string STATE = "state";
-    static const std::string MESSAGE = "message";
-    static const std::string MSG_TEXT = "msg";
-    static const std::string MSG_SRC = "src";
-    static const std::string DELETED = "deleted";
-    static const std::string TOTAL_ROWS = "total_rows"; //used to count docs
-    static const std::string ROWS = "rows"; //used to look through docs in db
+    static const std::string LOCATION;
+    static const std::string ID;
+    static const std::string IP;
+    static const std::string X_COOR;
+    static const std::string Y_COOR;
+    static const std::string MEASUREMENTS;
+    static const std::string DEV_ID;
+    static const std::string DISTANCE;
+    static const std::string REVISION;
+    static const std::string SOURCE;
+    static const std::string TARGET;
+    static const std::string REPLICATE;
+    static const std::string DOC_IDS;
+    static const std::string STATE;
+    static const std::string MESSAGE;
+    static const std::string MSG_TEXT;
+    static const std::string MSG_SRC;
+    static const std::string DELETED;
+    static const std::string TOTAL_ROWS; //used to count docs
+    static const std::string ROWS; //used to look through docs in db
 
 	private:
     void updateNodesFromCouch ();

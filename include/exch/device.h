@@ -14,7 +14,7 @@ Purpose:		Defines the device object which is an abstracted view of a device
 class device
 {
 	public:
-    device (std::string id);
+    device (std::string id = "");
     ~device ();
     std::string getID () const;
     void setID (std::string id);

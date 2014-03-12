@@ -12,6 +12,9 @@ Purpose:		Implements the behavior of the multicast object whose job it is to
 
 #include "../../include/exch/multicast.h"
 
+const std::string multicast::MULTICAST_GROUP = "225.1.1.1";
+const std::string multicast::LOCAL_INTERFACE = "9.5.1.1";
+
 /*******************************************************************************
  * Constructor:	multicast
  *

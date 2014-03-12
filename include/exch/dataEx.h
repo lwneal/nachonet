@@ -31,15 +31,15 @@ class dataEx
     void setIsAlive (bool state);
     bool alive () const;
     void setPingStatus (int nodeID, bool status);
-    bool lastPingResult (int nodeID) const;
+    bool lastPingResult (int nodeID);
 
     std::string getDevForUpdate ();
 
     std::vector<refMeasurement> getMeasurements (std::string id);
     void updateDevLocation (std::string id, location loc);
     void updateDevMeasurement (distMeasurement dist);
-    std::vector<location> getDeviceLocations () const;
-    std::vector<location> getNodeLocations () const;
+    std::vector<location> getDeviceLocations ();
+    std::vector<location> getNodeLocations ();
     void clearDevices ();
     void clearNodes ();
 
@@ -54,16 +54,16 @@ class dataEx
     virtual void pullUpdates (int flag) = 0;//some data needs to get passed
 
     //MESSAGES TO SEND
-    static const std::string HELLO = "HELLO";			//check if node is alive
-		static const std::string GOODBYE = "GOODBYE";  //tell other nodes I'm
+    static const std::string HELLO;			//check if node is alive
+		static const std::string GOODBYE;  //tell other nodes I'm
 																									 //leaving
-		static const std::string ACK = "ACK";					//acknowledge a HELLO
-		static const std::string STOP = "STOP";				//tell other nodes to stop
-		static const std::string START = "START";			//tell other nodes to start
+		static const std::string ACK;					//acknowledge a HELLO
+		static const std::string STOP;				//tell other nodes to stop
+		static const std::string START;			//tell other nodes to start
 
 		//STATES
-		static const std::string RUNNING = "RUNNING";  //state of running node
-		static const std::string DEAD = "DEAD";				//state of dead node
+		static const std::string RUNNING;  //state of running node
+		static const std::string DEAD;				//state of dead node
 
   protected:
     std::map<int, node> nodes;

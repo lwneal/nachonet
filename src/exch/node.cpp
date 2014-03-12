@@ -25,6 +25,20 @@ node::node (int id, location loc)
 }
 
 /*******************************************************************************
+ * Constructor:	node
+ *
+ * Description: Only initializes the id which has a default value of NO_ID
+ *
+ * Parameters:  id - the id of the node
+ *
+ * Returned:		None
+ ******************************************************************************/
+node::node (int id)
+{
+	setID (id);
+}
+
+/*******************************************************************************
  * Destroyer:		~node
  *
  * Description:	Sets the id to unused value and clears all of the measurements

@@ -35,6 +35,32 @@
 #include "../../include/exch/dataExOnTheCouch.h"
 #include "../../include/util/config.h"
 
+const std::string dataExOnTheCouch::LOCALHOST = "127.0.0.1";
+
+const std::string dataExOnTheCouch::ALL_DOCS_Q = "_all_docs";
+
+//these are the keys for all of the JSON pairs we need to use
+const std::string dataExOnTheCouch::LOCATION = "location";
+const std::string dataExOnTheCouch::ID = "_id";
+const std::string dataExOnTheCouch::IP = "ip";
+const std::string dataExOnTheCouch::X_COOR = "x";
+const std::string dataExOnTheCouch::Y_COOR = "y";
+const std::string dataExOnTheCouch::MEASUREMENTS = "measurements";
+const std::string dataExOnTheCouch::DEV_ID = "devID";
+const std::string dataExOnTheCouch::DISTANCE = "dist";
+const std::string dataExOnTheCouch::REVISION = "_rev";
+const std::string dataExOnTheCouch::SOURCE = "source";
+const std::string dataExOnTheCouch::TARGET = "target";
+const std::string dataExOnTheCouch::REPLICATE = "_replicate";
+const std::string dataExOnTheCouch::DOC_IDS = "doc_ids";
+const std::string dataExOnTheCouch::STATE = "state";
+const std::string dataExOnTheCouch::MESSAGE = "message";
+const std::string dataExOnTheCouch::MSG_TEXT = "msg";
+const std::string dataExOnTheCouch::MSG_SRC = "src";
+const std::string dataExOnTheCouch::DELETED = "deleted";
+const std::string dataExOnTheCouch::TOTAL_ROWS = "total_rows";
+const std::string dataExOnTheCouch::ROWS = "rows";
+
 /*******************************************************************************
  * Constructor:	dataExOnTheCouch
  *

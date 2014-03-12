@@ -18,6 +18,7 @@ class node
 {
   public:
     node (int id, location loc);
+    node (int id = NO_ID);
     ~node ();
     int getID () const;
     void setID (int id);

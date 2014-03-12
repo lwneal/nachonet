@@ -7,10 +7,8 @@ Purpose:		This driver is used for testing the data exchange module and its
 						pieces.
 *******************************************************************************/
 
-#include "../../include/exch/node.h"
-#include "../../include/exch/device.h"
-//#include "../../include/exch/multicast.h"
-//#include "../../include/exch/dataEx.h"
+#include "../../include/exch/multicast.h"
+#include "../../include/exch/dataEx.h"
 //#include "../../include/exch/dataExOnTheCouch.h"
 
 void fail (std::string errorMsg)
@@ -33,6 +31,8 @@ int main ()
 	loc.theID.intID = node::NO_ID;
 	node myNode (node::NO_ID, loc);
 	device myDev (DEV_ID);
+	multicast nachoCast;
+	dataEx * pDataEx;
 
 	//***************************************************************************
 	//														NODE TESTING
@@ -113,6 +113,13 @@ int main ()
 	{
 		fail ("device setLocation () or getLocation () failed");
 	}
+
+	//***************************************************************************
+	//														MULTICAST TESTING
+	//***************************************************************************
+
+	//do stuff I suppose
+
 
 	//***************************************************************************
 	//														DATA EXCHANGE TESTING

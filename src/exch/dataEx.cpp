@@ -21,8 +21,7 @@ Purpose:		Defines the behavior of the data exchange abstract class
  ******************************************************************************/
 dataEx::dataEx ()
 {
-	setID (NO_ID);
-	lastNodeUsed = 0;
+	setID (node::NO_ID);
 }
 
 /*******************************************************************************
@@ -164,10 +163,9 @@ std::string dataEx::getDevForUpdate ()
 	//now choose a random element to update since we have no idea how much this
 	//vector has changed since the last time we called this function
 	dev = myDevsToUpdate.begin ();
+	srand (time (0));
 	std::advance (dev, (rand() % myDevsToUpdate.size ()));
 
-	//we need to track the updated devs so we throw them into a vector
-	devsUpdatedSinceLastPush.push_back (devices[*dev]);
 	return *dev;
 }
 
@@ -179,18 +177,34 @@ std::string dataEx::getDevForUpdate ()
  *
  * Parameters:	id - the id of the device whose measurements we need
  *
- * Returned:		vector of reference measurements
+ * Returned:		vector of reference measurements (can be empty)
  ******************************************************************************/
 std::vector<refMeasurement> dataEx::getMeasurements (std::string id)
 {
 	const int REQ_NODES = 3;
 	std::vector<refMeasurement> measurements;
-	int currentNode;
+	refMeasurement entry;
+	int miss = 0;
+	srand (time (0));
 
 	for (int i = 0; i < REQ_NODES; i++)
 	{
-		currentNode = lastNodeUsed++ % nodes.size ();
-		measurements.push_back (nodes[currentNode].getMeasurement(id));
+		do
+		{
+			entry = nodes[rand () % getNumNodes ()].getMeasurement (id);
+
+			if ("" == entry.devDist.devID)
+			{
+				miss++;
+			}
+
+		} while ("" == entry.devDist.devID && (REQ_NODES <= getNumNodes() - miss));
+
+		if (REQ_NODES <= getNumNodes() - miss)
+		{
+			measurements.push_back (entry);
+		}
+
 	}
 
 	return measurements;
@@ -199,7 +213,8 @@ std::vector<refMeasurement> dataEx::getMeasurements (std::string id)
 /*******************************************************************************
  * Method:			updateDevLocation
  *
- * Description:	Update the location of a tracked device in the network.
+ * Description:	Update the location of a tracked device in the network. Also
+ * 							track the devices that have been updated.
  *
  * Parameters:	id - the id of the device to update
  * 							loc - the location of the device
@@ -209,6 +224,9 @@ std::vector<refMeasurement> dataEx::getMeasurements (std::string id)
 void dataEx::updateDevLocation (std::string id, location loc)
 {
 	devices[id].setLocation (loc);
+
+		//we need to track the updated devs so we throw them into a vector
+	devsUpdatedSinceLastPush.push_back (devices[id]);
 }
 
 /*******************************************************************************

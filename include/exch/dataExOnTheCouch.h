@@ -43,6 +43,7 @@ class dataExOnTheCouch : public dataEx
     virtual void pullUpdates (int flag);
 
     static const double TIMEOUT = 60;
+    static const long CURL_TIMEOUT = 30;
 
     static const int DEFAULT_COUCH_PORT = 5984;
     static const std::string LOCALHOST = "127.0.0.1";
@@ -86,7 +87,7 @@ class dataExOnTheCouch : public dataEx
 
     //from http://www.cplusplus.com/forum/unices/45878/
     CURLcode curlRead(const std::string& url, std::ostream& os,
-    										long timeout = 30);
+    										long timeout = CURL_TIMEOUT);
     CURLcode curlPost(const std::string& url, const std::string& json);
 
     std::map<int, std::string> nodeIPAddr;

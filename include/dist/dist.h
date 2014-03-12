@@ -17,6 +17,12 @@ Purpose:		This file defines the interface to the abstract class
 
 typedef struct distMeasurement
 {
+	distMeasurement ()
+	{
+		devID = "";
+		dist = 0.0;
+	}
+
   std::string devID;
   float dist;
 } distMeasurement;

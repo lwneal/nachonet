@@ -27,6 +27,8 @@ class node
     std::vector<refMeasurement> getAllMeasurements ();
     void clearMeasurements ();
 
+    static const int NO_ID = -1;
+
   private:
     int id;
     location loc;

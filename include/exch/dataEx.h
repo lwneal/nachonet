@@ -10,6 +10,7 @@ Purpose:		Defines the abstract data exchange object that is responsible for
 #pragma once
 #include "node.h"
 #include "device.h"
+#include <iterator>
 
 typedef struct Message
 {
@@ -52,8 +53,6 @@ class dataEx
     virtual void pushUpdates (int flag) = 0;//id what flag will be needed but
     virtual void pullUpdates (int flag) = 0;//some data needs to get passed
 
-    static const int NO_ID = -1;
-
     //MESSAGES TO SEND
     static const std::string HELLO = "HELLO";			//check if node is alive
 		static const std::string GOODBYE = "GOODBYE";  //tell other nodes I'm
@@ -72,7 +71,6 @@ class dataEx
     std::vector<device> devsUpdatedSinceLastPush;
   private:
     std::map<int, bool> aliveOnLastPing;
-    int lastNodeUsed; //for reference measurements
     int myID;
     bool isAlive;
 };

@@ -35,7 +35,7 @@ node::node (int id, location loc)
  ******************************************************************************/
 node::~node ()
 {
-	id = -1;
+	id = NO_ID;
 	measurements.clear ();
 }
 

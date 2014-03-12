@@ -57,7 +57,7 @@
 dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 {
 	struct ifaddrs * pIfaceAddr = NULL;
-	struct ipaddrs * pIface = NULL;
+	struct ifaddrs * pIface = NULL;
 	void * pTempAddr = NULL;
 	char addrBuffer[INET_ADDRSTRLEN];
 	char message[multicast::BUF_LENGTH];
@@ -68,12 +68,13 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 	jsonParser parser;
 	std::clock_t startTimeout;
 	double duration;
-	int nextID = NO_ID;
+	int nextID = node::NO_ID;
 	location loc;
 	loc.x = 0;
 	loc.y = 0;
-	loc.theID.intID = NO_ID;
-	node newNode (NO_ID, loc);
+	loc.theID.intID = node::NO_ID;
+	node newNode (node::NO_ID, loc);
+	Message checkResponse;
 
 	//Let's go get our IP address
 	getifaddrs (&pIfaceAddr);
@@ -151,11 +152,13 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 			}
 		}
 
+		setID (nextID);
+
 		pullUpdates (ADMIN);
 		pullUpdates (NODES);
 		pullUpdates (DEVICES);
 
-		setID (nextID);
+
 	}
 	else if (TIMEOUT < duration) //we didn't hear back so we are the first node
 	{
@@ -198,6 +201,16 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 
 	curlPost (url, json.writeJSON(""));
 
+	//check to see if nodes are responsive
+	for (auto & host : nodes)
+	{
+		checkResponse.dest.push_back (host.first);
+	}
+
+	checkResponse.msg = HELLO;
+
+	ping (checkResponse);
+
 	//Share our updates with everyone else
 	pushUpdates (ADMIN);
 	pushUpdates (NODES);
@@ -228,8 +241,6 @@ virtual dataExOnTheCouch::~dataExOnTheCouch ()
 	JSON json;
 	jsonData data;
 	jsonParser parser;
-
-	stillGreetingNodes = false;
 
 	message.msg = GOODBYE;
 
@@ -335,12 +346,12 @@ void dataExOnTheCouch::greetNewNode ()
 	std::string message;
 	JSON json;
 	jsonData data;
-	int nextID = NO_ID;
+	int nextID = node::NO_ID;
 	location loc;
 	loc.x = 0;
 	loc.y = 0;
-	loc.theID.intID = NO_ID;
-	node newNode (NO_ID, loc);
+	loc.theID.intID = node::NO_ID;
+	node newNode (node::NO_ID, loc);
 
 	while (stillGreetingNodes)
 	{
@@ -432,8 +443,6 @@ virtual void dataExOnTheCouch::ping (Message message)
 			json = parser.getObject();
 			oss.str("");
 
-			//adminDBRevisions[nodeID] = (json.getData(REVISION)).value.strVal;
-
 			data = json.getData(MESSAGE);
 			data.value.array.push_back (entry);
 
@@ -505,10 +514,12 @@ virtual void dataExOnTheCouch::checkMessages ()
 
 				case STOP:
 					setIsAlive (false);
+					//setState (DEAD);
 					break;
 
 				case START:
 					setIsAlive (true);
+					//setState (RUNNING);
 					break;
 
 				case ACK:
@@ -550,6 +561,7 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 
 	for (auto & host : nodeIPAddr)
 	{
+
 		data.type = jsonParser::STR_TYPE;
 		data.value.strVal.clear ();
 		data.value.strVal.append ("http://");
@@ -623,6 +635,7 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
 		curlPost ('/' + REPLICATE, json.writeJSON(""));
 	}
 
+
 }
 
 /*******************************************************************************
@@ -651,7 +664,7 @@ virtual void dataExOnTheCouch::pullUpdates (int flag)
 	{
 		host = nodeIPAddr.begin ();
 		std::advance (host, (rand() % nodeIPAddr.size ()));
-	} while (getID () == host->first);
+	} while (getID () == host->first || !lastPingResult (host->first));
 
 
 	data.type = jsonParser::STR_TYPE;
@@ -971,7 +984,7 @@ static size_t dataWrite (void* buf, size_t size, size_t nmemb, void* userp)
  * Returned:		CURLcode - the result of running the read command
  ******************************************************************************/
 CURLcode dataExOnTheCouch::curlRead (const std::string& url, std::ostream& os,
-																		 long timeout = 30)
+																		 long timeout)
 {
 	CURLcode code (CURLE_FAILED_INIT);
 	CURL* curl = curl_easy_init ();
@@ -1032,4 +1045,3 @@ CURLcode dataExOnTheCouch::curlPost(const std::string& url,
 	return code;
 
 }
-

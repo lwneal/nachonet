@@ -109,8 +109,8 @@ multicast::~multicast ()
 /*******************************************************************************
  * Method:			transmit
  *
- * Description:	Send data of BUF_LENGTH that is padded to the length to
- * 							everyone listening on the multicast.
+ * Description:	Send data of BUF_LENGTH that is padded with NULL terminators to
+ * 							the length to everyone listening on the multicast.
  *
  * Parameters:	data - the data to send
  *

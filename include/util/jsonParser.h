@@ -47,6 +47,7 @@ typedef struct Token
 class jsonParser
 {
 	public:
+		jsonParser ();
 		jsonParser (std::string rawJSON);
 		~jsonParser ();
 		void init (std::string rawJSON);
@@ -65,8 +66,8 @@ class jsonParser
     bool string (jsonData *pVal);
     bool num (jsonData *pVal);
 
-    const char * TRUE = "true";
-    const char * FALSE = "false";
+    static const std::string TRUE;
+    static const std::string FALSE;
 
 		static enum NonTerminals
     {

@@ -111,9 +111,9 @@ bin/dataCollect.o: src/collect/dataCollect.cpp include/collect/dataCollect.h
 	
 ##########################Data Exchange###############################	
 bin/dataExDriver: bin/dataExDriver.o bin/node.o bin/device.o bin/loc.o \
-bin/multicast.o bin/dataEx.o
+bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o
 	${CC} ${CFLAGS} -o bin/dataExDriver bin/dataExDriver.o bin/node.o \
-	bin/device.o bin/loc.o bin/multicast.o bin/dataEx.o
+	bin/device.o bin/loc.o bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o
 	
 bin/dataExDriver.o: src/exch/dataExDriver.cpp
 	${CC} ${CFLAGS} -o bin/dataExDriver.o -c src/exch/dataExDriver.cpp
@@ -129,6 +129,10 @@ bin/multicast.o: include/exch/multicast.h src/exch/multicast.cpp
 	
 bin/dataEx.o: include/exch/dataEx.h src/exch/dataEx.cpp
 	${CC} ${CFLAGS} -o bin/dataEx.o -c src/exch/dataEx.cpp
+	
+bin/dataExOnTheCouch.o: include/exch/dataExOnTheCouch.h \
+src/exch/dataExOnTheCouch.cpp
+	${CC} ${CFLAGS} -o bin/dataExOnTheCouch.o -c src/exch/dataExOnTheCouch.cpp
 
 ##########################Utilities###############################
 

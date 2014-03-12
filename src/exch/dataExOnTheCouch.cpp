@@ -35,7 +35,12 @@
 #include "../../include/exch/dataExOnTheCouch.h"
 #include "../../include/util/config.h"
 
+const double dataExOnTheCouch::TIMEOUT = 60;
+
 const std::string dataExOnTheCouch::LOCALHOST = "127.0.0.1";
+
+const std::string dataExOnTheCouch::TARGET_DB[] =
+																						{"admin_db", "node_db", "dev_db"};
 
 const std::string dataExOnTheCouch::ALL_DOCS_Q = "_all_docs";
 
@@ -130,7 +135,7 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 		message[i] = '\0';
 	}
 
-	for (int i = 0; i < myAddress.length(); i++)
+	for (unsigned int i = 0; i < myAddress.length(); i++)
 	{
 		message[i] = myAddress[i];
 	}
@@ -150,7 +155,7 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 		if (CURLE_OK == curlRead (url, oss))
 		{
 			// Web page successfully written to string
-			parser (oss.str());
+			parser.init (oss.str());
 			json = parser.getObject ();
 			oss.str ("");
 		}
@@ -193,8 +198,8 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 
 	//now add our docs to the database
 	json.clear();
-	data.type = jsonParser::INT_TYPE;
-	data.value.intVal = std::to_string(getID ());
+	data.type = jsonParser::STR_TYPE;
+	data.value.strVal = std::to_string(getID ());
 	json.setValue(ID, data);
 
 	data.type = jsonParser::STR_TYPE;
@@ -217,8 +222,8 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 	json.clear ();
 	//we can put a mostly empty doc in for the node because this will get updated
 	//later
-	data.type = jsonParser::INT_TYPE;
-	data.value.intVal = std::to_string(getID ());
+	data.type = jsonParser::STR_TYPE;
+	data.value.strVal = std::to_string(getID ());
 	json.setValue(ID, data);
 
 	url = "http://" + LOCALHOST + ':';
@@ -259,7 +264,7 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
  *
  * Returned:		None
  ******************************************************************************/
-virtual dataExOnTheCouch::~dataExOnTheCouch ()
+dataExOnTheCouch::~dataExOnTheCouch ()
 {
 	Message message;
 	std::string url;
@@ -286,7 +291,7 @@ virtual dataExOnTheCouch::~dataExOnTheCouch ()
 	if (CURLE_OK == curlRead (url, oss))
 	{
 		// Web page successfully written to string
-		parser (oss.str());
+		parser.init (oss.str());
 		json = parser.getObject ();
 		oss.str ("");
 
@@ -304,7 +309,7 @@ virtual dataExOnTheCouch::~dataExOnTheCouch ()
 	if (CURLE_OK == curlRead (url, oss))
 	{
 		// Web page successfully written to string
-		parser (oss.str());
+		parser.init (oss.str());
 		json = parser.getObject ();
 		oss.str ("");
 
@@ -434,7 +439,7 @@ void dataExOnTheCouch::greetNewNode ()
  *
  * Returned:		None
  ******************************************************************************/
-virtual void dataExOnTheCouch::ping (Message message)
+void dataExOnTheCouch::ping (Message message)
 {
 	std::string url = "";
 	std::ostringstream oss;
@@ -459,13 +464,13 @@ virtual void dataExOnTheCouch::ping (Message message)
 			setPingStatus (nodeID, false);
 		}
 
-		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
-		url = url + TARGET_DB[ADMIN] + '/' + std::to_string (nodeID);
+		url += "http://" + LOCALHOST + ':' + std::to_string(DEFAULT_COUCH_PORT)
+					+ '/' + TARGET_DB[ADMIN] + '/' + std::to_string (nodeID);
 
 		if(CURLE_OK == curlRead(url, oss))
 		{
 			// Web page successfully written to string
-			parser (oss.str());
+			parser.init (oss.str());
 			json = parser.getObject();
 			oss.str("");
 
@@ -495,7 +500,7 @@ virtual void dataExOnTheCouch::ping (Message message)
  *
  * Returned:		None
  ******************************************************************************/
-virtual void dataExOnTheCouch::checkMessages ()
+void dataExOnTheCouch::checkMessages ()
 {
 	std::string url = "";
 	std::ostringstream oss;
@@ -504,13 +509,13 @@ virtual void dataExOnTheCouch::checkMessages ()
 	jsonParser parser;
 	Message returnMessage;
 
-	url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
-	url = url + TARGET_DB[ADMIN] + '/' + std::to_string (getID ());
+	url = url + "http://" + LOCALHOST + ':' + std::to_string (DEFAULT_COUCH_PORT)
+				+ '/' + TARGET_DB[ADMIN] + '/' + std::to_string (getID ());
 
 	if(CURLE_OK == curlRead(url, oss))
 	{
 		// Web page successfully written to string
-		parser (oss.str());
+		parser.init (oss.str());
 		json = parser.getObject();
 
 		data = json.getData(MESSAGE);
@@ -579,7 +584,7 @@ virtual void dataExOnTheCouch::checkMessages ()
  *
  * Returned:		None
  ******************************************************************************/
-virtual void dataExOnTheCouch::pushUpdates (int flag)
+void dataExOnTheCouch::pushUpdates (int flag)
 {
 	JSON json;
 	jsonData data, entry;
@@ -681,7 +686,7 @@ virtual void dataExOnTheCouch::pushUpdates (int flag)
  *
  * Returned:		None
  ******************************************************************************/
-virtual void dataExOnTheCouch::pullUpdates (int flag)
+void dataExOnTheCouch::pullUpdates (int flag)
 {
 	JSON json;
 	jsonData data;
@@ -772,13 +777,14 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 
 	for (auto & thisNode : nodes)
 	{
-		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
-		url = url + TARGET_DB[NODES] + '/' + std::to_string (thisNode.first);
+		url = url + "http://" + LOCALHOST + ':'
+					+ std::to_string (DEFAULT_COUCH_PORT) + '/'+ TARGET_DB[NODES] + '/'
+					+ std::to_string (thisNode.first);
 
 		if (CURLE_OK == curlRead(url, oss))
 		{
 			// Web page successfully written to string
-			parser (oss.str ());
+			parser.init (oss.str ());
 			json = parser.getObject ();
 
 			//store revision id
@@ -827,13 +833,14 @@ void dataExOnTheCouch::updateDevsFromCouch ()
 
 	for (auto & thisDev : devices)
 	{
-		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
-		url = url + TARGET_DB[DEVICES] + '/' + std::to_string (thisDev.first);
+		url = "http://" + LOCALHOST + ':'
+					+ std::to_string (DEFAULT_COUCH_PORT) + '/' + TARGET_DB[DEVICES] + '/'
+					+ thisDev.first;
 
 		if (CURLE_OK == curlRead(url, oss))
 		{
 			// Web page successfully written to string
-			parser (oss.str ());
+			parser.init (oss.str ());
 			json = parser.getObject ();
 
 			//store revision id
@@ -868,8 +875,8 @@ void dataExOnTheCouch::updateCouchFromNode ()
 	location loc;
 	std::vector<refMeasurement> nodeMeasurements;
 
-	url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
-	url = url + TARGET_DB[DEVICES] + '/' + std::to_string (getID ());
+	url = url + "http://" + LOCALHOST + ':' + std::to_string (DEFAULT_COUCH_PORT)
+				+ '/' + TARGET_DB[DEVICES] + '/' + std::to_string (getID ());
 
 	//set the ID
 	data.type = jsonParser::STR_TYPE;
@@ -940,8 +947,8 @@ void dataExOnTheCouch::updateCouchFromDevs ()
 
 	for (auto & thisDev : devsUpdatedSinceLastPush)
 	{
-		url = url + "http://" + LOCALHOST + ':' + DEFAULT_COUCH_PORT + '/';
-		url = url + TARGET_DB[DEVICES] + '/' + thisDev.getID();
+		url = url + "http://" + LOCALHOST + ':' + std::to_string(DEFAULT_COUCH_PORT)
+					+ '/' + TARGET_DB[DEVICES] + '/' + thisDev.getID();
 
 		data.type = jsonParser::STR_TYPE;
 		data.value.strVal = thisDev.getID ();
@@ -1055,7 +1062,7 @@ CURLcode dataExOnTheCouch::curlPost(const std::string& url,
 	if (curl)
 	{
 		if (CURLE_OK
-				== (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json))
+				== (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str()))
 				&& CURLE_OK == (code =
 				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers))
 				&& CURLE_OK

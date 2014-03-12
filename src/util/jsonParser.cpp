@@ -9,6 +9,9 @@ Purpose:
 
 #include "../../include/util/jsonParser.h"
 
+const std::string jsonParser::TRUE = "true";
+const std::string jsonParser::FALSE = "false";
+
 //Helpful things for the lexer portion
 #define IS_DIGIT(c) ((c >= '0') && (c<= '9'))
 #define IS_LETTER(c) (((c >= 'a') && (c <= 'z')) ||\
@@ -29,6 +32,23 @@ static int gFirsts[jsonParser::MAX_NONTERMINALS][jsonParser::MAX_FIRSTS] =
 		{0,0,0,0,1,0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0,0,0,1,1,0}
 };
+
+/*******************************************************************************
+ * Constructor:	jsonParser
+ *
+ * Description: Initializes the bare necessities. Does not need a string, so no
+ * 							parsing happens here.
+ *
+ * Parameters:  None
+ *
+ * Returned:		None
+ ******************************************************************************/
+jsonParser::jsonParser ()
+{
+	this->validJSON = false;
+	pJSON = new JSON;
+	strPos = 0;
+}
 
 /*******************************************************************************
  * Constructor:	jsonParser

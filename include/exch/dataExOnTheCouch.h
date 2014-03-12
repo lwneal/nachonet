@@ -42,15 +42,15 @@ class dataExOnTheCouch : public dataEx
     virtual void pushUpdates (int flag);
     virtual void pullUpdates (int flag);
 
-    static const double TIMEOUT = 60;
+    static const double TIMEOUT;
     static const long CURL_TIMEOUT = 30;
 
     static const int DEFAULT_COUCH_PORT = 5984;
     static const std::string LOCALHOST;
 
-    static enum DB {ADMIN, NODES, DEVICES, ALL};
-    static const std::string TARGET_DB[] = {"admin_db", "node_db", "dev_db"};
-    static const std::string ALL_DOCS_Q = "_all_docs";
+    static enum DB {ADMIN, NODES, DEVICES, ALL} DB;
+    static const std::string TARGET_DB[];
+    static const std::string ALL_DOCS_Q;
 
     //these are the keys for all of the JSON pairs we need to use
     static const std::string LOCATION;

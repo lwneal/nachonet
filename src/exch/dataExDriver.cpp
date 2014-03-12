@@ -7,9 +7,7 @@ Purpose:		This driver is used for testing the data exchange module and its
 						pieces.
 *******************************************************************************/
 
-#include "../../include/exch/multicast.h"
-#include "../../include/exch/dataEx.h"
-//#include "../../include/exch/dataExOnTheCouch.h"
+#include "../../include/exch/dataExOnTheCouch.h"
 
 void fail (std::string errorMsg)
 {
@@ -33,6 +31,7 @@ int main ()
 	device myDev (DEV_ID);
 	multicast nachoCast;
 	dataEx * pDataEx;
+	pDataEx = new dataExOnTheCouch ();
 
 	//***************************************************************************
 	//														NODE TESTING
@@ -125,7 +124,7 @@ int main ()
 	//														DATA EXCHANGE TESTING
 	//***************************************************************************
 
-
+	delete pDataEx;
 
 	if (noIssues)
 	{

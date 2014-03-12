@@ -9,6 +9,7 @@ Purpose:		Defines the device object which is an abstracted view of a device
 
 #pragma once
 #include <string>
+#include "../loc/loc.h"
 
 class device
 {

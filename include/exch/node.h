@@ -12,6 +12,7 @@ Purpose:		Defines the node object which is an abstracted view of a node in
 #include <vector>
 #include <map>
 #include "../dist/dist.h"
+#include "../loc/loc.h"
 
 class node
 {
@@ -23,7 +24,7 @@ class node
     location getLocation () const;
     void setLocation (location loc);
     void setMeasurement (distMeasurement devDist);
-    refMeasurement getMeasurement (std::string devID) const;
+    refMeasurement getMeasurement (std::string devID);
     std::vector<refMeasurement> getAllMeasurements ();
     void clearMeasurements ();
 

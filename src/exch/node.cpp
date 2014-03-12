@@ -118,7 +118,7 @@ void node::setMeasurement (distMeasurement devDist)
  *
  * Returned:		refMeasurement - a distance combined with the node location
  ******************************************************************************/
-refMeasurement node::getMeasurement (std::string devID) const
+refMeasurement node::getMeasurement (std::string devID)
 {
 	refMeasurement ref;
 	ref.nodeLocation = loc;

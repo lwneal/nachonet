@@ -15,7 +15,7 @@ VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 .PHONY: all clean package zeus jsonDriver_valgrind
 
 all: bin/adminTools bin/prototype bin/distDriver bin/configDriver \
-bin/collectDriver bin/jsonDriver
+bin/collectDriver bin/jsonDriver bin/dataExDriver
 
 ########################ADMIN TOOLS###############################
 
@@ -107,6 +107,21 @@ include/collect/dataCollect.h extern/radiotapParser/radiotap-parser.h
 	
 bin/dataCollect.o: src/collect/dataCollect.cpp include/collect/dataCollect.h
 	${CC} ${CFLAGS} -o bin/dataCollect.o -c src/collect/dataCollect.cpp
+	
+	
+##########################Data Exchange###############################	
+bin/dataExDriver: bin/dataExDriver.o bin/node.o bin/device.o bin/loc.o
+	${CC} ${CFLAGS} -o bin/dataExDriver bin/dataExDriver.o bin/node.o \
+	bin/device.o bin/loc.o
+	
+bin/dataExDriver.o: src/exch/dataExDriver.cpp
+	${CC} ${CFLAGS} -o bin/dataExDriver.o -c src/exch/dataExDriver.cpp
+	
+bin/node.o: include/exch/node.h src/exch/node.cpp include/loc/loc.h
+	${CC} ${CFLAGS} -o bin/node.o -c src/exch/node.cpp
+	
+bin/device.o: include/exch/device.h src/exch/device.cpp
+	${CC} ${CFLAGS} -o bin/device.o -c src/exch/device.cpp
 
 ##########################Utilities###############################
 

@@ -111,9 +111,10 @@ bin/dataCollect.o: src/collect/dataCollect.cpp include/collect/dataCollect.h
 	
 ##########################Data Exchange###############################	
 bin/dataExDriver: bin/dataExDriver.o bin/node.o bin/device.o bin/loc.o \
-bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o
+bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 	${CC} ${CFLAGS} -o bin/dataExDriver bin/dataExDriver.o bin/node.o \
-	bin/device.o bin/loc.o bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o
+	bin/device.o bin/loc.o bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o \
+	bin/json.o bin/jsonParser.o -lcurl
 	
 bin/dataExDriver.o: src/exch/dataExDriver.cpp
 	${CC} ${CFLAGS} -o bin/dataExDriver.o -c src/exch/dataExDriver.cpp

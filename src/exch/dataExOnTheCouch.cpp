@@ -196,6 +196,12 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 		setID (0);
 	}
 
+	//add ourselves to the node maps
+	newNode.setID (getID ());
+
+	nodes [getID ()] = newNode;
+	nodeIPAddr [getID ()] = getIP ();
+
 	//now add our docs to the database
 	json.clear();
 	data.type = jsonParser::STR_TYPE;
@@ -249,7 +255,7 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 	//now set up our greeter for future new nodes
 	stillGreetingNodes = true;
 	pGreeter = new std::thread (&dataExOnTheCouch::greetNewNode,
-															dataExOnTheCouch ());
+															this);
 
 }
 
@@ -388,8 +394,8 @@ void dataExOnTheCouch::greetNewNode ()
 	{
 		message = nachoCast.receive ();
 
-		//the message should at least be a null terminator
-		if ('/0' != message[0])
+		//is the message more than just null terminators
+		if (0 < message.size ())
 		{
 			//let's go find the next available ID for the new guy
 			for (auto & entry : nodeIPAddr)
@@ -523,40 +529,44 @@ void dataExOnTheCouch::checkMessages ()
 		//read all of the messages out of the message queue and handle accordingly
 		for (auto & entry : data.value.array)
 		{
-			switch ((entry.value.pObject->getData(MSG_TEXT)).value.strVal)
+
+			if (0 ==
+					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (HELLO))
 			{
-				case HELLO:
-					returnMessage.msg = ACK;
-					returnMessage.dest.push_back (
-							(entry.value.pObject->getData(MSG_SRC)).value.intVal);
+				returnMessage.msg = ACK;
+				returnMessage.dest.push_back (
+						(entry.value.pObject->getData(MSG_SRC)).value.intVal);
 
-					ping (returnMessage);
-					break;
-
-				case GOODBYE:
-					nodeIPAddr.erase (nodeIPAddr.find (
+				ping (returnMessage);
+			}
+			else if (0 ==
+				(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (GOODBYE))
+			{
+				nodeIPAddr.erase (nodeIPAddr.find (
 							(entry.value.pObject->getData(MSG_SRC)).value.intVal));
 
-					nodeDBRevisions.erase (nodeDBRevisions.find (
-							(entry.value.pObject->getData(MSG_SRC)).value.intVal));
+				nodeDBRevisions.erase (nodeDBRevisions.find (
+						(entry.value.pObject->getData(MSG_SRC)).value.intVal));
 
-					dropNode ((entry.value.pObject->getData(MSG_SRC)).value.intVal);
-					break;
-
-				case STOP:
-					setIsAlive (false);
-					//setState (DEAD);
-					break;
-
-				case START:
-					setIsAlive (true);
-					//setState (RUNNING);
-					break;
-
-				case ACK:
-					setPingStatus (
+				dropNode ((entry.value.pObject->getData(MSG_SRC)).value.intVal);
+			}
+			else if (0 ==
+					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (STOP))
+			{
+				setIsAlive (false);
+				//setState (DEAD);
+			}
+			else if (0 ==
+					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (START))
+			{
+				setIsAlive (true);
+				//setState (RUNNING);
+			}
+			else if (0 ==
+					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (ACK))
+			{
+				setPingStatus (
 							(entry.value.pObject->getData(MSG_SRC)).value.intVal, true);
-					break;
 			}
 		}
 

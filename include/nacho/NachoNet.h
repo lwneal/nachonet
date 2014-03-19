@@ -20,11 +20,53 @@ class NachoNet
 	public:
 		NachoNet ();
 		~NachoNet ();
-		void run ();
+		void menu ();
+		int menuSelect ();
+		void start ();
+		void stop ();
+		void listDevices ();
+		void addNode ();
+		void dropNode ();
+
+		bool isAlive ();
+		bool isDebug ();
+		bool isVerbose ();
+
+		void setDebug (bool debug);
+		void setVerbose (bool verbose);
+
+		typedef enum Menus { MAIN = 0,
+											 TEST,
+											 MANAGE
+										 } Menus;
+
+		typedef enum MainMenu { EXIT = -1,
+														TEST_MENU,
+														MANAGE_MENU,
+														START,
+														STOP,
+														LIST_DEVICES
+													} MainMenu;
+
+		typedef enum TestMenu { DATA_COLLECTION = 0,
+														DIST_MEASUREMENT,
+														DATA_EXCHANGE,
+														LOCALIZATION
+													} TestMenu;
+
+		typedef enum ManageMenu { ADD_NODE = 0,
+															DROP_NODE,
+															CALIBRATE_DIST,
+															SET_NODE_LOC
+													} ManageMenu;
+
 	private:
 		dataCollect *pDataCollect;
 		distMeasure *pDistMeasure;
 		localization *pLocalizitation;
 		dataEx *pDataEx;
+
+		bool debug;
+		bool verbose;
 
 };

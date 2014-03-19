@@ -15,11 +15,8 @@ Purpose:		Defines the interface to the admin tool responsible for managing
 class DataExAdmin : Admin
 {
 	public:
-		DataExAdmin (dataEx *);
 		virtual void configure ();
 		virtual void test ();
 
 		static const int TEST_DURATION = 20;
-	private:
-		dataEx *pDataEx;
 };

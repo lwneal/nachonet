@@ -12,6 +12,7 @@ Purpose:		Defines the behavior of the stdCollect module which utilizes
 #include <iostream>
 #include <cstring>
 
+const std::string DEFAULT_IFACE = "wlan0";
 
 /******************************************************************************
  * Constructor: stdCollect
@@ -25,7 +26,6 @@ Purpose:		Defines the behavior of the stdCollect module which utilizes
  * Returned:		None
  *****************************************************************************/
 stdCollect::stdCollect (std::string interface, bool debug) : dataCollect (debug)
-, interface ("wlan0")
 {
 	this->interface = interface;
 }

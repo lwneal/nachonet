@@ -9,19 +9,6 @@ Purpose:		Implements the behavior of the admin tool that manages the Data
 
 #include "../../include/tools/DataExAdmin.h"
 
-/*******************************************************************************
- * Constructor:	DataExAdmin
- *
- * Description:	Initializes our copy of the Data Exchange object
- *
- * Parameters:	pDataEx - the object we want to manipulate
- *
- * Returned:		None
- ******************************************************************************/
-DataExAdmin::DataExAdmin (dataEx * pDataEx)
-{
-	this->pDataEx = pDataEx;
-}
 
 /*******************************************************************************
  * Method:			configure
@@ -37,21 +24,25 @@ void DataExAdmin::configure ()
 	location loc;
 	node thisNode;
 
-	if (NULL != pDataEx)
+	if (pNacho->pDataEx->alive ())
 	{
-		loc.theID.intID = pDataEx->getID ();
-		thisNode = pDataEx->nodes[pDataEx->getID ()];
+		std::cout << "You can't do that while NachoNet is running!\n";
+	}
+	else if (NULL == pNacho->pDataEx)
+	{
+		std::cout << "This node has not yet been added to NachoNet\n";
+	}
+	else
+	{
+		loc.theID.intID = pNacho->pDataEx->getID ();
+		thisNode = pNacho->pDataEx->nodes[pNacho->pDataEx->getID ()];
 
 		std::cout << "Please enter the location of this node ('x y'):";
 		std::cin >> loc.x >> loc.y;
 
 		thisNode.setLocation (loc);
 
-		pDataEx->nodes[pDataEx->getID ()] = thisNode;
-	}
-	else
-	{
-		std::cout << "This node has not been added to NachoNet\n";
+		pNacho->pDataEx->nodes[pNacho->pDataEx->getID ()] = thisNode;
 	}
 
 }
@@ -73,14 +64,14 @@ void DataExAdmin::test ()
 	Message message;
 	message.msg = dataEx::HELLO;
 
-	if (NULL != pDataEx)
+	if (NULL != pNacho->pDataEx)
 	{
-		for (auto & thisNode : pDataEx->nodes)
+		for (auto & thisNode : pNacho->pDataEx->nodes)
 		{
 			message.dest.push_back (thisNode.first);
 		}
 
-		pDataEx->ping(message);
+		pNacho->pDataEx->ping (message);
 		std::cout << "Pinging all nodes. Please wait a moment.\n";
 
 		startTimer = std::clock ();
@@ -90,11 +81,11 @@ void DataExAdmin::test ()
 			duration = ( std::clock() - startTimer ) / (double) CLOCKS_PER_SEC;
 		} while (duration < TEST_DURATION);
 
-		for (auto & thisNode : pDataEx->nodes)
+		for (auto & thisNode : pNacho->pDataEx->nodes)
 		{
 			std::cout << "Node " << thisNode.first << ": ";
 
-			if (pDataEx->lastPingResult(thisNode.first))
+			if (pNacho->pDataEx->lastPingResult (thisNode.first))
 			{
 				std::cout << "says hello\n";
 			}
@@ -106,7 +97,7 @@ void DataExAdmin::test ()
 	}
 	else
 	{
-		std::cout << "This node has not been added to NachoNet\n";
+		std::cout << "This node has not yet been added to NachoNet\n";
 	}
 
 

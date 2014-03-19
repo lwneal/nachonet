@@ -9,11 +9,12 @@ Purpose:		Defines the interface to a generic tool used for testing,
 
 #pragma once
 #include <fstream>
+#include "../nacho/NachoNet.h"
 
 class Admin
 {
 	public:
-		Admin ();
+		Admin (NachoNet *pNacho);
 		virtual ~Admin ();
 		virtual void options ();
 		virtual void test ();
@@ -24,5 +25,6 @@ class Admin
 
 	protected:
 		std::ostream os;
+		NachoNet *pNacho;
 
 };

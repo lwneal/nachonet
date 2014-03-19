@@ -14,10 +14,6 @@ Purpose:		Defines the interface to the admin object that will be used for
 class DataCollectAdmin : Admin
 {
 	public:
-		DataCollectAdmin (dataCollect *);
 		virtual void test ();
-
-	private:
-		dataCollect *pDataCollect;
 
 };

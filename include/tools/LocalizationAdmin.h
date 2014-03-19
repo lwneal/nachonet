@@ -14,10 +14,6 @@ Purpose:		Defines the interface to the admin tool that manages the
 class LocalizationAdmin : Admin
 {
 	public:
-		LocalizationAdmin (localization *);
 		virtual void test ();
-
-	private:
-		localization *pLocalization;
 
 };

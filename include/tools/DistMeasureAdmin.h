@@ -17,7 +17,6 @@ Purpose:		Defines the interface to the admin tool that will be used with the
 class DistMeasureAdmin : Admin
 {
 	public:
-		DistMeasureAdmin (distMeasure **);
 		virtual void options ();
 		virtual void configure ();
 		virtual void test ();
@@ -30,7 +29,6 @@ class DistMeasureAdmin : Admin
 		}DIST_EQN;
 
 	private:
-		distMeasure *pDistMeasure;
 		Config distConfig;
 };
 

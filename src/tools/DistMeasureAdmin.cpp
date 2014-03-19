@@ -9,22 +9,6 @@ Purpose:		Implements the admin tool that manages the Distance Measurement
 
 #include "../../include/tools/DistMeasureAdmin.h"
 
-/*******************************************************************************
- * Constructor:	DistMeasureAdmin
- *
- * Description:	Sets up the config file and stores the object pointer
- *
- * Parameters:	hDistMeasure - a handle the the Distance Measurement object
- * 														 because we may want to change what the object
- * 														 points to
- *
- * Returned:		None
- ******************************************************************************/
-DistMeasureAdmin::DistMeasureAdmin (distMeasure ** hDistMeasure)
-: distConfig("dist.conf")
-{
-	pDistMeasure = *hDistMeasure;
-}
 
 /*******************************************************************************
  * Method:			options
@@ -39,35 +23,44 @@ void DistMeasureAdmin::options ()
 {
 	char choice;
 
-	std::cout << "\nPlease select an equation to use:\n";
-	std::cout << "1) Path Loss (default)\n";
-	std::cout << "2) Free Space Path Loss\n";
-	std::cout << "3) Log Normal Shadow Model\n";
-	do
+	if (pNacho->pDataEx->alive ())
 	{
-		std::cin >> choice;
-	} while (PATH_LOSS != (int)choice && FREE_SPACE_PATH_LOSS != (int)choice
-					 && LOG_NORMAL_SHADOW != (int)choice);
-
-	switch ( (int)choice)
-	{
-		case FREE_SPACE_PATH_LOSS:
-			delete pDistMeasure;
-			pDistMeasure = new fsPathLoss (false, &distConfig);
-			break;
-
-		case LOG_NORMAL_SHADOW:
-			delete pDistMeasure;
-			pDistMeasure = new logNormalShadow (false, &distConfig);
-			break;
-
-		default:
-			delete pDistMeasure;
-			pDistMeasure = new pathLoss (false, &distConfig);
-			break;
+		std::cout << "You can't do that while NachoNet is running!\n";
 	}
+	else
+	{
 
-	std::cout << "Be sure to check the configuration for the current equation\n";
+		std::cout << "\nPlease select an equation to use:\n";
+		std::cout << "1) Path Loss (default)\n";
+		std::cout << "2) Free Space Path Loss\n";
+		std::cout << "3) Log Normal Shadow Model\n";
+		do
+		{
+			std::cin >> choice;
+		} while (PATH_LOSS != (int)choice && FREE_SPACE_PATH_LOSS != (int)choice
+						 && LOG_NORMAL_SHADOW != (int)choice);
+
+		switch ( (int)choice)
+		{
+			case FREE_SPACE_PATH_LOSS:
+				delete pNacho->pDistMeasure;
+				pNacho->pDistMeasure = new fsPathLoss (pNacho->isDebug (), &distConfig);
+				break;
+
+			case LOG_NORMAL_SHADOW:
+				delete pNacho->pDistMeasure;
+				pNacho->pDistMeasure = new logNormalShadow (pNacho->isDebug (),
+																										&distConfig);
+				break;
+
+			default:
+				delete pNacho->pDistMeasure;
+				pNacho->pDistMeasure = new pathLoss (pNacho->isDebug (), &distConfig);
+				break;
+		}
+
+		std::cout << "Check the configuration for the current equation\n";
+	}
 }
 
 /*******************************************************************************
@@ -88,32 +81,40 @@ void DistMeasureAdmin::configure ()
 	std::string name, input;
 	std::pair<std::string, std::string> update;
 
-	if(NULL != pDistMeasure)
+	if (pNacho->pDataEx->alive ())
+	{
+		std::cout << "You can't do that while NachoNet is running!\n";
+	}
+	else
 	{
 
-		name = pDistMeasure->getName();
-
-		keyVal = distConfig.read(name);
-
-		iter = keyVal.begin();
-
-		std::cout << "Enter a number to update the value or 0 to leave it alone\n";
-		std::cout << name << std::endl;
-
-		for (auto & entry : keyVal)
+		if(NULL != pNacho->pDistMeasure)
 		{
-			std::cout << (*iter).first << " (" << (*iter).second << "): ";
-			std::cin >> input;
 
-			if(0 != input.compare("0"))
+			name = pNacho->pDistMeasure->getName();
+
+			keyVal = distConfig.read(name);
+
+			iter = keyVal.begin();
+
+			std::cout << "Enter a number to update the value or 0 to leave it alone\n";
+			std::cout << name << std::endl;
+
+			for (auto & entry : keyVal)
 			{
-				update = std::make_pair((*iter).first, input);
+				std::cout << (*iter).first << " (" << (*iter).second << "): ";
+				std::cin >> input;
 
-				updates.push_back(update);
+				if(0 != input.compare("0"))
+				{
+					update = std::make_pair((*iter).first, input);
+
+					updates.push_back(update);
+				}
 			}
-		}
 
-		distConfig.write(name, updates);
+			distConfig.write(name, updates);
+		}
 	}
 }
 
@@ -135,29 +136,36 @@ void DistMeasureAdmin::test ()
 	ssMeasurement devSS;
 	distMeasurement devDist;
 
-	Admin::test ();
-
-	do
+	if (pNacho->pDataEx->alive ())
 	{
-		std::cout << "Please enter a valid input file name: ";
-		std::cin >> fileName;
-
-		testFile.open (fileName.c_str());
-	} while (!testFile);
-
-	if(NULL != pDistMeasure)
-	{
-		//input file is devID SS
-		while(!testFile.eof ())
-		{
-			testFile >> devSS.devID >> devSS.ss;
-			devDist = pDistMeasure->measure (devSS);
-
-			os << devDist.devID << "  " << devDist.dist << "\n";
-		}
+		std::cout << "You can't do that while NachoNet is running!\n";
 	}
+	else
+	{
+		Admin::test ();
 
-	testFile.close ();
+		do
+		{
+			std::cout << "Please enter a valid input file name: ";
+			std::cin >> fileName;
+
+			testFile.open (fileName.c_str());
+		} while (!testFile);
+
+		if(NULL != pNacho->pDistMeasure)
+		{
+			//input file is devID SS
+			while(!testFile.eof ())
+			{
+				testFile >> devSS.devID >> devSS.ss;
+				devDist = pNacho->pDistMeasure->measure (devSS);
+
+				os << devDist.devID << "  " << devDist.dist << "\n";
+			}
+		}
+
+		testFile.close ();
+	}
 
 }
 

@@ -9,19 +9,6 @@ Purpose:		Implements the functionality required to test the Data Collection
 
 #include "../../include/tools/DataCollectAdmin.h"
 
-/*******************************************************************************
- * Constructor:	DataCollectAdmin
- *
- * Description:	Initializes the local copy of the Data Collection object
- *
- * Parameters:	None
- *
- * Returned:		None
- ******************************************************************************/
-DataCollectAdmin::DataCollectAdmin (dataCollect *pDataCollect)
-{
-	this->pDataCollect = pDataCollect;
-}
 
 /*******************************************************************************
  * Method:			test
@@ -37,19 +24,26 @@ void DataCollectAdmin::test ()
 {
 	std::vector<ssMeasurement> values;
 
-	Admin::test ();
-
-	do
+	if (pNacho->pDataEx->alive ())
 	{
-		pDataCollect->readFromNetwork();
-	} while (!pDataCollect->isReadyToRead());
-
-
-	values = pDataCollect->getSS ();
-
-	for (auto item : values)
+		std::cout << "You can't do that while NachoNet is running!\n";
+	}
+	else
 	{
-		os << item.devID << "  " << item.ss << "\n";
+		Admin::test ();
+
+		do
+		{
+			pNacho->pDataCollect->readFromNetwork();
+		} while (!pNacho->pDataCollect->isReadyToRead());
+
+
+		values = pNacho->pDataCollect->getSS ();
+
+		for (auto item : values)
+		{
+			os << item.devID << "  " << item.ss << "\n";
+		}
 	}
 }
 

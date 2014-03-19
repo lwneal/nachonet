@@ -27,7 +27,6 @@
 	 "_id" : nodeID,
 	 "_rev" : [auto],
 	 "ip" : ipAddr,
-	 "state" : state,
 	 "message" : [{"msg" : message, "src" : nodeID}, ...]
  }
  *******************************************************************************/

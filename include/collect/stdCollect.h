@@ -21,6 +21,8 @@ class stdCollect : public dataCollect
 		stdCollect (std::string interface, bool debug = false);
 		virtual void readFromNetwork ();
 
+		static const std::string DEFAULT_IFACE;
+
 
 		const int CAPTURE_LENGTH = 2048;
 		const int PACKETS_TO_GRAB = 512;

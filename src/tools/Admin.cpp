@@ -11,15 +11,17 @@ Purpose:		Implements the basic functionality required by our admin tool
 /*******************************************************************************
  * Constructor:	Admin
  *
- * Description:	Initializes the output stream to null
+ * Description:	Initializes the output stream to and grab the pointer to the
+ * 							NachoNet object
  *
  * Parameters:	None
  *
  * Returned:		None
  ******************************************************************************/
-Admin::Admin ()
+Admin::Admin (NachoNet *pNacho)
 {
 	os = 0;
+	this->pNacho = pNacho;
 }
 
 /*******************************************************************************

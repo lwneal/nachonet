@@ -7,7 +7,6 @@ Purpose:		Provides the menu structure for testing modules, managing nodes, and
 						managing NachoNet
 *******************************************************************************/
 
-#include "../../include/tools//adminTools.h"
 #include <string.h>
 #include <iostream>
 #include <stdlib.h>

@@ -18,10 +18,8 @@ Purpose:		This is the main object that brings all of the pieces of NachoNet
 class NachoNet
 {
 	public:
-		NachoNet ();
+		NachoNet (bool debug, bool verbose);
 		~NachoNet ();
-		void menu ();
-		int menuSelect ();
 		void start ();
 		void stop ();
 		void listDevices ();
@@ -35,30 +33,6 @@ class NachoNet
 		void setDebug (bool debug);
 		void setVerbose (bool verbose);
 
-		typedef enum Menus { MAIN = 0,
-											 TEST,
-											 MANAGE
-										 } Menus;
-
-		typedef enum MainMenu { EXIT = -1,
-														TEST_MENU,
-														MANAGE_MENU,
-														START,
-														STOP,
-														LIST_DEVICES
-													} MainMenu;
-
-		typedef enum TestMenu { DATA_COLLECTION = 0,
-														DIST_MEASUREMENT,
-														DATA_EXCHANGE,
-														LOCALIZATION
-													} TestMenu;
-
-		typedef enum ManageMenu { ADD_NODE = 0,
-															DROP_NODE,
-															CALIBRATE_DIST,
-															SET_NODE_LOC
-													} ManageMenu;
 
 	private:
 		dataCollect *pDataCollect;

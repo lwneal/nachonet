@@ -8,6 +8,7 @@ Purpose:		Defines the interface to a generic tool used for testing,
 *******************************************************************************/
 
 #pragma once
+#include <fstream>
 
 class Admin
 {

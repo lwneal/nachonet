@@ -13,7 +13,6 @@ Purpose:		Defines the interface to the admin tool that will be used with the
 #include "../dist/logNormalShadow.h"
 #include "../dist/pathLoss.h"
 #include "../util/config.h"
-#include <fstream>
 
 class DistMeasureAdmin : Admin
 {

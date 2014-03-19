@@ -1,0 +1,23 @@
+/*******************************************************************************
+File:				LocalizationAdmin.h
+Author: 		Josh Siva
+Date:				3/19/14
+Project:		NachoNet
+Purpose:		Defines the interface to the admin tool that manages the
+						Localization object
+*******************************************************************************/
+
+#pragma once
+#include "Admin.h"
+#include "../loc/loc.h"
+
+class LocalizationAdmin : Admin
+{
+	public:
+		LocalizationAdmin (localization *);
+		virtual void test ();
+
+	private:
+		localization *pLocalization;
+
+};

@@ -24,34 +24,6 @@ DataCollectAdmin::DataCollectAdmin (dataCollect *pDataCollect)
 }
 
 /*******************************************************************************
- * Method:			configure
- *
- * Description:	Calls the parent method
- *
- * Parameters:	None
- *
- * Returned:		None
- ******************************************************************************/
-void DataCollectAdmin::configure ()
-{
-	Admin::configure ();
-}
-
-/*******************************************************************************
- * Method:			options
- *
- * Description:	Calls the parent method
- *
- * Parameters:	None
- *
- * Returned:		None
- ******************************************************************************/
-void DataCollectAdmin::options ()
-{
-	Admin::options ();
-}
-
-/*******************************************************************************
  * Method:			test
  *
  * Description:	Calls the parent method and then collects a bunch of signal

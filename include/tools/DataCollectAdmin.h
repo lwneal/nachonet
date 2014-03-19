@@ -15,8 +15,6 @@ class DataCollectAdmin : Admin
 {
 	public:
 		DataCollectAdmin (dataCollect *);
-		virtual void configure ();
-		virtual void options ();
 		virtual void test ();
 
 	private:

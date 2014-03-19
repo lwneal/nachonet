@@ -100,7 +100,7 @@ void DistMeasureAdmin::configure ()
 		std::cout << "Enter a number to update the value or 0 to leave it alone\n";
 		std::cout << name << std::endl;
 
-		while(keyVal.end() != iter)
+		for (auto & entry : keyVal)
 		{
 			std::cout << (*iter).first << " (" << (*iter).second << "): ";
 			std::cin >> input;
@@ -111,8 +111,6 @@ void DistMeasureAdmin::configure ()
 
 				updates.push_back(update);
 			}
-
-			++iter;
 		}
 
 		distConfig.write(name, updates);

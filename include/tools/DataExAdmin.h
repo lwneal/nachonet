@@ -9,10 +9,7 @@ Purpose:		Defines the interface to the admin tool responsible for managing
 
 #pragma once
 #include "Admin.h"
-#include "../exch/dataEx.h"
 #include <ctime>
-
-class dataEx;
 
 class DataExAdmin : public Admin
 {

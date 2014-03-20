@@ -12,7 +12,7 @@ Purpose:		Defines the behavior of the stdCollect module which utilizes
 #include <iostream>
 #include <cstring>
 
-const std::string DEFAULT_IFACE = "wlan0";
+const std::string stdCollect::DEFAULT_IFACE = "wlan0";
 
 /******************************************************************************
  * Constructor: stdCollect

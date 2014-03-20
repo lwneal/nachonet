@@ -183,6 +183,27 @@ std::string dataEx::getDevForUpdate ()
 }
 
 /*******************************************************************************
+ * Method:			getNodeIDs
+ *
+ * Description:	Get a vector of the IDs of nodes in NachoNet
+ *
+ * Parameters:	None
+ *
+ * Returned:		vector of IDs (ints)
+ ******************************************************************************/
+std::vector<int> dataEx::getNodeIDs ()
+{
+	std::vector<int> ids;
+
+	for (auto thisNode : nodes)
+	{
+		ids.push_back (thisNode.first);
+	}
+
+	return ids;
+}
+
+/*******************************************************************************
  * Method:			getMeasurements
  *
  * Description:	Gets a vector of three reference measurements to be sent off to
@@ -380,21 +401,25 @@ void dataEx::addNode (node newNode)
 /*******************************************************************************
  * Method:			dropNode
  *
- * Description:	Remove a node from NachoNet
+ * Description:	Remove a node from NachoNet and returns it
  *
  * Parameters:	id - the id of the node to remove
  *
- * Returned:		None
+ * Returned:		the node that was just removed
  ******************************************************************************/
-void dataEx::dropNode (int id)
+node dataEx::dropNode (int id)
 {
+	node returnNode;
 	std::map<int, node>::iterator it;
 	it = nodes.find (id);
 
 	if (nodes.end () != it)
 	{
+		returnNode = it->second;
 		nodes.erase (it);
 	}
+
+	return returnNode;
 }
 
 /*******************************************************************************

@@ -39,14 +39,17 @@ void DataExAdmin::configure ()
 	else
 	{
 		loc.theID.intID = pNacho->pDataEx->getID ();
-		thisNode = pNacho->pDataEx->nodes[pNacho->pDataEx->getID ()];
+		thisNode = pNacho->pDataEx->dropNode (pNacho->pDataEx->getID ());
 
-		std::cout << "Please enter the location of this node ('x y'):";
-		std::cin >> loc.x >> loc.y;
+		do
+		{
+			std::cout << "Please enter the location of this node x y:";
+		 std::cin >> loc.x >> loc.y;
+		} while (0 > loc.x || 0 > loc.y);
 
 		thisNode.setLocation (loc);
 
-		pNacho->pDataEx->nodes[pNacho->pDataEx->getID ()] = thisNode;
+		pNacho->pDataEx->addNode (thisNode);
 	}
 
 }
@@ -78,9 +81,9 @@ void DataExAdmin::test ()
 	}
 	else
 	{
-		for (auto & thisNode : pNacho->pDataEx->nodes)
+		for (int id : pNacho->pDataEx->getNodeIDs ())
 		{
-			message.dest.push_back (thisNode.first);
+			message.dest.push_back (id);
 		}
 
 		pNacho->pDataEx->ping (message);
@@ -94,11 +97,11 @@ void DataExAdmin::test ()
 			duration = ( std::clock() - startTimer ) / (double) CLOCKS_PER_SEC;
 		} while (duration < TEST_DURATION);
 
-		for (auto & thisNode : pNacho->pDataEx->nodes)
+		for (int id : pNacho->pDataEx->getNodeIDs ())
 		{
-			std::cout << "Node " << thisNode.first << ": ";
+			std::cout << "Node " << id << ": ";
 
-			if (pNacho->pDataEx->lastPingResult (thisNode.first))
+			if (pNacho->pDataEx->lastPingResult (id))
 			{
 				std::cout << "says hello\n";
 			}

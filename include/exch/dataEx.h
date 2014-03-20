@@ -10,7 +10,6 @@ Purpose:		Defines the abstract data exchange object that is responsible for
 #pragma once
 #include "node.h"
 #include "device.h"
-#include "../tools/DataExAdmin.h"
 #include <iterator>
 
 typedef struct Message
@@ -22,7 +21,6 @@ typedef struct Message
 
 class dataEx
 {
-	friend class DataExAdmin;
   public:
     dataEx ();
     virtual ~dataEx ();
@@ -34,9 +32,8 @@ class dataEx
     bool alive () const;
     void setPingStatus (int nodeID, bool status);
     bool lastPingResult (int nodeID);
-
     std::string getDevForUpdate ();
-
+    std::vector<int> getNodeIDs ();
     std::vector<refMeasurement> getMeasurements (std::string id);
     void updateDevLocation (std::string id, location loc);
     void updateDevMeasurement (distMeasurement dist);
@@ -46,7 +43,7 @@ class dataEx
     void clearNodes ();
 
     virtual void addNode (node newNode);
-    virtual void dropNode (int id);
+    virtual node dropNode (int id);
     virtual void addDevice (device newDev);
     virtual void dropDevice (std::string id);
 

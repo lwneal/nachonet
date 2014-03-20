@@ -36,9 +36,9 @@ class NachoNet
 		static const std::string DIST_CONFIG_FILE;
 
 	private:
-		dataCollect *pDataCollect;
-		distMeasure *pDistMeasure;
-		localization *pLocalization;
+		dataCollect * pDataCollect;
+		distMeasure * pDistMeasure;
+		localization * pLocalization;
 		dataEx *pDataEx;
 		std::thread * pWorker;
 		std::thread * pListener;
@@ -46,6 +46,5 @@ class NachoNet
 		bool debug;
 		bool verbose;
 		bool active;
-		bool pauseListener;
 
 };

@@ -64,7 +64,15 @@ void DataExAdmin::test ()
 	Message message;
 	message.msg = dataEx::HELLO;
 
-	if (NULL != pNacho->pDataEx)
+	if (pNacho->pDataEx->alive ())
+	{
+		std::cout << "You can't do that while NachoNet is running!\n";
+	}
+	else if (NULL == pNacho->pDataEx)
+	{
+		std::cout << "This node has not yet been added to NachoNet\n";
+	}
+	else
 	{
 		for (auto & thisNode : pNacho->pDataEx->nodes)
 		{
@@ -94,10 +102,6 @@ void DataExAdmin::test ()
 				std::cout << "NO RESPONSE\n";
 			}
 		}
-	}
-	else
-	{
-		std::cout << "This node has not yet been added to NachoNet\n";
 	}
 
 

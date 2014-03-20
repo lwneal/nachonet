@@ -14,48 +14,45 @@ VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 
 .PHONY: all clean package zeus jsonDriver_valgrind
 
-all: bin/adminTools bin/prototype bin/distDriver bin/configDriver \
+all: bin/nachonet bin/prototype bin/distDriver bin/configDriver \
 bin/collectDriver bin/jsonDriver bin/dataExDriver
 
-########################ADMIN TOOLS###############################
-
-bin/adminTools: bin/adminTools.o bin/adminToolsDriver.o \
-bin/adminDistMeasure.o bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o \
-bin/dist.o bin/config.o bin/loc.o bin/adminLocalization.o bin/dataCollect.o \
-bin/stdCollect.o bin/radiotap-parser.o bin/adminDataCollect.o \
-include/tools/adminTools.h 
-	${CC} ${CFLAGS} -o bin/adminTools bin/adminTools.o bin/adminToolsDriver.o \
-	bin/adminDistMeasure.o bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o \
-	bin/dist.o bin/config.o bin/loc.o bin/adminLocalization.o bin/dataCollect.o \
-	bin/stdCollect.o bin/radiotap-parser.o bin/adminDataCollect.o -lcurl -lpcap
-
-bin/prototype: bin/prototype.o include/tools/adminTools.h
-	${CC} ${CLFAGS} -o bin/prototype bin/prototype.o -lcurl
-
-bin/adminTools.o: src/tools/adminTools.cpp include/tools/adminTools.h \
-src/tools/adminDistMeasure.cpp include/tools/adminDistMeasure.h 
-	${CC} ${CFLAGS} -o bin/adminTools.o -c src/tools/adminTools.cpp
+########################NACHONET AND TOOLS###############################
+bin/nachonet: bin/dataCollect.o bin/stdCollect.o bin/dist.o bin/pathLoss.o \
+bin/fsPathLoss.o bin/logNormalShadow.o bin/dataEx.o bin/dataExOnTheCouch.o \
+bin/node.o bin/device.o bin/multicast.o bin/loc.o bin/radiotap-parser.o \
+bin/main.o bin/Admin.o bin/DataCollectAdmin.o bin/DistMeasureAdmin.o \
+bin/DataExAdmin.o bin/LocalizationAdmin.o
+	${CC} ${CFLAGS} -o bin/nachonet bin/dataCollect.o bin/stdCollect.o bin/dist.o\
+	 bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o bin/dataEx.o \
+	 bin/dataExOnTheCouch.o bin/node.o bin/device.o bin/multicast.o bin/loc.o \
+	 bin/radiotap-parser.o bin/main.o bin/Admin.o bin/DataCollectAdmin.o \
+	 bin/DistMeasureAdmin.o bin/DataExAdmin.o bin/LocalizationAdmin.o \
+	 -lpcap -lm -lcurl
 	
-bin/adminToolsDriver.o: src/tools/adminToolsDriver.cpp \
-include/tools/adminTools.h
-	${CC} ${CFLAGS} -o bin/adminToolsDriver.o -c src/tools/adminToolsDriver.cpp
+bin/main.o: src/tools/main.cpp 
+	${CC} ${CFLAGS} -o bin/main.o -c src/tools/main.cpp
 
-bin/adminDistMeasure.o: src/tools/adminDistMeasure.cpp \
-include/tools/adminDistMeasure.h src/dist/pathLoss.cpp src/dist/fsPathLoss.cpp \
-src/dist/logNormalShadow.cpp src/util/config.cpp include/util/config.h \
-src/dist/dist.cpp include/dist/dist.h
-	${CC} ${CFLAGS} -o bin/adminDistMeasure.o -c src/tools/adminDistMeasure.cpp
-	
-bin/adminLocalization.o: src/tools/adminLocalization.cpp \
-include/tools/adminLocalization.h include/loc/loc.h src/loc/loc.cpp
-	${CC} ${CFLAGS} -o bin/adminLocalization.o -c \
-	src/tools/adminLocalization.cpp
-	
-bin/adminDataCollect.o: src/tools/adminDataCollect.cpp \
-include/tools/adminDataCollect.h include/collect/dataCollect.h \
-include/collect/stdCollect.h src/collect/dataCollect.cpp \
-src/collect/stdCollect.cpp
-	${CC} ${CFLAGS} -o bin/adminDataCollect.o -c src/tools/adminDataCollect.cpp
+bin/NachoNet.o: include/nacho/NachoNet.h src/nacho/NachoNet.cpp
+	${CC} ${CFLAGS} -o bin/NachoNet.o -c src/tools/NachoNet.cpp
+
+bin/Admin.o: include/tools/Admin.h src/tools/Admin.cpp
+	${CC} ${CFLAGS} -o bin/Admin.o -c src/tools/Admin.cpp
+
+bin/DataCollectAdmin.o: include/tools/DataCollectAdmin.h \
+src/tools/DataCollectAdmin.cpp
+	${CC} ${CFLAGS} -o bin/DataCollectAdmin.o -c src/tools/DataCollectAdmin.cpp
+
+bin/DistMeasureAdmin.o: include/tools/DistMeasureAdmin.h \
+src/tools/DistMeasureAdmin.cpp
+	${CC} ${CFLAGS} -o bin/DistMeasureAdmin.o -c src/tools/DistMeasureAdmin.cpp
+
+bin/DataExAdmin.o: include/tools/DataExAdmin.h src/tools/DataExAdmin.cpp
+	${CC} ${CFLAGS} -o bin/DataExAdmin.o -c src/tools/DataExAdmin.cpp
+
+bin/LocalizationAdmin.o: include/tools/LocalizationAdmin.h \
+src/tools/LocalizationAdmin.cpp
+	${CC} ${CFLAGS} -o bin/LocalizationAdmin.o -c src/tools/LocalizationAdmin.cpp
 	
 bin/prototype.o: src/prototype.cpp include/tools/adminTools.h
 	${CC} ${CFLAGS} -o bin/prototype.o -c src/prototype.cpp

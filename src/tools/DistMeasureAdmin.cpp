@@ -10,6 +10,11 @@ Purpose:		Implements the admin tool that manages the Distance Measurement
 #include "../../include/tools/DistMeasureAdmin.h"
 
 
+DistMeasureAdmin::DistMeasureAdmin (NachoNet *pNacho) : Admin (pNacho)
+{
+
+}
+
 /*******************************************************************************
  * Method:			options
  *
@@ -102,7 +107,7 @@ void DistMeasureAdmin::configure ()
 
 			for (auto & entry : keyVal)
 			{
-				std::cout << (*iter).first << " (" << (*iter).second << "): ";
+				std::cout << entry.first << " (" << entry.second << "): ";
 				std::cin >> input;
 
 				if(0 != input.compare("0"))
@@ -160,7 +165,7 @@ void DistMeasureAdmin::test ()
 				testFile >> devSS.devID >> devSS.ss;
 				devDist = pNacho->pDistMeasure->measure (devSS);
 
-				os << devDist.devID << "  " << devDist.dist << "\n";
+				*pOut << devDist.devID << "  " << devDist.dist << "\n";
 			}
 		}
 

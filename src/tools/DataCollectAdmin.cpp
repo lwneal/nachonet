@@ -9,6 +9,9 @@ Purpose:		Implements the functionality required to test the Data Collection
 
 #include "../../include/tools/DataCollectAdmin.h"
 
+DataCollectAdmin::DataCollectAdmin (NachoNet *pNacho) : Admin (pNacho)
+{
+}
 
 /*******************************************************************************
  * Method:			test
@@ -42,7 +45,7 @@ void DataCollectAdmin::test ()
 
 		for (auto item : values)
 		{
-			os << item.devID << "  " << item.ss << "\n";
+			*pOut << item.devID << "  " << item.ss << "\n";
 		}
 	}
 }

@@ -11,9 +11,10 @@ Purpose:		Defines the interface to the admin object that will be used for
 #include "Admin.h"
 #include "../collect/stdCollect.h"
 
-class DataCollectAdmin : Admin
+class DataCollectAdmin : public Admin
 {
 	public:
+		DataCollectAdmin (NachoNet *pNacho);
 		virtual void test ();
 
 };

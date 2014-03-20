@@ -8,6 +8,8 @@ Purpose:		Implements the basic functionality required by our admin tool
 
 #include "../../include/tools/Admin.h"
 
+std::ostream* Admin::pOut = NULL;
+
 /*******************************************************************************
  * Constructor:	Admin
  *
@@ -20,7 +22,7 @@ Purpose:		Implements the basic functionality required by our admin tool
  ******************************************************************************/
 Admin::Admin (NachoNet *pNacho)
 {
-	os = 0;
+	pOut = &std::cout;
 	this->pNacho = pNacho;
 }
 
@@ -83,17 +85,16 @@ void Admin::test ()
 
 		if (!outFile.fail())
 		{
-			os = outFile;
+			pOut = &outFile;
 		}
 		else
 		{
 			std::cout << "\nFailed to open file!\n";
-			os = std::cout;
 		}
 	}
 	else
 	{
-		os = std::cout;
+		pOut = &std::cout;
 	}
 }
 
@@ -111,6 +112,11 @@ void Admin::configure ()
 {
 	std::cout << "\nNo configuration behavior has been defined.\n";
 }
+
+/*static std::ostream& Admin::out ()
+{
+	return *pOut;
+}*/
 
 
 

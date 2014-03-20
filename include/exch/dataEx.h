@@ -10,6 +10,7 @@ Purpose:		Defines the abstract data exchange object that is responsible for
 #pragma once
 #include "node.h"
 #include "device.h"
+#include "../tools/DataExAdmin.h"
 #include <iterator>
 
 typedef struct Message
@@ -21,6 +22,7 @@ typedef struct Message
 
 class dataEx
 {
+	friend class DataExAdmin;
   public:
     dataEx ();
     virtual ~dataEx ();

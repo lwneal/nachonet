@@ -15,10 +15,17 @@ Purpose:		This is the main object that brings all of the pieces of NachoNet
 #include "../exch/dataExOnTheCouch.h"
 #include "../loc/loc.h"
 #include "../tools/Admin.h"
+#include "../exch/dataEx.h"
+#include "../exch/dataExOnTheCouch.h"
+
 
 class NachoNet
 {
 	friend class Admin;
+	friend class DataCollectAdmin;
+	friend class DistMeasureAdmin;
+	friend class DataExAdmin;
+	friend class LocalizationAdmin;
 	public:
 		NachoNet (bool debug, bool verbose);
 		~NachoNet ();

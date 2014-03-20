@@ -11,6 +11,8 @@ Purpose:		Defines the interface to a generic tool used for testing,
 #include <fstream>
 #include "../nacho/NachoNet.h"
 
+class NachoNet;
+
 class Admin
 {
 	public:
@@ -20,11 +22,13 @@ class Admin
 		virtual void test ();
 		virtual void configure ();
 
+		//static std::ostream& out ();
+
 		static const char YES = 'y';
 		static const char NO = 'n';
 
 	protected:
-		std::ostream os;
+		static std::ostream * pOut;
 		NachoNet *pNacho;
 
 };

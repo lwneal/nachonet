@@ -10,6 +10,10 @@ Purpose:		Implements the behavior of the admin tool that manages the Data
 #include "../../include/tools/DataExAdmin.h"
 
 
+DataExAdmin::DataExAdmin (NachoNet *pNacho) : Admin (pNacho)
+{
+}
+
 /*******************************************************************************
  * Method:			configure
  *
@@ -80,6 +84,7 @@ void DataExAdmin::test ()
 		}
 
 		pNacho->pDataEx->ping (message);
+
 		std::cout << "Pinging all nodes. Please wait a moment.\n";
 
 		startTimer = std::clock ();

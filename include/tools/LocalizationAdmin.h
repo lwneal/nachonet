@@ -11,9 +11,10 @@ Purpose:		Defines the interface to the admin tool that manages the
 #include "Admin.h"
 #include "../loc/loc.h"
 
-class LocalizationAdmin : Admin
+class LocalizationAdmin : public Admin
 {
 	public:
+		LocalizationAdmin (NachoNet *pNacho);
 		virtual void test ();
 
 };

@@ -12,9 +12,12 @@ Purpose:		Defines the interface to the admin tool responsible for managing
 #include "../exch/dataEx.h"
 #include <ctime>
 
-class DataExAdmin : Admin
+class dataEx;
+
+class DataExAdmin : public Admin
 {
 	public:
+		DataExAdmin (NachoNet *pNacho);
 		virtual void configure ();
 		virtual void test ();
 

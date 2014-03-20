@@ -9,6 +9,10 @@ Purpose:
 
 #include "../../include/tools/LocalizationAdmin.h"
 
+LocalizationAdmin::LocalizationAdmin (NachoNet *pNacho) : Admin (pNacho)
+{
+}
+
 /*******************************************************************************
  * Method:			test
  *
@@ -64,7 +68,7 @@ void LocalizationAdmin::test ()
 
 			devLoc = pNacho->pLocalization->localize (ref1, ref2, ref3);
 
-			os << devLoc.theID.strID << "  (" << devLoc.x << ", " << devLoc.y
+			*pOut << devLoc.theID.strID << "  (" << devLoc.x << ", " << devLoc.y
 				 << ")\n";
 		}
 

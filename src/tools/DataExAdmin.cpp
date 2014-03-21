@@ -28,7 +28,7 @@ void DataExAdmin::configure ()
 	location loc;
 	node thisNode;
 
-	if (pNacho->pDataEx->alive ())
+	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
 	{
 		std::cout << "You can't do that while NachoNet is running!\n";
 	}
@@ -71,7 +71,7 @@ void DataExAdmin::test ()
 	Message message;
 	message.msg = dataEx::HELLO;
 
-	if (pNacho->pDataEx->alive ())
+	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
 	{
 		std::cout << "You can't do that while NachoNet is running!\n";
 	}

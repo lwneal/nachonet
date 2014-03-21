@@ -12,7 +12,7 @@ CFLAGS=-g -Wall
 
 VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 
-.PHONY: all clean package zeus jsonDriver_valgrind
+.PHONY: all clean package zeus jsonDriver_valgrind nachonet_valgrind
 
 all: bin/nachonet bin/prototype bin/distDriver bin/configDriver \
 bin/collectDriver bin/jsonDriver bin/dataExDriver
@@ -30,6 +30,9 @@ bin/jsonParser.o bin/NachoNet.o
 	 bin/radiotap-parser.o bin/main.o bin/Admin.o bin/DataCollectAdmin.o \
 	 bin/DistMeasureAdmin.o bin/DataExAdmin.o bin/LocalizationAdmin.o \
 	 bin/config.o bin/json.o bin/jsonParser.o bin/NachoNet.o -lpcap -lm -lcurl
+	 
+nachonet_valgrind: bin/nachonet
+	valgrind ${VALGRIND_OPTIONS} bin/nachonet
 	
 bin/main.o: src/tools/main.cpp 
 	${CC} ${CFLAGS} -o bin/main.o -c src/tools/main.cpp

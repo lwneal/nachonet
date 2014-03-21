@@ -10,9 +10,9 @@ Purpose:		Implements the admin tool that manages the Distance Measurement
 #include "../../include/tools/DistMeasureAdmin.h"
 
 
-DistMeasureAdmin::DistMeasureAdmin (NachoNet *pNacho) : Admin (pNacho)
+DistMeasureAdmin::DistMeasureAdmin (NachoNet *pNacho) : Admin (pNacho),
+distConfig (NachoNet::DIST_CONFIG_FILE)
 {
-
 }
 
 /*******************************************************************************
@@ -26,9 +26,9 @@ DistMeasureAdmin::DistMeasureAdmin (NachoNet *pNacho) : Admin (pNacho)
  ******************************************************************************/
 void DistMeasureAdmin::options ()
 {
-	char choice;
+	int choice;
 
-	if (pNacho->pDataEx->alive ())
+	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
 	{
 		std::cout << "You can't do that while NachoNet is running!\n";
 	}
@@ -41,9 +41,10 @@ void DistMeasureAdmin::options ()
 		std::cout << "3) Log Normal Shadow Model\n";
 		do
 		{
+			std::cout << "\nEnter your selection: ";
 			std::cin >> choice;
-		} while (PATH_LOSS != (int)choice && FREE_SPACE_PATH_LOSS != (int)choice
-						 && LOG_NORMAL_SHADOW != (int)choice);
+		} while (PATH_LOSS != choice && FREE_SPACE_PATH_LOSS != choice
+						 && LOG_NORMAL_SHADOW != choice);
 
 		switch ( (int)choice)
 		{
@@ -86,7 +87,7 @@ void DistMeasureAdmin::configure ()
 	std::string name, input;
 	std::pair<std::string, std::string> update;
 
-	if (pNacho->pDataEx->alive ())
+	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
 	{
 		std::cout << "You can't do that while NachoNet is running!\n";
 	}

@@ -30,7 +30,7 @@ void LocalizationAdmin::test ()
 	location devLoc;
 	refMeasurement ref1, ref2, ref3;
 
-	if (pNacho->pDataEx->alive ())
+	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
 	{
 		std::cout << "You can't do that while NachoNet is running!\n";
 	}

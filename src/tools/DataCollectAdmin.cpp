@@ -27,7 +27,7 @@ void DataCollectAdmin::test ()
 {
 	std::vector<ssMeasurement> values;
 
-	if (pNacho->pDataEx->alive ())
+	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
 	{
 		std::cout << "You can't do that while NachoNet is running!\n";
 	}

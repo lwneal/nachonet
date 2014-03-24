@@ -15,7 +15,7 @@ VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 .PHONY: all clean package zeus jsonDriver_valgrind nachonet_valgrind
 
 all: bin/nachonet bin/prototype bin/distDriver bin/configDriver \
-bin/collectDriver bin/jsonDriver bin/dataExDriver
+bin/collectDriver bin/jsonDriver bin/dataExDriver bin/multicastDriver
 
 ########################NACHONET AND TOOLS###############################
 bin/nachonet: bin/dataCollect.o bin/stdCollect.o bin/dist.o bin/pathLoss.o \
@@ -135,6 +135,12 @@ bin/dataEx.o: include/exch/dataEx.h src/exch/dataEx.cpp
 bin/dataExOnTheCouch.o: include/exch/dataExOnTheCouch.h \
 src/exch/dataExOnTheCouch.cpp
 	${CC} ${CFLAGS} -o bin/dataExOnTheCouch.o -c src/exch/dataExOnTheCouch.cpp
+	
+bin/multicastDriver: bin/MulticastDriver.o bin/multicast.o
+	${CC} ${CFLAGS} -o bin/multicastDriver bin/MulticastDriver.o bin/multicast.o
+
+bin/MulticastDriver.o: src/exch/MulticastDriver.cpp include/exch/multicast.h
+	${CC} ${CFLAGS} -o bin/MulticastDriver.o -c src/exch/MulticastDriver.cpp
 
 ##########################Utilities###############################
 

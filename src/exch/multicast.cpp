@@ -13,7 +13,7 @@ Purpose:		Implements the behavior of the multicast object whose job it is to
 #include "../../include/exch/multicast.h"
 
 const std::string multicast::MULTICAST_GROUP = "225.1.1.1";
-const std::string multicast::LOCAL_INTERFACE = "9.5.1.1";
+const std::string multicast::LOCAL_INTERFACE = "127.0.0.1";
 
 /*******************************************************************************
  * Constructor:	multicast
@@ -36,39 +36,14 @@ multicast::multicast (int port, std::string localIfaceAddr,
 
 	problem = false;
 
-	sd = socket (AF_INET, SOCK_DGRAM, 0);
+	sndSD = socket (AF_INET, SOCK_DGRAM, 0);
 
-	if (sd < 0)
+	if (sndSD < 0)
 	{
 		//error
+		perror ("send socket");
 		problem = true;
 	}
-
-	//Configure the receiver side
-	memset ((char *) &localSock, 0, sizeof(localSock));
-  localSock.sin_family = AF_INET;
-  localSock.sin_port = htons(port);
-  localSock.sin_addr.s_addr  = INADDR_ANY;
-
-  if (bind (sd, (struct sockaddr*)&localSock, sizeof(localSock)))
-  {
-  	//error
-  	problem = true;
-  	close (sd);
-  }
-
-  group.imr_multiaddr.s_addr = inet_addr(multicastGroupAddr.c_str());
-  group.imr_interface.s_addr = inet_addr(localIfaceAddr.c_str());
-
-  if (setsockopt (sd, IPPROTO_IP, IP_ADD_MEMBERSHIP,(char *)&group,
-  								sizeof(group)) < 0)
-  {
-  	//error
-  	problem = true;
-  	close (sd);
-  }
-
-
 
 	//Configure the transmitter side
 	memset((char *) &groupSock, 0, sizeof(groupSock));
@@ -76,23 +51,64 @@ multicast::multicast (int port, std::string localIfaceAddr,
   groupSock.sin_addr.s_addr = inet_addr(multicastGroupAddr.c_str());
   groupSock.sin_port = htons(port);
 
-  if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_LOOP,
+  if (setsockopt (sndSD, IPPROTO_IP, IP_MULTICAST_LOOP,
                 (char *)&loopBack, sizeof(loopBack)) < 0)
   {
     //error
+  	perror ("socket options writer");
   	problem = true;
-  	close (sd);
+  	close (sndSD);
   }
 
   localInterface.s_addr = inet_addr(localIfaceAddr.c_str ());
-  if (setsockopt(sd, IPPROTO_IP, IP_MULTICAST_IF,
+  if (setsockopt(sndSD, IPPROTO_IP, IP_MULTICAST_IF,
                  (char *)&localInterface,
                  sizeof(localInterface)) < 0)
   {
   	//error
+  	perror ("socket options writer");
   	problem = true;
-  	close (sd);
+  	close (sndSD);
   }
+
+
+  //Configure the receiver side
+  rcvSD = socket (AF_INET, SOCK_DGRAM, 0);
+  if (rcvSD < 0)
+	{
+		//error
+		perror ("receive socket");
+		problem = true;
+	}
+
+  memset ((char *) &localSock, 0, sizeof(localSock));
+  localSock.sin_family = AF_INET;
+  localSock.sin_port = htons(port);
+  localSock.sin_addr.s_addr  = htonl (INADDR_ANY);
+
+  if (bind (rcvSD, (struct sockaddr*)&localSock, sizeof(localSock)))
+  {
+  	//error
+  	perror ("binding socket");
+  	problem = true;
+  	close (rcvSD);
+  }
+
+  group.imr_multiaddr.s_addr = inet_addr(multicastGroupAddr.c_str());
+  group.imr_interface.s_addr = inet_addr(localIfaceAddr.c_str());
+
+  if (setsockopt (rcvSD, IPPROTO_IP, IP_ADD_MEMBERSHIP,(char *)&group,
+  								sizeof(group)) < 0)
+  {
+  	//error
+  	perror ("socket options reader");
+  	problem = true;
+  	close (rcvSD);
+  }
+
+
+
+
 }
 
 /*******************************************************************************
@@ -106,7 +122,8 @@ multicast::multicast (int port, std::string localIfaceAddr,
  ******************************************************************************/
 multicast::~multicast ()
 {
-	close (sd);
+	close (sndSD);
+	close (rcvSD);
 }
 
 /*******************************************************************************
@@ -123,12 +140,12 @@ void multicast::transmit (char data[BUF_LENGTH])
 {
 	if (!problem)
 	{
-		if (sendto(sd, data, BUF_LENGTH, 0,(struct sockaddr*)&groupSock,
+		if (sendto (sndSD, data, BUF_LENGTH, 0,(struct sockaddr*)&groupSock,
 						 sizeof(groupSock)) < 0)
 		{
 			//error
 			problem = true;
-			close (sd);
+			close (sndSD);
 		}
 	}
 }
@@ -149,18 +166,18 @@ std::string multicast::receive ()
 
 	//fill the buffer with null terminators so that we know what an empty message
 	//looks like
-	for (int i; i < BUF_LENGTH; i++)
+	for (int i = 0; i < BUF_LENGTH; i++)
 	{
 		dataBuf[i] = '\0';
 	}
 
 	if (!problem)
 	{
-		if (read(sd, dataBuf, BUF_LENGTH) < 0)
+		if (read(rcvSD, dataBuf, BUF_LENGTH) < 0)
 		{
 			//error
 			problem = true;
-			close (sd);
+			close (rcvSD);
 		}
 
 		message = dataBuf;

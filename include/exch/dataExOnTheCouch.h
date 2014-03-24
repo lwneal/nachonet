@@ -80,7 +80,7 @@ class dataExOnTheCouch : public dataEx
     void updateCouchFromNode ();
     void updateCouchFromDevs ();
 
-    multicast nachoCast;
+    multicast * pNachoCast;
     bool stillGreetingNodes;
     std::thread * pGreeter;
 

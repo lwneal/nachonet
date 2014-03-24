@@ -84,7 +84,7 @@ const std::string dataExOnTheCouch::ROWS = "rows";
  *
  * Returned:		None
  ******************************************************************************/
-dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
+dataExOnTheCouch::dataExOnTheCouch ()
 {
 	struct ifaddrs * pIfaceAddr = NULL;
 	struct ifaddrs * pIface = NULL;
@@ -118,6 +118,8 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 			inet_ntop (AF_INET, pTempAddr, addrBuffer, INET_ADDRSTRLEN);
 
 			myAddress = addrBuffer;
+			pNachoCast = new multicast (multicast::DEFAULT_PORT, myAddress,
+																	multicast::MULTICAST_GROUP);
 			setIP (myAddress);
 		}
 
@@ -134,13 +136,10 @@ dataExOnTheCouch::dataExOnTheCouch () : nachoCast ()
 		message[i] = '\0';
 	}
 
-	for (unsigned int i = 0; i < myAddress.length(); i++)
-	{
-		message[i] = myAddress[i];
-	}
+	memcpy (message, myAddress.c_str (), myAddress.length ());
 
 	//broadcast our IP address to anybody listening
-	nachoCast.transmit (message);
+	pNachoCast->transmit (message);
 
 	startTimeout = std::clock ();
 
@@ -333,6 +332,8 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 	pGreeter->join ();
 	delete pGreeter;
 
+	delete pNachoCast;
+
 }
 
 /*******************************************************************************
@@ -391,7 +392,7 @@ void dataExOnTheCouch::greetNewNode ()
 
 	while (stillGreetingNodes)
 	{
-		message = nachoCast.receive ();
+		message = pNachoCast->receive ();
 
 		//is the message more than just null terminators
 		if (0 < message.size ())

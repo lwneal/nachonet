@@ -37,7 +37,8 @@ class multicast
 
 	private:
 		bool problem;
-		int sd;
+		int sndSD;
+		int rcvSD;
 
 		//write
 		struct in_addr localInterface;

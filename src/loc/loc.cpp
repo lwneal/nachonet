@@ -39,7 +39,7 @@ localization::localization(bool debug)
  * 							ref3 - the reference measurement from node 3
  *
  * Returned:		location - the location of the device
- */
+ ******************************************************************************/
 
 location localization::localize(refMeasurement ref1, refMeasurement ref2,
 																refMeasurement ref3)

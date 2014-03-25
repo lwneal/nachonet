@@ -1072,9 +1072,11 @@ CURLcode dataExOnTheCouch::curlPost(const std::string& url,
 	if (curl)
 	{
 		if (CURLE_OK
-				== (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str()))
-				&& CURLE_OK == (code =
-				curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers))
+					== (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str()))
+				&& CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers))
+				&& CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT"))
 				&& CURLE_OK
 						== (code = curl_easy_setopt(curl, CURLOPT_URL, url.c_str())))
 		{

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Test Page</title>
+		<script type="text/JavaScript" src="jsDraw2D.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+		<script type="text/javascript">
+			var db = "/" + window.location.href.split("/")[3];
+
+			function getDevCoor ()
+			{
+				$.ajax (
+				{
+					url: db + "/_design/coords/_view/coords",
+					success: function (data)
+					{
+						var view = JSON.parse(data);
+						var coords = [];
+						$(view.rows).each(function (index,item)
+						{
+							coords.push (item.value);
+						});
+
+						displayCoor (coords);
+
+						drawCoor (coords, "blue");
+					} 
+				});			
+			}
+
+			function displayCoor (coords)
+			{
+				var html = "<table>";
+				$(coords).each(function (index, coor)
+				{
+					html += "<tr>";
+					html += "<td>" + coor.x + "</td>";
+					html += "<td>" + coor.y + "</td>"
+					html += "</tr>";
+				});
+
+				html += "</table>";
+
+				$('#coords').empty ();
+				$('#coords').append(html);
+			}
+
+			function drawCoor (coords, color)
+			{
+				var canvas = new jsGraphics(document.getElementById("canvas"));
+				var col = new jsColor(color);
+
+				$(coords).each(function (index, coor)
+				{
+					var pt = new jsPoint (50 * coor.x + 20, 50 * coor.y + 20);
+					canvas.fillCircle(col, pt, 5);
+				});
+
+			}
+
+			function createDevView ()
+			{
+				var view = 
+				{
+					"language" : "javascript",
+					"views" : {"coords" : 
+											{"map" : 
+												"function(doc) {if (doc.coor) {emit(doc.id, doc.coor);}}"
+											}
+										}
+				}
+
+				$.ajax (
+				{
+					type : "PUT",
+					url :  db + "/_design/coords",
+					contentType : "application/json",
+					data: JSON.stringify(view)
+				});
+			}
+		
+
+		</script>
+	</head>
+	<body onload="createDevView(); getDevCoor ();">
+		<h1>Coordinates</h1>
+		<div id="coords"></div>
+	</body>
+
+</html>

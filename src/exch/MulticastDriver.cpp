@@ -17,6 +17,15 @@ Purpose:		Tests the multicast object by setting up either a sender or
 #include <sys/types.h>
 #include <arpa/inet.h>
 
+/*******************************************************************************
+ * Function:
+ *
+ * Description:
+ *
+ * Parameters:
+ *
+ * Returned:
+ ******************************************************************************/
 void initBuffer (char * buffer, int size)
 {
 	for (int i = 0; i < size; i++)
@@ -25,6 +34,15 @@ void initBuffer (char * buffer, int size)
 	}
 }
 
+/*******************************************************************************
+ * Function:
+ *
+ * Description:
+ *
+ * Parameters:
+ *
+ * Returned:
+ ******************************************************************************/
 int main (int argc, char** argv)
 {
 	const char * EXIT = "exit";

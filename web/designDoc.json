@@ -1,0 +1,21 @@
+{
+	"_id" : "_/design/map",
+	"lists" : 
+	{
+		"printPoints" : "function(doc, req) 
+		{
+			provides("html", function () 
+			{
+				html = "<script type = 'text/JavaScript'>";
+				html += "var gr = new 
+					jsGraphics(document.getElementById
+					('canvas'));"
+				while (row = getRow())
+				{
+					html += "var pt1 = new jsPoint(row."	
+				}
+			}
+		}"	
+
+	}
+}

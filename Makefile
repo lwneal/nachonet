@@ -149,7 +149,7 @@ bin/MulticastDriver.o: src/exch/MulticastDriver.cpp include/exch/multicast.h
 bin/mapDriver: bin/MapDriver.o bin/Map.o bin/MapOnTheCouch.o bin/json.o \
 bin/jsonParser.o
 	${CC} ${CFLAGS} -o bin/mapDriver bin/MapDriver.o bin/Map.o \
-	bin/MapOnTheCouch.o bin/json.o bin/jsonParser.o -lcurl -lpthread -lX11
+	bin/MapOnTheCouch.o bin/json.o bin/jsonParser.o -lcurl -lpthread -lX11 -lm
 
 bin/MapDriver.o: src/map/MapDriver.cpp
 	${CC} ${CFLAGS} -o bin/MapDriver.o -c src/map/MapDriver.cpp

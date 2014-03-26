@@ -13,6 +13,8 @@ Purpose:		The interface of the Map objected implemented through CouchDB
 #include "../../extern/CImg-1.5.8/CImg.h"
 #include <curl/curl.h>
 #include <sstream>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 class MapOnTheCouch : public Map
 {
@@ -32,11 +34,14 @@ class MapOnTheCouch : public Map
 		static const std::string WIDTH;
 		static const std::string HEIGHT;
 		static const std::string REVISION;
+		static const std::string RESPONSE_REV; //the key for a rev on a response is
+																					 //different
 
 	private:
 		//from http://www.cplusplus.com/forum/unices/45878/
     CURLcode curlRead(const std::string& url, std::ostream& os,
     										long timeout = CURL_TIMEOUT);
     CURLcode curlPutImage(const std::string& url);
-    CURLcode curlPutJSON(const std::string& url, const std::string& json);
+    CURLcode curlPutJSON(const std::string& url, const std::string& json,
+    										 std::ostream& os);
 };

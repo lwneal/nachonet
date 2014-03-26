@@ -18,83 +18,114 @@ const std::string MapOnTheCouch::Y = "y";
 const std::string MapOnTheCouch::WIDTH = "width";
 const std::string MapOnTheCouch::HEIGHT = "height";
 const std::string MapOnTheCouch::REVISION ="_rev";
+const std::string MapOnTheCouch::RESPONSE_REV = "rev";
 
+using namespace cimg_library;
+
+/*******************************************************************************
+ * Method:			save
+ *
+ * Description:	Save the data in the class to the couch. Also send the height
+ * 							and width of the image to the couch so that we can scale
+ * 							appropriately later. (Note: we are sending both the file name
+ * 							and the file itself)
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
 void MapOnTheCouch::save ()
 {
-	std::ostringstream oss;
+	std::ostringstream oss, response;
 	std::string url = RES_LOCATION;
 	JSON resource, maxDim, imgDim;
-	jsonParser parser;
+	jsonParser * pParser;
 	jsonData data, objData;
 	int width = 0, height = 0;
-	FILE *pFile = NULL;
 
-	pFile = fopen (getMapFileName ().c_str (), "rb");
+	CImg<unsigned char> image;
 
-	if (NULL == pFile)
+	try
 	{
-		std::cout << "Error opening file.\n";
+		image.load(getMapFileName ().c_str ());
 	}
-	else
+	catch (cimg_library::CImgIOException &e)
 	{
-		fclose (pFile);
-		const cimg_library::CImg<unsigned char> image =
-				cimg_library::CImg<>(getMapFileName ().c_str ());
-
-		std::cout << "Opened file. Processing...\n";
-		width = image.width ();
-		height = image.height ();
-
-		std::cout << "Processed. Getting data from couch...\n";
-
-		if (CURLE_OK == curlRead (RES_LOCATION, oss))
-		{
-			// Web page successfully written to string
-			parser.init (oss.str ());
-			resource = parser.getObject ();
-
-			data.type = jsonParser::STR_TYPE;
-			data.value.strVal = getMapFileName ();
-			resource.setValue (FILE_NAME, data);
-
-			data.type = jsonParser::FLT_TYPE;
-			data.value.floatVal = getMaxX ();
-			maxDim.setValue (X, data);
-
-			data.value.floatVal = getMaxY ();
-			maxDim.setValue (Y, data);
-
-			objData.type = jsonParser::OBJ_TYPE;
-			objData.value.pObject = &maxDim;
-			resource.setValue (MAX_DIM, objData);
-
-			data.type = jsonParser::INT_TYPE;
-			data.value.intVal = width;
-			imgDim.setValue (WIDTH, data);
-
-			data.value.intVal = height;
-			imgDim.setValue (HEIGHT, data);
-
-			objData.type = jsonParser::OBJ_TYPE;
-			objData.value.pObject = &imgDim;
-			resource.setValue (IMG_DIM, objData);
-
-			std::cout << "Data retrieved. Pushing updates to couch...\n";
-
-			curlPutJSON (RES_LOCATION, resource.writeJSON (""));
-
-			//we have to specify the which revision of the doc to which we
-			//want to attach the image
-			url += "/image?rev=";
-			url += resource.getData (REVISION).value.strVal;
-
-			curlPutImage (url);
-
-			std::cout << "Operation complete.\n";
-		}
+		std::cout << e._message << "\n";
 	}
+
+
+	std::cout << "Opened file. Processing...\n";
+	width = image.width ();
+	height = image.height ();
+
+	std::cout << "Processed. Getting data from couch...\n";
+
+	if (CURLE_OK == curlRead (RES_LOCATION, oss))
+	{
+		// Web page successfully written to string
+		pParser = new jsonParser (oss.str ());
+		resource = pParser->getObject ();
+		delete pParser;
+
+		data.type = jsonParser::STR_TYPE;
+		data.value.strVal = getMapFileName ();
+		resource.setValue (FILE_NAME, data);
+
+		data.type = jsonParser::FLT_TYPE;
+		data.value.floatVal = getMaxX ();
+		maxDim.setValue (X, data);
+
+		data.value.floatVal = getMaxY ();
+		maxDim.setValue (Y, data);
+
+		objData.type = jsonParser::OBJ_TYPE;
+		objData.value.pObject = &maxDim;
+		resource.setValue (MAX_DIM, objData);
+
+		data.type = jsonParser::INT_TYPE;
+		data.value.intVal = width;
+		imgDim.setValue (WIDTH, data);
+
+		data.value.intVal = height;
+		imgDim.setValue (HEIGHT, data);
+
+		objData.type = jsonParser::OBJ_TYPE;
+		objData.value.pObject = &imgDim;
+		resource.setValue (IMG_DIM, objData);
+
+		std::cout << "Data retrieved. Pushing updates to couch...\n";
+
+		curlPutJSON (RES_LOCATION, resource.writeJSON (""), response);
+
+		pParser = new jsonParser (response.str ());
+		resource = pParser->getObject ();
+		delete pParser;
+
+		//we have to specify the which revision of the doc to which we
+		//want to attach the image
+		url += "/image?rev=";
+		url += resource.getData (RESPONSE_REV).value.strVal;
+
+		std::cout << "putting image to: " << url << "\n";
+
+		curlPutImage (url);
+
+		std::cout << "Operation complete.\n";
+	}
+
 }
 
+/*******************************************************************************
+ * Method:			load
+ *
+ * Description:	Grab the filename and max dimensions that are currently on the
+ * 							couch to update our members
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
 void MapOnTheCouch::load ()
 {
 	std::ostringstream oss;
@@ -118,7 +149,7 @@ void MapOnTheCouch::load ()
 }
 
 /*******************************************************************************
- * Method:			dataWrite
+ * Function:			dataWrite
  *
  * Description: A write call-back function used by curl_easy_setup on curlRead
  *
@@ -196,9 +227,10 @@ CURLcode MapOnTheCouch::curlPutImage(const std::string& url)
 	CURL* curl = curl_easy_init ();
 	struct curl_slist* headers = NULL;
 	FILE *pFile = NULL;
+	struct stat fileInfo;
 	headers = curl_slist_append (headers, "Content-Type: image/jpeg");
 
-	pFile = fopen (getMapFileName ().c_str (), "wb");
+	pFile = fopen (getMapFileName ().c_str (), "rb");
 
 	if (NULL == pFile)
 	{
@@ -206,14 +238,19 @@ CURLcode MapOnTheCouch::curlPutImage(const std::string& url)
 	}
 	else
 	{
+		fstat (fileno (pFile), &fileInfo);
+
 		if (curl)
 		{
 			if (CURLE_OK
-						== (code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, pFile))
+						== (code = curl_easy_setopt(curl, CURLOPT_READDATA, pFile))
+					&& CURLE_OK
+						== (code = curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L))
 					&& CURLE_OK
 						== (code = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers))
 					&& CURLE_OK
-						== (code = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT"))
+						== (code = curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE,
+																			 (curl_off_t)(fileInfo.st_size)))
 					&& CURLE_OK
 							== (code = curl_easy_setopt(curl, CURLOPT_URL, url.c_str())))
 			{
@@ -238,11 +275,13 @@ CURLcode MapOnTheCouch::curlPutImage(const std::string& url)
  *
  * Parameters:	url - the url to which we are sending our data
  * 							json - the json we want posted
+ * 							os - the result of running the command
  *
  * Returned:		CURLcode - the result of running the post command
  ******************************************************************************/
 CURLcode MapOnTheCouch::curlPutJSON(const std::string& url,
-																		const std::string& json)
+																		const std::string& json,
+																		std::ostream& os)
 {
 	CURLcode code (CURLE_FAILED_INIT);
 	CURL* curl = curl_easy_init ();
@@ -252,6 +291,9 @@ CURLcode MapOnTheCouch::curlPutJSON(const std::string& url,
 	if (curl)
 	{
 		if (CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &dataWrite))
+				&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &os))
+				&& CURLE_OK
 					== (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str()))
 				&& CURLE_OK
 					== (code = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers))

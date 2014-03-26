@@ -19,7 +19,8 @@ const std::string jsonParser::FALSE = "false";
 #define IS_OTHER_VALID_CHAR(c) ((c == '_') || (c == '\"') || (c == '\\') || \
 															 (c == '\b') || (c == '\f') || \
 															 (c == 'n') || (c == '\r') || (c == '\t'))
-#define IS_VALID_START_STR(c) (IS_LETTER(c) || IS_OTHER_VALID_CHAR(c))
+#define IS_VALID_START_STR(c) (IS_LETTER(c) || IS_OTHER_VALID_CHAR(c) || \
+															 IS_DIGIT(c))
 
 static int gFirsts[jsonParser::MAX_NONTERMINALS][jsonParser::MAX_FIRSTS] =
 {
@@ -199,7 +200,7 @@ void jsonParser::getNextToken ()
 				break;
 
 			default:
-				if (IS_DIGIT (ch))
+				if (QUOTE != prevTok.tokenClass && IS_DIGIT (ch))
 				{
 					returnTok.tokenClass = INT;
 

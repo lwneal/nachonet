@@ -12,10 +12,12 @@ CFLAGS=-g -Wall
 
 VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
 
-.PHONY: all clean package zeus jsonDriver_valgrind nachonet_valgrind
+.PHONY: all clean package zeus jsonDriver_valgrind nachonet_valgrind \
+valgrind_map
 
 all: bin/nachonet bin/prototype bin/distDriver bin/configDriver \
-bin/collectDriver bin/jsonDriver bin/dataExDriver bin/multicastDriver
+bin/collectDriver bin/jsonDriver bin/dataExDriver bin/multicastDriver \
+bin/mapDriver
 
 ########################NACHONET AND TOOLS###############################
 bin/nachonet: bin/dataCollect.o bin/stdCollect.o bin/dist.o bin/pathLoss.o \
@@ -141,6 +143,25 @@ bin/multicastDriver: bin/MulticastDriver.o bin/multicast.o
 
 bin/MulticastDriver.o: src/exch/MulticastDriver.cpp include/exch/multicast.h
 	${CC} ${CFLAGS} -o bin/MulticastDriver.o -c src/exch/MulticastDriver.cpp
+	
+#################################Map#####################################	
+
+bin/mapDriver: bin/MapDriver.o bin/Map.o bin/MapOnTheCouch.o bin/json.o \
+bin/jsonParser.o
+	${CC} ${CFLAGS} -o bin/mapDriver bin/MapDriver.o bin/Map.o \
+	bin/MapOnTheCouch.o bin/json.o bin/jsonParser.o -lcurl
+
+bin/MapDriver.o: src/map/MapDriver.cpp
+	${CC} ${CFLAGS} -o bin/MapDriver.o -c src/map/MapDriver.cpp
+	
+bin/Map.o: include/map/Map.h src/map/Map.cpp
+	${CC} ${CFLAGS} -o bin/Map.o -c src/map/Map.cpp
+
+bin/MapOnTheCouch.o:include/map/MapOnTheCouch.h src/map/MapOnTheCouch.cpp
+	${CC} ${CFLAGS} -o bin/MapOnTheCouch.o -c src/map/MapOnTheCouch.cpp
+
+valgrind_map: bin/mapDriver
+	valgrind ${VALGRIND_OPTIONS} bin/mapDriver
 
 ##########################Utilities###############################
 

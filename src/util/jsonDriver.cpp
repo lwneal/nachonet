@@ -160,6 +160,12 @@ int main ()
 	obj.clear ();
 	delete pParser;
 
+	std::string hardJSON;
+	std::cin >> hardJSON;
+	pParser = new jsonParser (hardJSON);
+	obj = pParser->getObject ();
+	delete pParser;
+
 	return 0;
 }
 

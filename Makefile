@@ -149,7 +149,7 @@ bin/MulticastDriver.o: src/exch/MulticastDriver.cpp include/exch/multicast.h
 bin/mapDriver: bin/MapDriver.o bin/Map.o bin/MapOnTheCouch.o bin/json.o \
 bin/jsonParser.o
 	${CC} ${CFLAGS} -o bin/mapDriver bin/MapDriver.o bin/Map.o \
-	bin/MapOnTheCouch.o bin/json.o bin/jsonParser.o -lcurl
+	bin/MapOnTheCouch.o bin/json.o bin/jsonParser.o -lcurl -lpthread -lX11
 
 bin/MapDriver.o: src/map/MapDriver.cpp
 	${CC} ${CFLAGS} -o bin/MapDriver.o -c src/map/MapDriver.cpp
@@ -157,7 +157,8 @@ bin/MapDriver.o: src/map/MapDriver.cpp
 bin/Map.o: include/map/Map.h src/map/Map.cpp
 	${CC} ${CFLAGS} -o bin/Map.o -c src/map/Map.cpp
 
-bin/MapOnTheCouch.o:include/map/MapOnTheCouch.h src/map/MapOnTheCouch.cpp
+bin/MapOnTheCouch.o:include/map/MapOnTheCouch.h src/map/MapOnTheCouch.cpp \
+extern/CImg-1.5.8/CImg.h
 	${CC} ${CFLAGS} -o bin/MapOnTheCouch.o -c src/map/MapOnTheCouch.cpp
 
 valgrind_map: bin/mapDriver

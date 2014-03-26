@@ -10,6 +10,7 @@ Purpose:		The interface of the Map objected implemented through CouchDB
 #include "Map.h"
 #include "../util/json.h"
 #include "../util/jsonParser.h"
+#include "../../extern/CImg-1.5.8/CImg.h"
 #include <curl/curl.h>
 #include <sstream>
 
@@ -38,6 +39,4 @@ class MapOnTheCouch : public Map
     										long timeout = CURL_TIMEOUT);
     CURLcode curlPutImage(const std::string& url);
     CURLcode curlPutJSON(const std::string& url, const std::string& json);
-
-    int getImageSize (FILE * pFile, int * pWidth, int * pHeight);
 };

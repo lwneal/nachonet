@@ -37,12 +37,13 @@ void MapOnTheCouch::save ()
 	}
 	else
 	{
-		std::cout << "Opened file. Processing...\n";
+		fclose (pFile);
+		const cimg_library::CImg<unsigned char> image =
+				cimg_library::CImg<>(getMapFileName ().c_str ());
 
-		if (!getImageSize (pFile, &width, &height))
-		{
-			std::cout << "Error getting image size.\n";
-		}
+		std::cout << "Opened file. Processing...\n";
+		width = image.width ();
+		height = image.height ();
 
 		std::cout << "Processed. Getting data from couch...\n";
 
@@ -89,10 +90,8 @@ void MapOnTheCouch::save ()
 
 			curlPutImage (url);
 
-			std::cout << "Opeation complete.\n";
+			std::cout << "Operation complete.\n";
 		}
-
-		fclose (pFile);
 	}
 }
 
@@ -116,153 +115,6 @@ void MapOnTheCouch::load ()
 
 		setMaxDimensions (x,y);
 	}
-}
-
-
-
-/*******************************************************************************
- * Function:		readByte
- *
- * Description: Read a byte from a file. Based on the routine at:
- * 							http://carnage-melon.tom7.org/stuff/jpegsize.html
- *
- * 							"This routine is as public domain as is legally allowed."
- *
- * Parameters:	ch - a byte of data
- * 							pFile - the file we're reading from
- *
- * Returned:		None
- ******************************************************************************/
-static void readByte (char ch, FILE * pFile)
-{
-	((ch) = getc ((pFile)));
-}
-
-/*******************************************************************************
- * Function:		readWord
- *
- * Description: Read a word from a file. Based on the routine at:
- * 							http://carnage-melon.tom7.org/stuff/jpegsize.html
- *
- * 							"This routine is as public domain as is legally allowed."
- *
- * Parameters:	ch - a byte of data
- * 							pFile - the file we're reading from
- *
- * Returned:		None
- ******************************************************************************/
-static void readWord (char ch, FILE *pFile)
-{
-	int c = 0, d = 0;
-	if ((c = getc ((pFile))) == EOF || (d = getc ((pFile))) == EOF)
-	{
-	}
-	else
-	{
-		(ch) = (c << 8) + (d);
-	}
-}
-
-/*******************************************************************************
- * Method:			getImageSize
- *
- * Description: Get the dimensions of a .jpeg image. Based on the routine at:
- * 							http://carnage-melon.tom7.org/stuff/jpegsize.html
- *
- * 							"This routine is as public domain as is legally allowed."
- *
- * Parameters:	pWidth - a pointer to int that holds the width of the image
- * 							pHeight - pointer to int that holds the height of the image
- *
- * Returned:		"Returns 0 on failure, nonzero on success"
- ******************************************************************************/
-int MapOnTheCouch::getImageSize (FILE * pFile, int * pWidth, int * pHeight)
-{
-	int marker = 0;
-	int dummy = 0;
-
-	if (getc (pFile) != 0xFF || getc (pFile) != 0xD8)
-	{
-		return 0;
-	}
-
-	while (true)
-	{
-		std::cout << marker << " ";
-
-		int discardedBytes = 0;
-		readByte (marker, pFile);
-		while (marker != 0xFF)
-		{
-			discardedBytes++;
-			readByte (marker, pFile);
-		}
-
-		do
-		{
-			readByte (marker, pFile);
-		} while (0xFF == marker);
-
-		if (0 != discardedBytes)
-		{
-			return 0;
-		}
-
-		switch (marker)
-		{
-			case 0xC0:
-			case 0xC1:
-			case 0xC2:
-			case 0xC3:
-			case 0xC5:
-			case 0xC6:
-			case 0xC7:
-			case 0xC9:
-			case 0xCA:
-			case 0xCB:
-			case 0xCD:
-			case 0xCE:
-			case 0xCF:
-			{
-				readWord (dummy, pFile);	/* usual parameter length count */
-				readByte (dummy, pFile);
-				readWord ((*pHeight), pFile);
-				readWord ((*pWidth), pFile);
-				readByte (dummy, pFile);
-
-				return 1;
-				break;
-			}
-
-			case 0xDA:
-			case 0xD9:
-				return 0;
-
-			default:
-			{
-				int length;
-
-				readWord (length, pFile);
-
-				if (length < 2)
-				{
-					return 0;
-				}
-
-				length -= 2;
-				while (length > 0)
-				{
-					readByte (dummy, pFile);
-					length--;
-				}
-			}
-			break;
-		}
-		std::cout << "(" << *pWidth << ", " << *pHeight << ")\n";
-	}
-
-	return 1; //to hide warning. this is unreachable
-
 }
 
 /*******************************************************************************

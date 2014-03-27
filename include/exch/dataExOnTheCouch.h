@@ -88,7 +88,8 @@ class dataExOnTheCouch : public dataEx
     //from http://www.cplusplus.com/forum/unices/45878/
     CURLcode curlRead(const std::string& url, std::ostream& os,
     										long timeout = CURL_TIMEOUT);
-    CURLcode curlPost(const std::string& url, const std::string& json);
+    CURLcode curlPost(const std::string& url, const std::string& json,
+    									std::ostream& os);
 
     std::map<int, std::string> nodeIPAddr;
 

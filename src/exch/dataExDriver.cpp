@@ -9,9 +9,12 @@ Purpose:		This driver is used for testing the data exchange module and its
 
 #include "../../include/exch/dataExOnTheCouch.h"
 
+bool gNoIssues = true;
+
 void fail (std::string errorMsg)
 {
 	std::cout << "FAILED: " << errorMsg << "\n";
+	gNoIssues = false;
 }
 
 int main ()
@@ -19,7 +22,7 @@ int main ()
 	const int NODE_ID = 10;
 	const std::string DEV_ID = "AABBCCDDEEFF";
 	const std::string DEV_ID_2 = "aabbccddeeff";
-	bool noIssues = true;
+
 	location loc, locChk;
 	distMeasurement dist;
 	refMeasurement distChk;
@@ -30,8 +33,8 @@ int main ()
 	node myNode (node::NO_ID, loc);
 	device myDev (DEV_ID);
 	multicast nachoCast;
-	dataEx * pDataEx;
-	pDataEx = new dataExOnTheCouch ();
+	dataEx * pDataEx = NULL;
+
 
 	//***************************************************************************
 	//														NODE TESTING
@@ -117,16 +120,64 @@ int main ()
 	//														MULTICAST TESTING
 	//***************************************************************************
 
-	//do stuff I suppose
+	//tested elsewhere
 
 
 	//***************************************************************************
-	//														DATA EXCHANGE TESTING
+	//										DATA EXCHANGE TESTING SINGLE NODE
 	//***************************************************************************
+	//be sure to check CouchDB for effects as well
+	pDataEx = new dataExOnTheCouch ();
+
+	//we shouldn't find anyone, so we should be node 0
+	if (0 != pDataEx->getID ())
+	{
+		fail ("data ex id not set correctly on instantiation");
+	}
+
+	//there are three nodes already hanging out in the db that we won't grab
+	if (1 != pDataEx->getNumNodes ())
+	{
+		fail ("data ex did not get the correct number of nodes on instantiation");
+	}
+
+	//though there are devs in the database, we should not get them because we
+	//haven't seen them yet
+	if (0 != pDataEx->getNumDevs ())
+	{
+		fail ("data ex did not get the correct number of devs on instantiation");
+	}
+
+	if (pDataEx->alive ())
+	{
+		fail ("data ex did not set alive state correctly on instantiation");
+	}
+
+	loc.theID.intID = 5;
+	loc.x = 5;
+	loc.y = 5;
+	node newNode (5, loc);
+
+	pDataEx->addNode (newNode);
+
+	if (2 != pDataEx->getNumNodes ())
+	{
+		fail ("data ex did not add node");
+	}
+
+	pDataEx->dropNode (5);
+
+	if (1 != pDataEx->getNumNodes ())
+	{
+		fail ("data ex did not drop node");
+	}
+
+
+
 
 	delete pDataEx;
 
-	if (noIssues)
+	if (gNoIssues)
 	{
 		std::cout << "\nTesting completed successfully. Nachos for everyone!\n";
 	}

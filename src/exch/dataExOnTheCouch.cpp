@@ -34,7 +34,7 @@
 #include "../../include/exch/dataExOnTheCouch.h"
 #include "../../include/util/config.h"
 
-const double dataExOnTheCouch::TIMEOUT = 60;
+const double dataExOnTheCouch::TIMEOUT = 10;
 
 const std::string dataExOnTheCouch::LOCALHOST = "127.0.0.1";
 
@@ -92,9 +92,9 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	char addrBuffer[INET_ADDRSTRLEN];
 	char message[multicast::BUF_LENGTH];
 	std::string myAddress, url;
-	std::ostringstream oss;
+	std::ostringstream oss, response;
 	JSON json;
-	jsonData data;
+	jsonData data, entry;
 	jsonParser parser;
 	std::clock_t startTimeout;
 	double duration;
@@ -118,17 +118,18 @@ dataExOnTheCouch::dataExOnTheCouch ()
 			inet_ntop (AF_INET, pTempAddr, addrBuffer, INET_ADDRSTRLEN);
 
 			myAddress = addrBuffer;
-			pNachoCast = new multicast (multicast::DEFAULT_PORT, myAddress,
-																	multicast::MULTICAST_GROUP);
-			setIP (myAddress);
-		}
 
+		}
 	}
 
 	if (NULL != pIfaceAddr)
 	{
 		freeifaddrs (pIfaceAddr);
 	}
+
+	pNachoCast = new multicast (multicast::DEFAULT_PORT, myAddress,
+															multicast::MULTICAST_GROUP);
+	setIP (myAddress);
 
 	//prepare our broadcast message
 	for (int i = 0; i < multicast::BUF_LENGTH; i++)
@@ -158,26 +159,33 @@ dataExOnTheCouch::dataExOnTheCouch ()
 			oss.str ("");
 		}
 
-		duration = ( std::clock() - startTimeout ) / (double) CLOCKS_PER_SEC;
+		duration = 10 * ( std::clock() - startTimeout ) / (double) CLOCKS_PER_SEC;
+		//std::cout << duration << "\n";
 
 	} while (0 >= json.getData (TOTAL_ROWS).value.intVal
-					 || TIMEOUT > duration);
+					 && TIMEOUT > duration);
 
 	//we heard back so we need to go through admin_db and set up our local data
 	//to prepare for the first full sync
 	if (0 < json.getData (TOTAL_ROWS).value.intVal)
 	{
-		for (auto & entry : json.getData (ROWS).value.array)
+		std::cout << "Found other node. Updating...\n";
+
+		for (int i = 0; i < json.getData (TOTAL_ROWS).value.intVal; i++)
 		{
-			nodeIPAddr[entry.value.pObject->getData(ID).value.intVal]
+			entry = json.getData (ROWS).value.array[i];
+
+			nodeIPAddr[atoi(entry.value.pObject->getData(ID).value.strVal.c_str ())]
 			           = entry.value.pObject->getData(IP).value.strVal;
 
-			nodes[entry.value.pObject->getData(ID).value.intVal] = newNode;
+			nodes[atoi(entry.value.pObject->getData(ID).value.strVal.c_str ())]
+								 = newNode;
 
 			//figure out our ID
-			if (entry.value.pObject->getData(ID).value.intVal > nextID)
+			if (atoi(entry.value.pObject->getData(ID).value.strVal.c_str ()) > nextID)
 			{
-				nextID = entry.value.pObject->getData(ID).value.intVal + 1;
+				nextID = atoi(entry.value.pObject->getData(ID).value.strVal.c_str ())
+								 + 1;
 			}
 		}
 
@@ -189,8 +197,9 @@ dataExOnTheCouch::dataExOnTheCouch ()
 
 
 	}
-	else if (TIMEOUT < duration) //we didn't hear back so we are the first node
+	else //if (TIMEOUT < duration) we didn't hear back so we are the first node
 	{
+		std::cout << "FiR57 p0As7!\n";
 		setID (0);
 	}
 
@@ -221,7 +230,9 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	url.append (std::to_string (DEFAULT_COUCH_PORT));
 	url += '/' + TARGET_DB[ADMIN] + '/' + std::to_string(getID ());
 
-	curlPost (url, json.writeJSON(""));
+	std::cout << "Adding to admin_db: " << json.writeJSON ("") << "\n";
+
+	curlPost (url, json.writeJSON(""), response);
 
 	json.clear ();
 	//we can put a mostly empty doc in for the node because this will get updated
@@ -234,12 +245,15 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	url.append (std::to_string (DEFAULT_COUCH_PORT));
 	url += '/' + TARGET_DB[NODES] + '/' + std::to_string(getID ());
 
-	curlPost (url, json.writeJSON(""));
+	curlPost (url, json.writeJSON(""), response);
 
 	//check to see if nodes are responsive
 	for (auto & host : nodes)
 	{
-		checkResponse.dest.push_back (host.first);
+		if (getID () != host.first) // we don't need to include ourselves
+		{
+			checkResponse.dest.push_back (host.first);
+		}
 	}
 
 	checkResponse.msg = HELLO;
@@ -272,7 +286,7 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 {
 	Message message;
 	std::string url;
-	std::ostringstream oss;
+	std::ostringstream oss, response;
 	JSON json;
 	jsonData data;
 	jsonParser parser;
@@ -303,7 +317,7 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 		data.value.boolVal = true;
 		json.setValue (DELETED, data);
 
-		curlPost (url, json.writeJSON(""));
+		curlPost (url, json.writeJSON(""), response);
 	}
 
 	url = "http://" + LOCALHOST + ':';
@@ -321,7 +335,7 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 		data.value.boolVal = true;
 		json.setValue (DELETED, data);
 
-		curlPost (url, json.writeJSON(""));
+		curlPost (url, json.writeJSON(""), response);
 	}
 
 	pushUpdates (ADMIN);
@@ -380,6 +394,7 @@ std::string dataExOnTheCouch::getIP () const
  ******************************************************************************/
 void dataExOnTheCouch::greetNewNode ()
 {
+	std::ostringstream response;
 	std::string message;
 	JSON json;
 	jsonData data;
@@ -429,7 +444,7 @@ void dataExOnTheCouch::greetNewNode ()
 
 			json.setValue (SOURCE, data);
 
-			curlPost ('/' + REPLICATE, json.writeJSON("")); //admin docs sent
+			curlPost ('/' + REPLICATE, json.writeJSON(""), response);//admin docs sent
 		}
 	}
 }
@@ -448,7 +463,7 @@ void dataExOnTheCouch::greetNewNode ()
 void dataExOnTheCouch::ping (Message message)
 {
 	std::string url = "";
-	std::ostringstream oss;
+	std::ostringstream oss, response;
 	JSON json, msgField;
 	jsonData data, entry;
 	jsonParser parser;
@@ -485,7 +500,7 @@ void dataExOnTheCouch::ping (Message message)
 
 			json.setValue (MESSAGE, data);
 
-			curlPost (url, json.writeJSON(""));
+			curlPost (url, json.writeJSON(""), response);
 
 			pushUpdates (ADMIN);
 		}
@@ -509,7 +524,7 @@ void dataExOnTheCouch::ping (Message message)
 void dataExOnTheCouch::checkMessages ()
 {
 	std::string url = "";
-	std::ostringstream oss;
+	std::ostringstream oss, response;
 	JSON json;
 	jsonData data;
 	jsonParser parser;
@@ -574,7 +589,7 @@ void dataExOnTheCouch::checkMessages ()
 		data.value.array.clear ();
 		json.setValue (MESSAGE, data);
 
-		curlPost (url, json.writeJSON(""));
+		curlPost (url, json.writeJSON(""), response);
 
 		//update messages
 		pushUpdates (ADMIN);
@@ -598,7 +613,7 @@ void dataExOnTheCouch::pushUpdates (int flag)
 {
 	JSON json;
 	jsonData data, entry;
-
+	std::ostringstream response;
 
 	for (auto & host : nodeIPAddr)
 	{
@@ -673,7 +688,7 @@ void dataExOnTheCouch::pushUpdates (int flag)
 		}
 
 
-		curlPost ('/' + REPLICATE, json.writeJSON(""));
+		curlPost ('/' + REPLICATE, json.writeJSON(""), response);
 	}
 
 
@@ -701,6 +716,8 @@ void dataExOnTheCouch::pullUpdates (int flag)
 	JSON json;
 	jsonData data;
 	std::map<int, std::string>::iterator host;
+	std::ostringstream response;
+
 	do
 	{
 		host = nodeIPAddr.begin ();
@@ -752,7 +769,7 @@ void dataExOnTheCouch::pullUpdates (int flag)
 			break;
 	}
 
-	curlPost ('/' + REPLICATE, json.writeJSON(""));
+	curlPost ('/' + REPLICATE, json.writeJSON(""), response);
 
 	switch (flag)
 	{
@@ -796,6 +813,7 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 			// Web page successfully written to string
 			parser.init (oss.str ());
 			json = parser.getObject ();
+			oss.str("");
 
 			//store revision id
 			nodeDBRevisions[thisNode.first] = (json.getData (REVISION)).value.strVal;
@@ -852,6 +870,7 @@ void dataExOnTheCouch::updateDevsFromCouch ()
 			// Web page successfully written to string
 			parser.init (oss.str ());
 			json = parser.getObject ();
+			oss.str("");
 
 			//store revision id
 			devDBRevisions[thisDev.first] = (json.getData (REVISION)).value.strVal;
@@ -879,6 +898,7 @@ void dataExOnTheCouch::updateDevsFromCouch ()
  ******************************************************************************/
 void dataExOnTheCouch::updateCouchFromNode ()
 {
+	std::ostringstream response;
 	std::string url = "";
 	JSON json, jsonLoc, jsonDist;
 	jsonData data, entry;
@@ -932,7 +952,7 @@ void dataExOnTheCouch::updateCouchFromNode ()
 		data.value.array.push_back (entry);
 	}
 
-	curlPost (url, json.writeJSON(""));
+	curlPost (url, json.writeJSON(""), response);
 
 }
 
@@ -949,6 +969,7 @@ void dataExOnTheCouch::updateCouchFromNode ()
 void dataExOnTheCouch::updateCouchFromDevs ()
 {
 	//use stored revision id
+	std::ostringstream response;
 	std::string url = "";
 	JSON json, jsonLoc;
 	jsonData data, entry;
@@ -980,7 +1001,7 @@ void dataExOnTheCouch::updateCouchFromDevs ()
 		data.value.pObject = &jsonLoc;
 		json.setValue (LOCATION, data);
 
-		curlPost (url, json.writeJSON(""));
+		curlPost (url, json.writeJSON(""), response);
 	}
 
 	//reset
@@ -1062,7 +1083,8 @@ CURLcode dataExOnTheCouch::curlRead (const std::string& url, std::ostream& os,
  * Returned:		CURLcode - the result of running the post command
  ******************************************************************************/
 CURLcode dataExOnTheCouch::curlPost(const std::string& url,
-																		const std::string& json)
+																		const std::string& json,
+																		std::ostream& os)
 {
 	CURLcode code (CURLE_FAILED_INIT);
 	CURL* curl = curl_easy_init ();
@@ -1072,6 +1094,9 @@ CURLcode dataExOnTheCouch::curlPost(const std::string& url,
 	if (curl)
 	{
 		if (CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &dataWrite))
+				&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &os))
+				&& CURLE_OK
 					== (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str()))
 				&& CURLE_OK
 					== (code = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers))

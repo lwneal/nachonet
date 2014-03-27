@@ -55,11 +55,11 @@ void MapOnTheCouch::save ()
 	}
 
 
-	std::cout << "Opened file. Processing...\n";
+	//std::cout << "Opened file. Processing...\n";
 	width = image.width ();
 	height = image.height ();
 
-	std::cout << "Processed. Getting data from couch...\n";
+	//std::cout << "Processed. Getting data from couch...\n";
 
 	if (CURLE_OK == curlRead (RES_LOCATION, oss))
 	{
@@ -94,7 +94,7 @@ void MapOnTheCouch::save ()
 		objData.value.pObject = &imgDim;
 		resource.setValue (IMG_DIM, objData);
 
-		std::cout << "Data retrieved. Pushing updates to couch...\n";
+		//std::cout << "Data retrieved. Pushing updates to couch...\n";
 
 		curlPutJSON (RES_LOCATION, resource.writeJSON (""), response);
 
@@ -107,7 +107,7 @@ void MapOnTheCouch::save ()
 		url += "/image?rev=";
 		url += resource.getData (RESPONSE_REV).value.strVal;
 
-		std::cout << "putting image to: " << url << "\n";
+		//std::cout << "putting image to: " << url << "\n";
 
 		curlPutImage (url);
 

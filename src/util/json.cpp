@@ -185,7 +185,10 @@ std::string JSON::writeValue (jsonData data)
 					returnString.push_back(',');
 				}
 
-				returnString.pop_back ();
+				if (1 != returnString.length ())
+				{
+					returnString.pop_back ();
+				}
 
 				returnString.push_back (']');
 

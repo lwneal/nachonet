@@ -88,7 +88,7 @@ bool Map::getUserInput ()
 
 		setMapFile (fileName);
 
-		std::cout << "Please enter the room's max dimensions\n";
+		std::cout << "Please enter the room's max dimensions in meters\n";
 		do
 		{
 			std::cout << "x: ";

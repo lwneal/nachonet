@@ -160,10 +160,28 @@ int main ()
 	obj.clear ();
 	delete pParser;
 
-	std::string hardJSON;
+	/*std::string hardJSON;
 	std::cin >> hardJSON;
 	pParser = new jsonParser (hardJSON);
+	obj = pParser->getObject ();*/
+
+	std::cout << "\nParse Array of Objects, iterate and print:\n";
+	std::cout << "{\"this\":[{\"x\":1}, {\"x\":2}]}\n";
+
+	pParser = new jsonParser("{\"this\":[{\"x\":1}, {\"x\":2}]}");
+
 	obj = pParser->getObject ();
+
+	for (auto &item : obj.getData("this").value.array)
+	{
+		std::cout << item.value.pObject->getData("x").value.intVal;
+		std::cout << " ";
+	}
+
+	std::cout << "\n";
+
+	obj.clear ();
+
 	delete pParser;
 
 	return 0;

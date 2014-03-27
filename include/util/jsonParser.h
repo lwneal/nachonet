@@ -15,15 +15,71 @@ class JSON;
 
 typedef struct jsonData
 {
+	jsonData& operator=(const jsonData& that)
+	{
+		//value = that.value;
+		value.array = that.value.array;
+		value.boolVal = that.value.boolVal;
+		value.floatVal = that.value.floatVal;
+		value.intVal = that.value.intVal;
+		value.strVal = that.value.strVal;
+		value.pObject = that.value.pObject;
+		type = that.type;
+
+		return *this;
+	}
+
 	typedef struct jsonVal
 	{
 		jsonVal ()
 		{
-			pObject = 0x0;
+			pObject = NULL;
 			intVal = 0;
 			floatVal = 0.0;
 			boolVal = false;
 		}
+
+		/*jsonVal (const jsonVal & that)
+		{
+			intVal = that.intVal;
+			strVal = that.strVal;
+			floatVal = that.floatVal;
+			array = that.array;
+			boolVal = that.boolVal;
+
+			pObject = new JSON;
+			*pObject = *(that.pObject);
+		}
+
+		~jsonVal ()
+		{
+			if (NULL != pObject)
+			{
+				delete pObject;
+				pObject = NULL;
+			}
+		}
+
+		jsonVal & operator= (const jsonVal& that)
+		{
+			if (this != &that)
+			{
+				intVal = that.intVal;
+				strVal = that.strVal;
+				floatVal = that.floatVal;
+				array = that.array;
+				boolVal = that.boolVal;
+
+				if (NULL != pObject)
+				{
+					delete pObject;
+				}
+
+				pObject = new JSON;
+				*pObject = *(that.pObject);
+			}
+			return *this;
+		}*/
 
 		int intVal;
 		std::string strVal;

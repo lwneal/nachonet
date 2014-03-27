@@ -61,7 +61,7 @@ const std::string dataExOnTheCouch::STATE = "state";
 const std::string dataExOnTheCouch::MESSAGE = "message";
 const std::string dataExOnTheCouch::MSG_TEXT = "msg";
 const std::string dataExOnTheCouch::MSG_SRC = "src";
-const std::string dataExOnTheCouch::DELETED = "deleted";
+const std::string dataExOnTheCouch::DELETED = "_deleted";
 const std::string dataExOnTheCouch::TOTAL_ROWS = "total_rows";
 const std::string dataExOnTheCouch::ROWS = "rows";
 
@@ -171,10 +171,8 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	{
 		std::cout << "Found other node. Updating...\n";
 
-		for (int i = 0; i < json.getData (TOTAL_ROWS).value.intVal; i++)
+		for (auto & entry : json.getData (ROWS).value.array)
 		{
-			entry = json.getData (ROWS).value.array[i];
-
 			nodeIPAddr[atoi(entry.value.pObject->getData(ID).value.strVal.c_str ())]
 			           = entry.value.pObject->getData(IP).value.strVal;
 
@@ -269,6 +267,8 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	pGreeter = new std::thread (&dataExOnTheCouch::greetNewNode,
 															this);
 
+	setIsAlive (false);
+
 }
 
 /*******************************************************************************
@@ -289,13 +289,16 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 	std::ostringstream oss, response;
 	JSON json;
 	jsonData data;
-	jsonParser parser;
+	jsonParser *pParser;
 
 	message.msg = GOODBYE;
 
 	for (auto & entry : nodeIPAddr)
 	{
-		message.dest.push_back (entry.first);
+		if (getID () != entry.first)
+		{
+			message.dest.push_back (entry.first);
+		}
 	}
 
 	ping (message);
@@ -309,8 +312,8 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 	if (CURLE_OK == curlRead (url, oss))
 	{
 		// Web page successfully written to string
-		parser.init (oss.str());
-		json = parser.getObject ();
+		pParser = new jsonParser (oss.str());
+		json = pParser->getObject ();
 		oss.str ("");
 
 		data.type = jsonParser::BOOL_TYPE;
@@ -318,6 +321,8 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 		json.setValue (DELETED, data);
 
 		curlPost (url, json.writeJSON(""), response);
+
+		delete pParser;
 	}
 
 	url = "http://" + LOCALHOST + ':';
@@ -327,8 +332,8 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 	if (CURLE_OK == curlRead (url, oss))
 	{
 		// Web page successfully written to string
-		parser.init (oss.str());
-		json = parser.getObject ();
+		pParser = new jsonParser (oss.str());
+		json = pParser->getObject ();
 		oss.str ("");
 
 		data.type = jsonParser::BOOL_TYPE;
@@ -336,6 +341,8 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 		json.setValue (DELETED, data);
 
 		curlPost (url, json.writeJSON(""), response);
+
+		delete pParser;
 	}
 
 	pushUpdates (ADMIN);

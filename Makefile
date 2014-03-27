@@ -10,14 +10,23 @@ CC=g++-4.7 -std=gnu++11
 
 CFLAGS=-g -Wall
 
-VALGRIND_OPTIONS=-v --leak-check=yes --track-origins=yes
+VALGRIND_OPTIONS=-v --leak-check=yes --leak-check=full --track-origins=yes \
+--show-reachable=yes
 
 .PHONY: all clean package zeus jsonDriver_valgrind nachonet_valgrind \
-valgrind_map
+map_valgrind dataEx_valgrind
 
 all: bin/nachonet bin/prototype bin/distDriver bin/configDriver \
 bin/collectDriver bin/jsonDriver bin/dataExDriver bin/multicastDriver \
-bin/mapDriver
+bin/mapDriver bin/configure
+
+########################CONFIGURATION####################################
+bin/configure: bin/Configure.o bin/json.o bin/jsonParser.o
+	${CC} ${CFLAGS} -o bin/configure bin/Configure.o bin/json.o \
+	bin/jsonParser.o -lcurl
+	
+bin/Configure.o: src/tools/Configure.cpp
+	${CC} ${CFLAGS} -o bin/Configure.o -c src/tools/Configure.cpp
 
 ########################NACHONET AND TOOLS###############################
 bin/nachonet: bin/dataCollect.o bin/stdCollect.o bin/dist.o bin/pathLoss.o \
@@ -145,6 +154,9 @@ bin/multicastDriver: bin/MulticastDriver.o bin/multicast.o
 bin/MulticastDriver.o: src/exch/MulticastDriver.cpp include/exch/multicast.h
 	${CC} ${CFLAGS} -o bin/MulticastDriver.o -c src/exch/MulticastDriver.cpp
 	
+dataEx_valgrind: bin/dataExDriver
+	valgrind ${VALGRIND_OPTIONS} bin/dataExDriver
+	
 #################################Map#####################################	
 
 bin/mapDriver: bin/MapDriver.o bin/Map.o bin/MapOnTheCouch.o bin/json.o \
@@ -162,7 +174,7 @@ bin/MapOnTheCouch.o:include/map/MapOnTheCouch.h src/map/MapOnTheCouch.cpp \
 extern/CImg-1.5.8/CImg.h
 	${CC} ${CFLAGS} -o bin/MapOnTheCouch.o -c src/map/MapOnTheCouch.cpp
 
-valgrind_map: bin/mapDriver
+map_valgrind: bin/mapDriver
 	valgrind ${VALGRIND_OPTIONS} bin/mapDriver
 
 ##########################Utilities###############################

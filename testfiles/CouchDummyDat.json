@@ -1,0 +1,11 @@
+{
+  "nodes" : 
+  [{"_id" : "1", "coor" : {"x" : 0, "y" : 0}, "measurements" : []},
+   {"_id" : "2", "coor" : {"x" : 7.2, "y" : 0}, "measurements" : []},
+   {"_id" : "3", "coor" : {"x" : 0, "y" : 13}, "measurements" : []},
+   {"_id" : "4", "coor" : {"x" : 7.2, "y" : 13}, "measurements" : []}],
+  "devices": 
+  [{"_id" : "AABBCCDDEEFF", "coor" : {"x" : 2, "y" : 4}},
+   {"_id" : "BBBBCCDDEEFF", "coor" : {"x" : 2, "y" : 10.6}},
+   {"_id" : "AAAACCDDEEFF", "coor" : {"x" : 5.4, "y" : 7.8}}]
+}

@@ -172,6 +172,11 @@ int main ()
 		fail ("data ex did not drop node");
 	}
 
+	//***************************************************************************
+	//										DATA EXCHANGE TESTING MULTIPLE NODES
+	//***************************************************************************
+	//be sure to check CouchDB for effects as well
+
 
 
 

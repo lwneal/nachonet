@@ -94,9 +94,10 @@ void JSON::clear ()
 	for (auto entry : keyVal)
 	{
 		if (jsonParser::OBJ_TYPE == entry.second.type
-				&& 0x0 != entry.second.value.pObject)
+				&& NULL != entry.second.value.pObject)
 		{
 			delete entry.second.value.pObject;
+			entry.second.value.pObject = NULL;
 		}
 	}
 

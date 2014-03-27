@@ -25,13 +25,14 @@ bin/fsPathLoss.o bin/logNormalShadow.o bin/dataEx.o bin/dataExOnTheCouch.o \
 bin/node.o bin/device.o bin/multicast.o bin/loc.o bin/radiotap-parser.o \
 bin/main.o bin/Admin.o bin/DataCollectAdmin.o bin/DistMeasureAdmin.o \
 bin/DataExAdmin.o bin/LocalizationAdmin.o bin/config.o bin/json.o \
-bin/jsonParser.o bin/NachoNet.o
+bin/jsonParser.o bin/Map.o bin/MapOnTheCouch.o bin/NachoNet.o
 	${CC} ${CFLAGS} -o bin/nachonet bin/dataCollect.o bin/stdCollect.o bin/dist.o\
 	 bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o bin/dataEx.o \
 	 bin/dataExOnTheCouch.o bin/node.o bin/device.o bin/multicast.o bin/loc.o \
 	 bin/radiotap-parser.o bin/main.o bin/Admin.o bin/DataCollectAdmin.o \
 	 bin/DistMeasureAdmin.o bin/DataExAdmin.o bin/LocalizationAdmin.o \
-	 bin/config.o bin/json.o bin/jsonParser.o bin/NachoNet.o -lpcap -lm -lcurl
+	 bin/config.o bin/json.o bin/jsonParser.o bin/Map.o bin/MapOnTheCouch.o \
+	 bin/NachoNet.o -lpcap -lm -lcurl -lpthread -lX11
 	 
 nachonet_valgrind: bin/nachonet
 	valgrind ${VALGRIND_OPTIONS} bin/nachonet

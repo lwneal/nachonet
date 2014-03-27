@@ -20,7 +20,7 @@ class Map
 	public:
 		Map ();
 		virtual ~Map ();
-		void getUserInput ();
+		bool getUserInput ();
 
 		void setMapFile (std::string fileName);
 		std::string getMapFileName ();

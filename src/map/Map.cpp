@@ -49,10 +49,11 @@ Map::~Map ()
  *
  * Parameters:	None
  *
- * Returned:		None
+ * Returned:		false if the file could not be opened, true otherwise
  ******************************************************************************/
-void Map::getUserInput ()
+bool Map::getUserInput ()
 {
+	bool returnVal = true;
 	std::ifstream inFile;
 	std::string fileName;
 	float x, y;
@@ -79,6 +80,7 @@ void Map::getUserInput ()
 	if (!inFile)
 	{
 		std::cout << "Unable to open file\n";
+		returnVal = false;
 	}
 	else
 	{
@@ -101,6 +103,8 @@ void Map::getUserInput ()
 
 		setMaxDimensions (x, y);
 	}
+
+	return returnVal;
 }
 
 /*******************************************************************************

@@ -17,6 +17,7 @@ Purpose:		This is the main object that brings all of the pieces of NachoNet
 #include "../tools/Admin.h"
 #include "../exch/dataEx.h"
 #include "../exch/dataExOnTheCouch.h"
+#include "../map/MapOnTheCouch.h"
 
 
 class NachoNet
@@ -36,6 +37,7 @@ class NachoNet
 		void listDevices ();
 		void addNode ();
 		void dropNode ();
+		void updateMap ();
 
 		bool isDebug ();
 		bool isVerbose ();
@@ -47,6 +49,7 @@ class NachoNet
 		distMeasure * pDistMeasure;
 		localization * pLocalization;
 		dataEx *pDataEx;
+		Map *pMap;
 		std::thread * pWorker;
 		std::thread * pListener;
 

@@ -27,6 +27,7 @@
 	 "_id" : nodeID,
 	 "_rev" : [auto],
 	 "ip" : ipAddr,
+	 "state" : state,
 	 "message" : [{"msg" : message, "src" : nodeID}, ...]
  }
  *******************************************************************************/
@@ -576,13 +577,13 @@ void dataExOnTheCouch::checkMessages ()
 					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (STOP))
 			{
 				setIsAlive (false);
-				//setState (DEAD);
+				setState (DEAD);
 			}
 			else if (0 ==
 					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (START))
 			{
 				setIsAlive (true);
-				//setState (RUNNING);
+				setState (RUNNING);
 			}
 			else if (0 ==
 					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (ACK))
@@ -788,6 +789,40 @@ void dataExOnTheCouch::pullUpdates (int flag)
 			break;
 	}
 
+}
+
+/*******************************************************************************
+ * Method:			setState
+ *
+ * Description:	Set the state of this node in the admin database.
+ *
+ * Parameters:	state - either "RUNNING" or "DEAD"
+ *
+ * Returned:		None
+ ******************************************************************************/
+void dataExOnTheCouch::setState (std::string state)
+{
+	std::string url = "";
+	std::ostringstream oss, response;
+	JSON json;
+	jsonData data;
+	jsonParser parser;
+
+	url = url + "http://" + LOCALHOST + ':' + std::to_string (DEFAULT_COUCH_PORT)
+				+ '/' + TARGET_DB[ADMIN] + '/' + std::to_string (getID ());
+
+	if(CURLE_OK == curlRead(url, oss))
+	{
+		// Web page successfully written to string
+		parser.init (oss.str());
+		json = parser.getObject();
+
+		data.type = jsonParser::STR_TYPE;
+		data.value.strVal = state;
+		json.setValue (STATE, data);
+
+		curlPost (url, json.writeJSON (""), response);
+	}
 }
 
 /*******************************************************************************

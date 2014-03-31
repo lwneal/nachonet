@@ -49,8 +49,9 @@ class dataEx
 
     virtual void ping (Message message) = 0; //push msg
     virtual void checkMessages () = 0; //handles messages
-    virtual void pushUpdates (int flag) = 0;//id what flag will be needed but
+    virtual void pushUpdates (int flag) = 0;//idk what flag will be needed but
     virtual void pullUpdates (int flag) = 0;//some data needs to get passed
+    virtual void setState (std::string state) = 0;
 
     //MESSAGES TO SEND
     static const std::string HELLO;			//check if node is alive

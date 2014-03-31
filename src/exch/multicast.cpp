@@ -33,6 +33,7 @@ multicast::multicast (int port, std::string localIfaceAddr,
 											std::string multicastGroupAddr)
 {
 	char loopBack = 0;
+	int reuse = 1;
 
 	problem = false;
 
@@ -80,6 +81,14 @@ multicast::multicast (int port, std::string localIfaceAddr,
 		perror ("receive socket");
 		problem = true;
 	}
+
+  if (setsockopt(rcvSD, SOL_SOCKET, SO_REUSEADDR,(char *)&reuse,
+  		sizeof(reuse)) < 0)
+  {
+      perror("setting SO_REUSEADDR");
+      close(rcvSD);
+  }
+
 
   memset ((char *) &localSock, 0, sizeof(localSock));
   localSock.sin_family = AF_INET;

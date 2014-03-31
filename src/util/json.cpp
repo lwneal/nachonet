@@ -173,7 +173,16 @@ std::string JSON::writeValue (jsonData data)
 				break;
 
 			case jsonParser::OBJ_TYPE:
-				returnString += data.value.pObject->writeJSON (returnString);
+				if (NULL != jsonParser::OBJ_TYPE)
+				{
+					returnString += data.value.pObject->writeJSON (returnString);
+				}
+				else
+				{
+					returnString += "{}";
+				}
+
+
 				break;
 
 			case jsonParser::VEC_TYPE:

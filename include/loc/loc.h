@@ -28,8 +28,8 @@ typedef struct location
 {
 	location ()
 	{
-		x = 0.0;
-		y = 0.0;
+		x = 0.0f;
+		y = 0.0f;
 	}
 
   id theID;

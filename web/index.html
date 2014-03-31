@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Map</title>
+		<script type="text/JavaScript" src="jsDraw2D.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+		<script type="text/javascript">
+			var devDB = "/dev_db";
+			var nodeDB = "/node_db";
+			var mapDB = "/map";
+
+			function getNodeCoor ()
+			{
+				$.ajax (
+				{		
+					url : nodeDB + "/_design/coords/_view/coords",
+					success: function (data)
+					{	
+						var view = JSON.parse (data);
+						var coords = [];
+						$(view.rows).each(function (index, item)
+						{
+							coords.push (item.value);
+						});
+						drawCoor (coords, "blue");
+					}
+				});
+			}
+
+
+			function getDevCoor ()
+			{
+				$.ajax (
+				{
+					url: devDB + "/_design/coords/_view/coords",
+					success: function (data)
+					{
+						var view = JSON.parse(data);
+						var coords = [];
+						$(view.rows).each(function (index,item)
+						{
+							coords.push (item.value);
+						});
+						drawCoor (coords, "red");
+					} 
+				});			
+			}
+
+			function displayCoor (coords)
+			{
+	
+				var html = "<table>";
+				$(coords).each(function (index, coor)
+				{
+					html += "<tr>";
+					html += "<td>" + coor.x + "</td>";
+					html += "<td>" + coor.y + "</td>"
+					html += "</tr>";
+				});
+
+				html += "</table>";
+
+				$('#coords').empty ();
+				$('#coords').append(html);
+			}
+
+			function drawCoor (coords, color)
+			{
+				$.ajax (
+				{
+					url: mapDB + "/resource",
+					success: function (data)
+					{
+						var resData = JSON.parse (data);
+						var xRatio = resData.imgDimensions.width / 
+									resData.maxDimensions.x;
+						var yRatio = resData.imgDimensions.height / 
+									resData.maxDimensions.y;
+									
+						drawPoint (coords, color, xRatio, yRatio);
+
+					}
+
+				});
+			}
+			
+			function drawPoint (coords, color, xRatio, yRatio)
+			{						
+				var canvas = new jsGraphics(document.getElementById("canvas"));
+				var col = new jsColor(color);
+
+				$(coords).each(function (index, coor)
+				{
+					var pt = new jsPoint (xRatio * coor.x + 12, 
+										  yRatio * coor.y + 12);				  
+										  									  
+					canvas.fillCircle(col, pt, 5);
+				});
+
+			}
+
+			function createView (db)
+			{
+				var view = 
+				{
+					"language" : "javascript",
+					"views" : {"coords" : 
+											{"map" : 
+												"function(doc) {if (doc.coor) {emit(doc.id, doc.coor);}}"
+											}
+										}
+				}
+
+				$.ajax (
+				{
+					type : "PUT",
+					url :  db + "/_design/coords",
+					contentType : "application/json",
+					data: JSON.stringify(view)
+				});
+			}
+		
+
+		</script>
+	</head>
+	<body onload="createView(devDB); createView (nodeDB); getDevCoor (); getNodeCoor ()">
+	<img src="/map/resource/image" alt="NACHOZ!!!">
+	</body>
+
+</html>

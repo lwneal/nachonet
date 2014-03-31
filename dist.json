@@ -1,0 +1,4 @@
+{
+	"pathLoss" : {"P_d0" : -38, "n" : 2.24 },
+	"fsPathLoss" : {"channel" : 1}
+}

@@ -15,9 +15,9 @@ Purpose:		Defines the interface to the fsPathLoss module which implements
 class fsPathLoss : public distMeasure
 {
 	public:
-		fsPathLoss(bool debug = false, Config *pConfig = NULL);
+		fsPathLoss(bool debug = false, EZConfig *pConfig = NULL);
 		virtual ~fsPathLoss();
-		virtual void init(Config *pConfig);
+		virtual void init(EZConfig *pConfig);
 		virtual distMeasurement measure(ssMeasurement devSS);
 
 		void setWavelength(int channel);

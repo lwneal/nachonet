@@ -10,7 +10,7 @@ Purpose:		This file defines the interface to the abstract class
 
 #pragma once
 #include "../collect/dataCollect.h"
-#include "../util/config.h"
+#include "../util/EZConfig.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iomanip>
@@ -31,7 +31,7 @@ class distMeasure
 {
 	public:
 		virtual ~distMeasure(){}
-		virtual void init(Config *pConfig) = 0;
+		virtual void init(EZConfig *pConfig) = 0;
 		virtual distMeasurement measure(ssMeasurement devSS) = 0;
 		std::string getName() const;
 

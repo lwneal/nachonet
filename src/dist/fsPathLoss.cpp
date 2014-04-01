@@ -26,21 +26,24 @@ Purpose:		Implements the behavior of the fsPathLoss module (free space path
  *
  *Returned:		 None
  *****************************************************************************/
-fsPathLoss::fsPathLoss(bool debug, Config *pConfig)
+fsPathLoss::fsPathLoss(bool debug, EZConfig *pConfig)
 {
-	std::vector<std::pair<std::string, std::string>> keyVal;
+	jsonData data;
 
 	name = "fsPathLoss";
 	setWavelength(MIN_CHANNEL);
 
 	if(NULL != pConfig)
 	{
-		pConfig->addSection(name);
+		if(!pConfig->sectionExists(name))
+		{
+			data.type = jsonParser::INT_TYPE;
+			data.value.intVal = MIN_CHANNEL;
 
-		keyVal.push_back(std::make_pair("channel", std::to_string(MIN_CHANNEL)));
+			pConfig->write (name, "channel", data);
 
-		pConfig->write(name, keyVal);
-		pConfig->save();
+			pConfig->save();
+		}
 
 		noConfig = false;
 	}
@@ -110,20 +113,19 @@ void fsPathLoss::setWavelength(float frequency)
  *
  *Returned:			None
  *****************************************************************************/
-void fsPathLoss::init(Config *pConfig)
+void fsPathLoss::init(EZConfig *pConfig)
 {
-	std::map<std::string, std::string> keyVal;
-	float tmp;
+	JSON json;
 
 	if(NULL != pConfig && !noConfig)
 	{
-		keyVal = pConfig->read(name);
+		json = pConfig->getSection (name);
 
 		//if there is nothing in the file then don't overwrite the default values
-		if(0 != keyVal.size())
+		if(0 != json.getData ("channel").value.intVal)
 		{
-			tmp = std::stof(keyVal["channel"]);
-			setWavelength(tmp);
+
+			setWavelength(json.getData ("channel").value.intVal);
 		}
 	}
 

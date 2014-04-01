@@ -24,10 +24,10 @@ Purpose:		Defines the behavior of the logNormalShadow object which means
  *
  *Returned:		 None
  *****************************************************************************/
-logNormalShadow::logNormalShadow(bool debug, Config *pConfig) :
+logNormalShadow::logNormalShadow(bool debug, EZConfig *pConfig) :
 randomVar(0, 3.0)
 {
-	std::vector<std::pair<std::string, std::string>> keyVal;
+	jsonData data;
 
 	name = "logNormal";
 	envVal = logNormalShadow::DEFAULT_ENV_VAL;
@@ -36,13 +36,21 @@ randomVar(0, 3.0)
 
 	if(NULL != pConfig)
 	{
-		pConfig->addSection(name);
 
-		keyVal.push_back(std::make_pair("n", std::to_string(envVal)));
-		keyVal.push_back(std::make_pair("P_d0", std::to_string(powerAtRefDist)));
-		keyVal.push_back(std::make_pair("d0", std::to_string(refDist)));
+		if (!pConfig->sectionExists (name))
+		{
+			data.type = jsonParser::FLT_TYPE;
+			data.value.floatVal = envVal;
+			pConfig->write (name, "n", data);
 
-		pConfig->write(name, keyVal);
+			data.value.floatVal = powerAtRefDist;
+			pConfig->write (name, "P_d0", data);
+
+			data.value.floatVal = refDist;
+			pConfig->write (name, "d0", data);
+
+			pConfig->save ();
+		}
 
 		noConfig = false;
 	}
@@ -68,20 +76,22 @@ randomVar(0, 3.0)
  *
  *Returned:			None
  *****************************************************************************/
-void logNormalShadow::init(Config *pConfig)
+void logNormalShadow::init(EZConfig *pConfig)
 {
-	std::map<std::string, std::string> keyVal;
+	JSON json;
 
 	if(NULL != pConfig && !noConfig)
 	{
-		keyVal = pConfig->read(name);
+		json = pConfig->getSection (name);
 
 		//if there is nothing in the file then don't overwrite the default values
-		if(0 != keyVal.size())
+		if(0.0f != json.getData ("n").value.floatVal
+			 && 0.0f != json.getData ("P_d0").value.floatVal
+			 && 0.0f != json.getData ("d0").value.floatVal)
 		{
-			envVal = std::stof(keyVal["n"]);
-			powerAtRefDist = std::stoi(keyVal["P_d0"]);
-			refDist = std::stof(keyVal["d0"]);
+			envVal = json.getData ("n").value.floatVal;
+			powerAtRefDist = json.getData ("P_d0").value.floatVal;
+			refDist = json.getData ("d0").value.floatVal;
 		}
 	}
 }

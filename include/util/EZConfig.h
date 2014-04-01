@@ -28,6 +28,7 @@ class EZConfig
 		JSON getAll ();
 		std::string getFileName ();
 		void clearSection (std::string section);
+		bool sectionExists (std::string section);
 
 	private:
 		JSON myJSON;

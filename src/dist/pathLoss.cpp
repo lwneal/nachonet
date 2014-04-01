@@ -27,9 +27,10 @@ Purpose:		The file implements the behavior of the pathLoss module which means
  *
  *Returned:		 None
  *****************************************************************************/
-pathLoss::pathLoss(bool debug, Config *pConfig)
+pathLoss::pathLoss(bool debug, EZConfig *pConfig)
 {
 	std::vector<std::pair<std::string, std::string>> keyVal;
+	jsonData data;
 
 	name = "pathLoss";
 	envVal = pathLoss::DEFAULT_ENV_VAL;
@@ -39,16 +40,17 @@ pathLoss::pathLoss(bool debug, Config *pConfig)
 	if(NULL != pConfig)
 	{
 		//so that we do not overwrite
-		if(Config::SECTION_EXISTS != pConfig->addSection(name))
+		if(!pConfig->sectionExists(name))
 		{
-			keyVal.push_back(std::make_pair("n", std::to_string(envVal)));
-			keyVal.push_back(std::make_pair("P_d0", std::to_string(powerAtRefDist)));
+			data.type = jsonParser::FLT_TYPE;
+			data.value.floatVal = envVal;
+			pConfig->write (name, "n", data);
 
-			pConfig->write(name, keyVal);
+			data.value.floatVal = powerAtRefDist;
+			pConfig->write (name, "P_d0", data);
+
 			pConfig->save();
 		}
-
-
 
 		noConfig = false;
 	}
@@ -87,19 +89,20 @@ pathLoss::~pathLoss()
  *
  *Returned:			None
  *****************************************************************************/
-void pathLoss::init(Config *pConfig)
+void pathLoss::init(EZConfig *pConfig)
 {
-	std::map<std::string, std::string> keyVal;
+	JSON json;
 
 	if(NULL != pConfig && !noConfig)
 	{
-		keyVal = pConfig->read(name);
+		json = pConfig->getSection (name);
 
 		//if there is nothing in the file then don't overwrite the default values
-		if(0 != keyVal.size())
+		if(0.0f != json.getData ("n").value.floatVal
+			 && 0.0f != json.getData ("P_d0").value.floatVal)
 		{
-			envVal = std::stof(keyVal["n"]);
-			powerAtRefDist = std::stoi(keyVal["P_d0"]);
+			envVal = json.getData ("n").value.floatVal;
+			powerAtRefDist = json.getData ("P_d0").value.floatVal;
 		}
 	}
 

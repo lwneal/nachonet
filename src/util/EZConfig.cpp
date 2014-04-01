@@ -89,7 +89,10 @@ void EZConfig::write (std::string section, std::string key, jsonData data)
 
 	sectionData = myJSON.getData (section);
 
+	sectionData.type = jsonParser::OBJ_TYPE;
 	sectionData.value.pObject->setValue (key, data);
+
+	myJSON.setValue (section, sectionData);
 }
 
 /*******************************************************************************
@@ -213,6 +216,27 @@ void EZConfig::clearSection (std::string section)
 	blankData.type = jsonParser::OBJ_TYPE;
 
 	myJSON.setValue (section, blankData);
+}
+
+/*******************************************************************************
+ *Method:				sectionExists
+ *
+ *Description:	Checks to see if the given section already exists
+ *
+ *Parameters:  	section - the key that identifies the section
+ *
+ *Returned:			bool - true if the section exists, false otherwise
+ ******************************************************************************/
+bool EZConfig::sectionExists (std::string section)
+{
+	bool returnVal = false;
+
+	if (0 == getSection (section).writeJSON("").compare ("{}"))
+	{
+		returnVal = true;
+	}
+
+	return returnVal;
 }
 
 

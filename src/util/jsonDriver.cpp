@@ -184,6 +184,13 @@ int main ()
 
 	delete pParser;
 
+	JSON thisJSON;
+
+	if (0 == thisJSON.writeJSON("").compare ("{}"))
+	{
+		std::cout << "Correctly found empty object\n";
+	}
+
 	return 0;
 }
 

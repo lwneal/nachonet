@@ -35,7 +35,7 @@ typedef struct jsonData
 		{
 			pObject = NULL;
 			intVal = 0;
-			floatVal = 0.0;
+			floatVal = 0.0f;
 			boolVal = false;
 		}
 

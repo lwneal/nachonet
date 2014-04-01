@@ -16,9 +16,9 @@ Purpose:		This file defines the interface to the logNormalShadow module which
 class logNormalShadow : public distMeasure
 {
 	public:
-		logNormalShadow(bool debug = false, Config *config = NULL);
+		logNormalShadow(bool debug = false, EZConfig *config = NULL);
 		~logNormalShadow() {};
-		virtual void init(Config *pConfig);
+		virtual void init(EZConfig *pConfig);
 		virtual distMeasurement measure(ssMeasurement devSS);
 
 		const float DEFAULT_REF_DIST = 1;

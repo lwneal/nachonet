@@ -14,6 +14,8 @@ Purpose:		This file defines the interface to the abstract class
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iomanip>
+#include <fstream>
+#include <iostream>
 
 typedef struct distMeasurement
 {
@@ -33,6 +35,7 @@ class distMeasure
 		virtual ~distMeasure(){}
 		virtual void init(EZConfig *pConfig) = 0;
 		virtual distMeasurement measure(ssMeasurement devSS) = 0;
+		virtual std::vector<std::string> getVariables () = 0;
 		std::string getName() const;
 
 	protected:

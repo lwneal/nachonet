@@ -16,6 +16,7 @@ Purpose:		Defines the interface to a Config file that uses JSON format to
 #include "jsonParser.h"
 #include <fstream>
 #include <streambuf>
+#include <iostream>
 
 class EZConfig
 {

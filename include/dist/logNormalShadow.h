@@ -20,10 +20,12 @@ class logNormalShadow : public distMeasure
 		~logNormalShadow() {};
 		virtual void init(EZConfig *pConfig);
 		virtual distMeasurement measure(ssMeasurement devSS);
+		virtual std::vector<std::string> getVariables ();
 
 		const float DEFAULT_REF_DIST = 1;
 		const int DEFAULT_POW_AT_REF = 38;
 		const float DEFAULT_ENV_VAL = 3.5;
+
 	private:
 		bool debug;
 		float refDist; //d_0

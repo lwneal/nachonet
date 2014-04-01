@@ -9,9 +9,7 @@ Purpose:		The file implements the behavior of the pathLoss module which means
 ******************************************************************************/
 
 #include "../../include/dist/pathLoss.h"
-#include <fstream>
-#include <iostream>
-#include <iomanip>
+
 
 /******************************************************************************
  *Constructor: pathLoss
@@ -141,6 +139,25 @@ distMeasurement pathLoss::measure(ssMeasurement devSS)
 	}
 
 	return devDist;
+}
+
+/******************************************************************************
+ *Method:				getVariables
+ *
+ *Description:  Get the symbols/names of the variables needed by this equation
+ *
+ *Parameters:   None
+ *
+ *Returned:			vector of strings - the variables names
+ *****************************************************************************/
+std::vector<std::string> pathLoss::getVariables ()
+{
+	std::vector<std::string> varNames;
+
+	varNames.push_back ("n");
+	varNames.push_back ("P_d0");
+
+	return varNames;
 }
 
 

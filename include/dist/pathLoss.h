@@ -18,6 +18,7 @@ class pathLoss : public distMeasure
 		virtual ~pathLoss();
 		virtual void init(EZConfig *pConfig);
 		virtual distMeasurement measure(ssMeasurement devSS);
+		virtual std::vector<std::string> getVariables ();
 
 		//These values have been chosen by looking at an example graph in
 		// [Pu et. al. 2011]

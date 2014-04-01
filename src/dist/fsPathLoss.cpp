@@ -166,3 +166,22 @@ distMeasurement fsPathLoss::measure(ssMeasurement devSS)
 	return devDist;
 }
 
+/******************************************************************************
+ *Method:				getVariables
+ *
+ *Description:  Get the symbols/names of the variables needed by this equation
+ *
+ *Parameters:   None
+ *
+ *Returned:			vector of strings - the variables names
+ *****************************************************************************/
+std::vector<std::string> fsPathLoss::getVariables ()
+{
+	std::vector<std::string> varNames;
+
+	varNames.push_back ("channel");
+
+	return varNames;
+}
+
+

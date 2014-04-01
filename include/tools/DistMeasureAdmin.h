@@ -13,7 +13,7 @@ Purpose:		Defines the interface to the admin tool that will be used with the
 #include "../dist/fsPathLoss.h"
 #include "../dist/logNormalShadow.h"
 #include "../dist/pathLoss.h"
-#include "../util/config.h"
+#include "../util/EZConfig.h"
 
 class DistMeasureAdmin : public Admin
 {
@@ -31,6 +31,6 @@ class DistMeasureAdmin : public Admin
 		}DIST_EQN;
 
 	private:
-		Config distConfig;
+		EZConfig distConfig;
 };
 

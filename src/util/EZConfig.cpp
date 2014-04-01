@@ -110,7 +110,6 @@ void EZConfig::save (bool readable)
 {
 	std::ofstream configFile;
 	std::string rawJSON;
-	char ch;
 
 	configFile.open(fileName.c_str(), std::ofstream::trunc);
 
@@ -128,15 +127,15 @@ void EZConfig::save (bool readable)
 		{
 			configFile << "\t"; // beginning of a section
 
-			while ("}" != rawJSON[i])
+			while ('}' != rawJSON[i])
 			{
 				configFile << rawJSON[i];
 
-				if (":" == rawJSON[i + 1])
+				if (':' == rawJSON[i + 1])
 				{
 					configFile << " ";
 				}
-				else if (":" == rawJSON[i] || "," == rawJSON[i])
+				else if (':' == rawJSON[i] || ',' == rawJSON[i])
 				{
 					configFile << " ";
 				}

@@ -33,14 +33,14 @@ bin/nachonet: bin/dataCollect.o bin/stdCollect.o bin/dist.o bin/pathLoss.o \
 bin/fsPathLoss.o bin/logNormalShadow.o bin/dataEx.o bin/dataExOnTheCouch.o \
 bin/node.o bin/device.o bin/multicast.o bin/loc.o bin/radiotap-parser.o \
 bin/main.o bin/Admin.o bin/DataCollectAdmin.o bin/DistMeasureAdmin.o \
-bin/DataExAdmin.o bin/LocalizationAdmin.o bin/config.o bin/json.o \
+bin/DataExAdmin.o bin/LocalizationAdmin.o bin/EZConfig.o bin/json.o \
 bin/jsonParser.o bin/Map.o bin/MapOnTheCouch.o bin/NachoNet.o
 	${CC} ${CFLAGS} -o bin/nachonet bin/dataCollect.o bin/stdCollect.o bin/dist.o\
 	 bin/pathLoss.o bin/fsPathLoss.o bin/logNormalShadow.o bin/dataEx.o \
 	 bin/dataExOnTheCouch.o bin/node.o bin/device.o bin/multicast.o bin/loc.o \
 	 bin/radiotap-parser.o bin/main.o bin/Admin.o bin/DataCollectAdmin.o \
 	 bin/DistMeasureAdmin.o bin/DataExAdmin.o bin/LocalizationAdmin.o \
-	 bin/config.o bin/json.o bin/jsonParser.o bin/Map.o bin/MapOnTheCouch.o \
+	 bin/EZConfig.o bin/json.o bin/jsonParser.o bin/Map.o bin/MapOnTheCouch.o \
 	 bin/NachoNet.o -lpcap -lm -lcurl -lpthread -lX11
 	 
 nachonet_valgrind: bin/nachonet
@@ -76,9 +76,9 @@ bin/prototype.o: src/prototype.cpp include/tools/adminTools.h
 ########################DIST MEASURE###############################
 
 bin/distDriver: bin/distDriver.o bin/pathLoss.o bin/fsPathLoss.o\
-bin/logNormalShadow.o bin/config.o 
+bin/logNormalShadow.o bin/EZConfig.o 
 	${CC} ${CFLAGS} -o bin/distDriver bin/distDriver.o bin/pathLoss.o \
-	bin/fsPathLoss.o bin/logNormalShadow.o bin/config.o
+	bin/fsPathLoss.o bin/logNormalShadow.o bin/EZConfig.o
 	
 bin/distDriver.o: src/dist/distDriver.cpp include/dist/dist.h
 	${CC} ${CFLAGS} -o bin/distDriver.o -c src/dist/distDriver.cpp
@@ -178,6 +178,15 @@ map_valgrind: bin/mapDriver
 	valgrind ${VALGRIND_OPTIONS} bin/mapDriver
 
 ##########################Utilities###############################
+
+bin/ezConfigDriver: bin/EZConfigDriver.o bin/EZConfig.o
+	${CC} ${CFLAGS} -o bin/ezConfigDriver bin/EZConfigDriver.o bin/EZConfig.o
+	
+bin/EZConfigDriver.o: src/util/EZConfigDriver.cpp include/util/EZConfig.h
+	${CC} ${CFLAGS} -o bin/EZConfigDriver.o -c src/util/EZConfigDriver.cpp
+	
+bin/EZConfig.o: src/util/EZConfig.cpp include/util/EZConfig.h
+	${CC} ${CFLAGS} -o bin/EZConfig.o -c src/util/EZConfig.cpp
 
 bin/configDriver: bin/configDriver.o bin/config.o
 	${CC} ${CFLAGS} -o bin/configDriver bin/configDriver.o bin/config.o

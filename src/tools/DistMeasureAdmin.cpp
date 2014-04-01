@@ -87,6 +87,10 @@ void DistMeasureAdmin::configure ()
 	std::string name, input;
 	std::pair<std::string, std::string> update;
 
+	jsonData data;
+	JSON json;
+	std::vector<std::string> varNames;
+
 	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
 	{
 		std::cout << "You can't do that while NachoNet is running!\n";
@@ -99,27 +103,46 @@ void DistMeasureAdmin::configure ()
 
 			name = pNacho->pDistMeasure->getName();
 
-			keyVal = distConfig.read(name);
-
-			iter = keyVal.begin();
+			json = distConfig.getSection (name);
+			varNames = pNacho->pDistMeasure->getVariables ();
 
 			std::cout << "Enter a number to update the value or 0 to leave it alone\n";
 			std::cout << name << std::endl;
 
-			for (auto & entry : keyVal)
+			for (auto & var : varNames)
 			{
-				std::cout << entry.first << " (" << entry.second << "): ";
+				std::cout << var << " (";
+
+				if (jsonParser::INT_TYPE == json.getData (var).type)
+				{
+					std::cout << json.getData (var).value.intVal;
+				}
+				else if (jsonParser::FLT_TYPE == json.getData (var).type)
+				{
+					std::cout << json.getData (var).value.floatVal;
+				}
+
+				std::cout << "): ";
 				std::cin >> input;
 
 				if(0 != input.compare("0"))
 				{
-					update = std::make_pair((*iter).first, input);
+					data = json.getData (var);
 
-					updates.push_back(update);
+					if (jsonParser::INT_TYPE == data.type)
+					{
+						data.value.intVal = std::atoi (input.c_str ());
+					}
+					else if (jsonParser::FLT_TYPE == data.type)
+					{
+						data.value.floatVal = std::atof (input.c_str ());
+					}
+
+					distConfig.write (name, var, data);
 				}
 			}
 
-			distConfig.write(name, updates);
+			distConfig.save ();
 		}
 	}
 }

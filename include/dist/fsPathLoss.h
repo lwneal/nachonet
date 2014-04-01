@@ -19,6 +19,7 @@ class fsPathLoss : public distMeasure
 		virtual ~fsPathLoss();
 		virtual void init(EZConfig *pConfig);
 		virtual distMeasurement measure(ssMeasurement devSS);
+		virtual std::vector<std::string> getVariables ();
 
 		void setWavelength(int channel);
 		void setWavelength(float frequency);

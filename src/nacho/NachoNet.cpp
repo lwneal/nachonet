@@ -10,7 +10,7 @@ Purpose:		Implements the behavior of the NachoNet object which is the object
 
 #include "../../include/nacho/NachoNet.h"
 
-const std::string NachoNet::DIST_CONFIG_FILE = "dist.conf";
+const std::string NachoNet::DIST_CONFIG_FILE = "dist.json";
 
 /*******************************************************************************
  * Constructor:	NachoNet
@@ -25,7 +25,7 @@ const std::string NachoNet::DIST_CONFIG_FILE = "dist.conf";
  ******************************************************************************/
 NachoNet::NachoNet (bool debug, bool verbose)
 {
-	Config distConfig (DIST_CONFIG_FILE);
+	EZConfig distConfig (DIST_CONFIG_FILE);
 	this->debug = debug;
 	this->verbose = verbose;
 

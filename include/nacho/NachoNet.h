@@ -43,7 +43,7 @@ class NachoNet
 		bool isVerbose ();
 
 		static const std::string DIST_CONFIG_FILE;
-		static const int REQUIRED_MEASUREMENTS = 3;
+		static const unsigned int REQUIRED_MEASUREMENTS = 3;
 
 	private:
 		dataCollect * pDataCollect;

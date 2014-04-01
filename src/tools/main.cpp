@@ -156,9 +156,10 @@ int main (int argc, char** argv)
 	NachoNet *pMyNachos;
 	Admin *pMyAdmin;
 	int optionChar;
-	bool debug = false, verbose = false, done = false;
+	std::string fileName = "";
+	bool debug = false, verbose = false, feeder = false, done = false;
 
-	while ((optionChar = getopt (argc, argv, "dv")) != -1)
+	while ((optionChar = getopt (argc, argv, "dvf:")) != -1)
 	{
 		switch (optionChar)
 		{
@@ -168,20 +169,25 @@ int main (int argc, char** argv)
 			case 'v':
 			 verbose = true;
 			 break;
+			case 'f':
+				feeder = true;
+				fileName = optarg;
+				break;
 			case '?':
 			 std::cout << "\nHELP\n";
 			 std::cout << "Due to the libpcap integration, this must be run with "
 								 <<	"sudo\n";
 			 std::cout << "Options\n";
 			 std::cout << "d - turn debug mode on\n"
-					       << "v - turn verbose mode on\n";
+					       << "v - turn verbose mode on\n"
+					       << "f - use a DataFeeder for data collection\n";
 
 			 done = true;
 			 break;
 		 }
 	}
 
-	pMyNachos = new NachoNet (debug, verbose);
+	pMyNachos = new NachoNet (debug, verbose, feeder, fileName);
 
 	while (!done || MAIN != menuID)
 	{

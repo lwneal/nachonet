@@ -19,15 +19,21 @@ const std::string NachoNet::DIST_CONFIG_FILE = "dist.json";
  * 							and kicks of the listener who will listen for things to do as
  * 							soon as the data exchange module is initialized
  *
- * Parameters:	None
+ * Parameters:	debug - flag indicating whether to use debug mode or not
+ * 							verbose - flag indicating whether to use verbose mode or not
+ * 							feeder - flag indicating whether we are using a DataFeeder for
+ * 											 data collection
+ * 							feederFile - the file name used by the DataFeeder
  *
  * Returned:		None
  ******************************************************************************/
-NachoNet::NachoNet (bool debug, bool verbose)
+NachoNet::NachoNet (bool debug, bool verbose, bool feeder,
+										std::string feederFile)
 {
 	EZConfig distConfig (DIST_CONFIG_FILE);
 	this->debug = debug;
 	this->verbose = verbose;
+	this->feeder = feeder;
 
 	if (isVerbose ())
 	{
@@ -36,7 +42,15 @@ NachoNet::NachoNet (bool debug, bool verbose)
 
 	pMap = new MapOnTheCouch;
 	pMap->load ();
-	pDataCollect = new stdCollect (stdCollect::DEFAULT_IFACE, debug);
+
+	if (feeder)
+	{
+		pDataCollect = new DataFeeder (feederFile, debug);
+	}
+	else
+	{
+		pDataCollect = new stdCollect (stdCollect::DEFAULT_IFACE, debug);
+	}
 	pDistMeasure = new pathLoss (debug, &distConfig);
 	pDataEx = NULL;
 	pLocalization = new localization (debug);

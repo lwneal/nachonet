@@ -9,6 +9,7 @@ Purpose:		This is the main object that brings all of the pieces of NachoNet
 
 #pragma once
 #include "../collect/stdCollect.h"
+#include "../collect/DataFeeder.h"
 #include "../dist/fsPathLoss.h"
 #include "../dist/logNormalShadow.h"
 #include "../dist/pathLoss.h"
@@ -28,7 +29,8 @@ class NachoNet
 	friend class DataExAdmin;
 	friend class LocalizationAdmin;
 	public:
-		NachoNet (bool debug, bool verbose);
+		NachoNet (bool debug, bool verbose, bool feeder,
+							std::string feederFile = "");
 		~NachoNet ();
 		void start ();
 		void stop ();
@@ -54,6 +56,7 @@ class NachoNet
 		std::thread * pWorker;
 		std::thread * pListener;
 
+		bool feeder;
 		bool debug;
 		bool verbose;
 		bool active;

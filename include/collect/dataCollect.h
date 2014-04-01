@@ -30,7 +30,7 @@ class dataCollect
     dataCollect(bool debug);
     virtual ~dataCollect () {}
     std::vector<ssMeasurement> getSS() const;
-    virtual void readFromNetwork() = 0; //must set readyToRead
+    virtual void readFromNetwork() = 0;
     void setDebug(bool);
     bool isDebug() const;
     bool isReadyToRead ();

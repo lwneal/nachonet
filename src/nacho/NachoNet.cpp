@@ -235,6 +235,7 @@ void NachoNet::worker ()
 	std::vector<distMeasurement> distances;
 	std::vector<refMeasurement> referenceDistances;
 	location devLocation;
+	int interval = 0, networkReads = 0;
 
 	while (pDataEx->alive ())
 	{
@@ -242,7 +243,21 @@ void NachoNet::worker ()
 		pDataEx->pullUpdates (dataExOnTheCouch::NODES);
 
 		//collect data from network
-		pDataCollect->readFromNetwork ();
+		do
+		{
+			interval++;
+			networkReads++;
+
+			pDataCollect->readFromNetwork();
+
+			if (NachoNet::GARBAGE_COLLECTION_INTERVAL < interval)
+			{
+				pDataCollect->garbageCollect ();
+				interval = 0;
+			}
+
+		} while (!pDataCollect->isReadyToRead ()
+						 || MIN_NETWORK_READS > networkReads);
 		signalStrengths = pDataCollect->getSS ();
 
 		//calculate distances from signal strengths

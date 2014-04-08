@@ -12,6 +12,7 @@ Purpose:		Tests the functionality of the data collection modules
 int main (int argc, char ** argv)
 {
 	bool debug;
+	int counter = 0;
 
 	if (argc > 1)
 	{
@@ -27,7 +28,15 @@ int main (int argc, char ** argv)
 
 	do
 	{
+		counter++;
 		theCollector.readFromNetwork();
+
+		if (10 < counter)
+		{
+			theCollector.garbageCollect ();
+			counter = 0;
+		}
+
 	} while (!theCollector.isReadyToRead());
 
 

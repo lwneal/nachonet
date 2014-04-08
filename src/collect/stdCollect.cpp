@@ -50,8 +50,6 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 	struct ieee80211_radiotap_header * pRadiotapHeader;
 	const u_char * pAddr;
 	char converted [(ETHERNET_ADDR_LEN * 2) + 1];
-	u_char addr [ETHERNET_ADDR_LEN];
-	std::string lastDevID ("000000000000");
 	std::string currentDevID;
 	int returnVal, channel = 0, ss = ERROR;
 
@@ -119,25 +117,24 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 			} while (returnVal >= 0);
 
 			pAddr = (pPacket + pRadiotapHeader->it_len + MAC_ADDR_OFFSET);
-			memcpy (addr, pAddr, ETHERNET_ADDR_LEN);
 
 			for (int i = 0; i < ETHERNET_ADDR_LEN; i++)
 			{
-				sprintf (&converted[i * 2], "%02X", addr[ETHERNET_ADDR_LEN - (i + 1)]);
+				sprintf (&converted[i * 2], "%02X", pAddr[i]);
 			}
 
 			currentDevID.assign(converted);
 
-			if (0 != currentDevID.compare(lastDevID))
+			if (isDebug ())
 			{
-				if (isDebug ())
-				{
-					std::cout << channel << "   " << ss << "   " << currentDevID << "\n";
-				}
-
-				update (currentDevID, ss);
-				lastDevID.assign (currentDevID);
+				std::cout << channel << "   " << ss << "   " << currentDevID << "\n";
 			}
+
+			if (ERROR != ss)
+			{
+				update (currentDevID, ss);
+			}
+
 		}
 	}
 
@@ -156,11 +153,8 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 void stdCollect::readFromNetwork ()
 {
 	pcap_t * pHandle;
-	//u_char * pArgs = NULL;
 	char errorBuffer[PCAP_ERRBUF_SIZE];
 	int numPackets;
-
-	//pgObject = (void *)this;
 
 	pHandle = pcap_create (interface.c_str(), errorBuffer);
 	if (NULL != pHandle)

@@ -35,9 +35,10 @@ class dataCollect
     bool isDebug() const;
     bool isReadyToRead ();
     void clearBuffer();
+    void garbageCollect ();
     const int MEDIAN = 2;
     const int EMPTY = 0;
-    const float READY_CUTOFF = .33;
+    const float READY_CUTOFF = .75;
 
   protected:
    void update(std::string id, int ss);

@@ -26,6 +26,7 @@ DataCollectAdmin::DataCollectAdmin (NachoNet *pNacho) : Admin (pNacho)
 void DataCollectAdmin::test ()
 {
 	std::vector<ssMeasurement> values;
+	int interval = 0, networkReads = 0;
 
 	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
 	{
@@ -37,8 +38,18 @@ void DataCollectAdmin::test ()
 
 		do
 		{
+			interval++;
+			networkReads++;
+
 			pNacho->pDataCollect->readFromNetwork();
-		} while (!pNacho->pDataCollect->isReadyToRead());
+
+			if (NachoNet::GARBAGE_COLLECTION_INTERVAL < interval)
+			{
+				pNacho->pDataCollect->garbageCollect ();
+				interval = 0;
+			}
+		} while (!pNacho->pDataCollect->isReadyToRead()
+						 || NachoNet::MIN_NETWORK_READS > networkReads);
 
 
 		values = pNacho->pDataCollect->getSS ();

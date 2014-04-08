@@ -112,7 +112,7 @@ bool dataCollect::isReadyToRead ()
 			readyToRead = true;
 		}
 
-		/*if(isDebug ())*/
+		if(isDebug ())
 		{
 			std::cout << "Total ready to read: " << numReadyToRead << "    ";
 			std::cout << "Out of: " << buffer.size () << "\n";
@@ -208,6 +208,23 @@ void dataCollect::update(std::string id, int ss)
 
 		std::cout << "\n";
 
+	}
+
+}
+
+void dataCollect::garbageCollect ()
+{
+	for (std::map<std::string, recentData>::iterator iter = buffer.begin ();
+			 iter != buffer.end ();)
+	{
+		if (0 == iter->second.data[CONTAINER_SIZE - 1])
+		{
+			iter = buffer.erase (iter);
+		}
+		else
+		{
+			++iter;
+		}
 	}
 }
 

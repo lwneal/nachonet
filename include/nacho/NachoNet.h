@@ -46,6 +46,8 @@ class NachoNet
 
 		static const std::string DIST_CONFIG_FILE;
 		static const unsigned int REQUIRED_MEASUREMENTS = 3;
+		static const int GARBAGE_COLLECTION_INTERVAL = 10;
+		static const int MIN_NETWORK_READS = 5;
 
 	private:
 		dataCollect * pDataCollect;

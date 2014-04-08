@@ -303,9 +303,9 @@ int main (int argc, char** argv)
 				break;
 		}
 
-		//std::cout << "==========================================\n";
-		//std::cout << "\n\n\n\n\n\n";
-		clearScreen ();
+		std::cout << "==========================================\n";
+		std::cout << "\n\n\n\n\n\n";
+		//clearScreen ();
 
 	}
 

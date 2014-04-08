@@ -123,7 +123,7 @@ void stdCollect::packetLoop (pcap *pHandle, int numPackets)
 
 			for (int i = 0; i < ETHERNET_ADDR_LEN; i++)
 			{
-				sprintf (&converted[i * 2], "%02X", addr[i]);
+				sprintf (&converted[i * 2], "%02X", addr[ETHERNET_ADDR_LEN - (i + 1)]);
 			}
 
 			currentDevID.assign(converted);

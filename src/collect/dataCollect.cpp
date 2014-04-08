@@ -111,6 +111,12 @@ bool dataCollect::isReadyToRead ()
 		{
 			readyToRead = true;
 		}
+
+		/*if(isDebug ())*/
+		{
+			std::cout << "Total ready to read: " << numReadyToRead << "    ";
+			std::cout << "Out of: " << buffer.size () << "\n";
+		}
 	}
 
 

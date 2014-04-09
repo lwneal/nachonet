@@ -47,6 +47,7 @@ const std::string dataExOnTheCouch::ALL_DOCS_Q = "_all_docs";
 //these are the keys for all of the JSON pairs we need to use
 const std::string dataExOnTheCouch::LOCATION = "location";
 const std::string dataExOnTheCouch::ID = "_id";
+const std::string dataExOnTheCouch::ALT_ID = "id";
 const std::string dataExOnTheCouch::IP = "ip";
 const std::string dataExOnTheCouch::X_COOR = "x";
 const std::string dataExOnTheCouch::Y_COOR = "y";
@@ -94,7 +95,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	char message[multicast::BUF_LENGTH];
 	std::string myAddress, url;
 	std::ostringstream oss, response;
-	JSON json;
+	JSON json, jsonLoc;
 	jsonData data, entry;
 	jsonParser parser;
 	std::clock_t startTimeout;
@@ -173,18 +174,20 @@ dataExOnTheCouch::dataExOnTheCouch ()
 		std::cout << "Found other node. Updating...\n";
 		std::cout << "From: " << json.writeJSON ("");
 
-		std::vector<jsonData>::iterator iter =
-				 json.getData (ROWS).value.array.begin ();
+		//std::vector<jsonData>::iterator iter =
+		//		 json.getData (ROWS).value.array.begin ();
 
-		while (iter != json.getData (ROWS).value.array.end ())
+		//while (iter != json.getData (ROWS).value.array.end ())
+		for (int i = 0; i < json.getData (TOTAL_ROWS).value.intVal; i++)
 		{
 
-			data = *iter;
+			data = json.getData (ROWS).value.array[i];
+			entry = data.value.pObject->getData(ALT_ID);
 
 			url = "http://" + LOCALHOST + ':';
 			url.append (std::to_string (DEFAULT_COUCH_PORT));
-			url += '/' + TARGET_DB[ADMIN] + '/'
-					+ data.value.pObject->getData(ID).value.strVal ;
+			url += '/' + TARGET_DB[ADMIN] + '/';
+			url	+= entry.value.strVal ;
 
 			if (CURLE_OK == curlRead (url, oss))
 			{
@@ -209,9 +212,11 @@ dataExOnTheCouch::dataExOnTheCouch ()
 					nextID = atoi(json.getData(ID).value.strVal.c_str ())
 									 + 1;
 				}
+
+				setPingStatus (atoi(json.getData(ID).value.strVal.c_str ()), true);
 			}
 
-			++iter;
+			//++iter;
 
 		}
 
@@ -267,7 +272,19 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	//later
 	data.type = jsonParser::STR_TYPE;
 	data.value.strVal = std::to_string(getID ());
-	json.setValue(ID, data);
+	json.setValue (ID, data);
+
+	data.type = jsonParser::FLT_TYPE;
+	data.value.floatVal = 0.0f;
+	jsonLoc.setValue (X_COOR, data);
+	jsonLoc.setValue (Y_COOR, data);
+
+	data.type = jsonParser::OBJ_TYPE;
+	data.value.pObject = &jsonLoc;
+	json.setValue (LOCATION, data);
+
+	data.type = jsonParser::VEC_TYPE;
+	json.setValue (MEASUREMENTS, data);
 
 	url = "http://" + LOCALHOST + ':';
 	url.append (std::to_string (DEFAULT_COUCH_PORT));

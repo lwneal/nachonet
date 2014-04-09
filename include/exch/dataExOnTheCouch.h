@@ -56,6 +56,7 @@ class dataExOnTheCouch : public dataEx
     //these are the keys for all of the JSON pairs we need to use
     static const std::string LOCATION;
     static const std::string ID;
+    static const std::string ALT_ID;
     static const std::string IP;
     static const std::string X_COOR;
     static const std::string Y_COOR;

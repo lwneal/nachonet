@@ -89,6 +89,8 @@ class dataExOnTheCouch : public dataEx
     //from http://www.cplusplus.com/forum/unices/45878/
     CURLcode curlRead(const std::string& url, std::ostream& os,
     										long timeout = CURL_TIMEOUT);
+    CURLcode curlPut(const std::string& url, const std::string& json,
+    									std::ostream& os);
     CURLcode curlPost(const std::string& url, const std::string& json,
     									std::ostream& os);
 

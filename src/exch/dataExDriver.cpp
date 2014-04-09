@@ -172,25 +172,6 @@ int main ()
 		fail ("data ex did not drop node");
 	}
 
-	//***************************************************************************
-	//										DATA EXCHANGE TESTING MULTIPLE NODES
-	//***************************************************************************
-	//be sure to check CouchDB for effects as well
-
-	delete pDataEx;
-	char ch;
-
-	//start one node then the other
-	pDataEx = new dataExOnTheCouch ();
-
-	//wait for other to start up
-	while (1 == pDataEx->getNumNodes ());
-
-	std::cout << "press any key and then hit enter\n";
-	std::cin >> ch;
-
-	std::cout << "I have " << pDataEx->getNumNodes () << "nodes "
-						<< "and " << pDataEx->getNumDevs () << "devices\n";
 
 	delete pDataEx;
 

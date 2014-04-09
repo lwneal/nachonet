@@ -171,21 +171,48 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	if (0 < json.getData (TOTAL_ROWS).value.intVal)
 	{
 		std::cout << "Found other node. Updating...\n";
+		std::cout << "From: " << json.writeJSON ("");
 
-		for (auto & entry : json.getData (ROWS).value.array)
+		std::vector<jsonData>::iterator iter =
+				 json.getData (ROWS).value.array.begin ();
+
+		while (iter != json.getData (ROWS).value.array.end ())
 		{
-			nodeIPAddr[atoi(entry.value.pObject->getData(ID).value.strVal.c_str ())]
-			           = entry.value.pObject->getData(IP).value.strVal;
 
-			nodes[atoi(entry.value.pObject->getData(ID).value.strVal.c_str ())]
-								 = newNode;
+			data = *iter;
 
-			//figure out our ID
-			if (atoi(entry.value.pObject->getData(ID).value.strVal.c_str ()) > nextID)
+			url = "http://" + LOCALHOST + ':';
+			url.append (std::to_string (DEFAULT_COUCH_PORT));
+			url += '/' + TARGET_DB[ADMIN] + '/'
+					+ data.value.pObject->getData(ID).value.strVal ;
+
+			if (CURLE_OK == curlRead (url, oss))
 			{
-				nextID = atoi(entry.value.pObject->getData(ID).value.strVal.c_str ())
-								 + 1;
+					// Web page successfully written to string
+					parser.init (oss.str());
+					json = parser.getObject ();
+					oss.str ("");
+
+
+				std::cout << "node: " << json.getData(ID).value.strVal
+									<< " " << json.getData(IP).value.strVal << "\n";
+
+				nodeIPAddr[atoi(json.getData(ID).value.strVal.c_str ())]
+									 = json.getData(IP).value.strVal;
+
+				nodes[atoi(json.getData(ID).value.strVal.c_str ())]
+									 = newNode;
+
+				//figure out our ID
+				if (atoi(json.getData(ID).value.strVal.c_str ()) > nextID)
+				{
+					nextID = atoi(json.getData(ID).value.strVal.c_str ())
+									 + 1;
+				}
 			}
+
+			++iter;
+
 		}
 
 		setID (nextID);
@@ -229,9 +256,11 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	url.append (std::to_string (DEFAULT_COUCH_PORT));
 	url += '/' + TARGET_DB[ADMIN] + '/' + std::to_string(getID ());
 
-	std::cout << "Adding to admin_db: " << json.writeJSON ("") << "\n";
+	//std::cout << "Adding to admin_db: " << json.writeJSON ("") << "\n";
 
-	curlPost (url, json.writeJSON(""), response);
+	curlPut (url, json.writeJSON(""), response);
+
+	std::cout << response.str () << "\n";
 
 	json.clear ();
 	//we can put a mostly empty doc in for the node because this will get updated
@@ -244,7 +273,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	url.append (std::to_string (DEFAULT_COUCH_PORT));
 	url += '/' + TARGET_DB[NODES] + '/' + std::to_string(getID ());
 
-	curlPost (url, json.writeJSON(""), response);
+	curlPut (url, json.writeJSON(""), response);
 
 	//check to see if nodes are responsive
 	for (auto & host : nodes)
@@ -321,7 +350,7 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 		data.value.boolVal = true;
 		json.setValue (DELETED, data);
 
-		curlPost (url, json.writeJSON(""), response);
+		curlPut (url, json.writeJSON(""), response);
 
 		delete pParser;
 	}
@@ -341,7 +370,7 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 		data.value.boolVal = true;
 		json.setValue (DELETED, data);
 
-		curlPost (url, json.writeJSON(""), response);
+		curlPut (url, json.writeJSON(""), response);
 
 		delete pParser;
 	}
@@ -403,7 +432,7 @@ std::string dataExOnTheCouch::getIP () const
 void dataExOnTheCouch::greetNewNode ()
 {
 	std::ostringstream response;
-	std::string message;
+	std::string message, url;
 	JSON json;
 	jsonData data;
 	int nextID = node::NO_ID;
@@ -420,6 +449,7 @@ void dataExOnTheCouch::greetNewNode ()
 		//is the message more than just null terminators
 		if (0 < message.size ())
 		{
+			std::cout << "Heard from someone\n";
 			//let's go find the next available ID for the new guy
 			for (auto & entry : nodeIPAddr)
 			{
@@ -452,7 +482,14 @@ void dataExOnTheCouch::greetNewNode ()
 
 			json.setValue (SOURCE, data);
 
-			curlPost ('/' + REPLICATE, json.writeJSON(""), response);//admin docs sent
+			url = "http://" + LOCALHOST + ':';
+			url.append (std::to_string (DEFAULT_COUCH_PORT));
+			url.append ('/' + REPLICATE);
+
+			curlPost (url, json.writeJSON(""), response);//admin docs sent
+
+
+			std::cout << response.str () << "\n";
 		}
 	}
 }
@@ -508,7 +545,7 @@ void dataExOnTheCouch::ping (Message message)
 
 			json.setValue (MESSAGE, data);
 
-			curlPost (url, json.writeJSON(""), response);
+			curlPut (url, json.writeJSON(""), response);
 
 			pushUpdates (ADMIN);
 		}
@@ -597,7 +634,7 @@ void dataExOnTheCouch::checkMessages ()
 		data.value.array.clear ();
 		json.setValue (MESSAGE, data);
 
-		curlPost (url, json.writeJSON(""), response);
+		curlPut (url, json.writeJSON(""), response);
 
 		//update messages
 		pushUpdates (ADMIN);
@@ -622,6 +659,7 @@ void dataExOnTheCouch::pushUpdates (int flag)
 	JSON json;
 	jsonData data, entry;
 	std::ostringstream response;
+	std::string url;
 
 	for (auto & host : nodeIPAddr)
 	{
@@ -696,7 +734,11 @@ void dataExOnTheCouch::pushUpdates (int flag)
 		}
 
 
-		curlPost ('/' + REPLICATE, json.writeJSON(""), response);
+		url = "http://" + LOCALHOST + ':';
+		url.append (std::to_string (DEFAULT_COUCH_PORT));
+		url.append ('/' + REPLICATE);
+
+		curlPost (url, json.writeJSON(""), response);
 	}
 
 
@@ -725,6 +767,7 @@ void dataExOnTheCouch::pullUpdates (int flag)
 	jsonData data;
 	std::map<int, std::string>::iterator host;
 	std::ostringstream response;
+	std::string url;
 
 	do
 	{
@@ -777,7 +820,11 @@ void dataExOnTheCouch::pullUpdates (int flag)
 			break;
 	}
 
-	curlPost ('/' + REPLICATE, json.writeJSON(""), response);
+	url = "http://" + LOCALHOST + ':';
+	url.append (std::to_string (DEFAULT_COUCH_PORT));
+	url.append ('/' + REPLICATE);
+
+	curlPost (url, json.writeJSON(""), response);
 
 	switch (flag)
 	{
@@ -821,7 +868,7 @@ void dataExOnTheCouch::setState (std::string state)
 		data.value.strVal = state;
 		json.setValue (STATE, data);
 
-		curlPost (url, json.writeJSON (""), response);
+		curlPut (url, json.writeJSON (""), response);
 	}
 }
 
@@ -994,7 +1041,7 @@ void dataExOnTheCouch::updateCouchFromNode ()
 		data.value.array.push_back (entry);
 	}
 
-	curlPost (url, json.writeJSON(""), response);
+	curlPut (url, json.writeJSON(""), response);
 
 }
 
@@ -1043,7 +1090,7 @@ void dataExOnTheCouch::updateCouchFromDevs ()
 		data.value.pObject = &jsonLoc;
 		json.setValue (LOCATION, data);
 
-		curlPost (url, json.writeJSON(""), response);
+		curlPut (url, json.writeJSON(""), response);
 	}
 
 	//reset
@@ -1115,6 +1162,50 @@ CURLcode dataExOnTheCouch::curlRead (const std::string& url, std::ostream& os,
 }
 
 /*******************************************************************************
+ * Method:			curlPut
+ *
+ * Description:	Put the given json text to the given url.
+ *
+ * Parameters:	url - the url to which we are sending our data
+ * 							json - the json we want posted
+ *
+ * Returned:		CURLcode - the result of running the post command
+ ******************************************************************************/
+CURLcode dataExOnTheCouch::curlPut(const std::string& url,
+																		const std::string& json,
+																		std::ostream& os)
+{
+	CURLcode code (CURLE_FAILED_INIT);
+	CURL* curl = curl_easy_init ();
+	struct curl_slist* headers = NULL;
+	headers = curl_slist_append (headers, "Content-Type: application/json");
+
+	if (curl)
+	{
+		if (CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &dataWrite))
+				&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &os))
+				&& CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str()))
+				&& CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers))
+				&& CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT"))
+				&& CURLE_OK
+						== (code = curl_easy_setopt(curl, CURLOPT_URL, url.c_str())))
+		{
+			code = curl_easy_perform (curl);
+		}
+		curl_easy_cleanup (curl);
+	}
+
+	curl_slist_free_all (headers);
+
+	return code;
+
+}
+
+/*******************************************************************************
  * Method:			curlPost
  *
  * Description:	Post the given json text to the given url.
@@ -1142,8 +1233,6 @@ CURLcode dataExOnTheCouch::curlPost(const std::string& url,
 					== (code = curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str()))
 				&& CURLE_OK
 					== (code = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers))
-				&& CURLE_OK
-					== (code = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT"))
 				&& CURLE_OK
 						== (code = curl_easy_setopt(curl, CURLOPT_URL, url.c_str())))
 		{

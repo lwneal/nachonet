@@ -197,6 +197,7 @@ void jsonParser::getNextToken ()
 			case ' ':
 			case '\n':
 			case '\t':
+			case '\r':
 				break;
 
 			default:

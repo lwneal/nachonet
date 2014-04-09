@@ -14,6 +14,25 @@ Purpose:		Defines the abstract data exchange object that is responsible for
 
 typedef struct Message
 {
+	Message ()
+	{
+		msg = "";
+	}
+
+	Message (Message & that)
+	{
+		msg = that.msg;
+		dest = that.dest;
+	}
+
+	Message& operator= (const Message & that)
+	{
+		dest = that.dest;
+		msg = that.msg;
+
+		return *this;
+	}
+
   std::vector<int> dest; //we can specify multiple destinations here
   std::string msg;
 } Message;

@@ -459,6 +459,7 @@ void dataExOnTheCouch::greetNewNode ()
 	loc.theID.intID = node::NO_ID;
 	node newNode (node::NO_ID, loc);
 
+
 	while (stillGreetingNodes)
 	{
 		message = pNachoCast->receive ();
@@ -508,6 +509,8 @@ void dataExOnTheCouch::greetNewNode ()
 
 			std::cout << response.str () << "\n";
 		}
+
+		sleep (1);
 	}
 }
 

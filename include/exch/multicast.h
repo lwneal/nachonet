@@ -18,6 +18,7 @@ Purpose:		Defines the multicast class which is used to broadcast and receive
 #include <stdlib.h>
 #include <cstring>
 #include <unistd.h>
+#include <fcntl.h>
 
 class multicast
 {

@@ -34,6 +34,10 @@ multicast::multicast (int port, std::string localIfaceAddr,
 {
 	char loopBack = 0;
 	int reuse = 1;
+	struct timeval tv;
+
+	tv.tv_sec = 5;
+	tv.tv_usec = 0;
 
 	problem = false;
 
@@ -81,6 +85,8 @@ multicast::multicast (int port, std::string localIfaceAddr,
 		perror ("receive socket");
 		problem = true;
 	}
+
+  fcntl (rcvSD, F_SETFL, O_NONBLOCK);
 
   if (setsockopt(rcvSD, SOL_SOCKET, SO_REUSEADDR,(char *)&reuse,
   		sizeof(reuse)) < 0)
@@ -182,7 +188,7 @@ std::string multicast::receive ()
 
 	if (!problem)
 	{
-		if (read(rcvSD, dataBuf, BUF_LENGTH) < 0)
+		if (recv(rcvSD, dataBuf, BUF_LENGTH, 0) < 0)
 		{
 			//error
 			problem = true;

@@ -101,6 +101,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	std::clock_t startTimeout;
 	double duration;
 	int nextID = node::NO_ID;
+	int totalRows;
 	location loc;
 	loc.x = 0;
 	loc.y = 0;
@@ -164,21 +165,18 @@ dataExOnTheCouch::dataExOnTheCouch ()
 		duration = 10 * ( std::clock() - startTimeout ) / (double) CLOCKS_PER_SEC;
 		//std::cout << duration << "\n";
 
-	} while (0 >= json.getData (TOTAL_ROWS).value.intVal
-					 && TIMEOUT > duration);
+	} while (/*0 >= json.getData (TOTAL_ROWS).value.intVal
+					 &&*/ TIMEOUT > duration);
 
+	totalRows = json.getData (TOTAL_ROWS).value.intVal;
 	//we heard back so we need to go through admin_db and set up our local data
 	//to prepare for the first full sync
-	if (0 < json.getData (TOTAL_ROWS).value.intVal)
+	if (0 < totalRows)
 	{
 		std::cout << "Found other node. Updating...\n";
 		std::cout << "From: " << json.writeJSON ("");
 
-		//std::vector<jsonData>::iterator iter =
-		//		 json.getData (ROWS).value.array.begin ();
-
-		//while (iter != json.getData (ROWS).value.array.end ())
-		for (int i = 0; i < json.getData (TOTAL_ROWS).value.intVal; i++)
+		for (int i = 0; i < totalRows; i++)
 		{
 
 			data = json.getData (ROWS).value.array[i];
@@ -207,7 +205,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 									 = newNode;
 
 				//figure out our ID
-				if (atoi(json.getData(ID).value.strVal.c_str ()) > nextID)
+				if (atoi(json.getData(ID).value.strVal.c_str ()) >= nextID)
 				{
 					nextID = atoi(json.getData(ID).value.strVal.c_str ())
 									 + 1;
@@ -215,8 +213,6 @@ dataExOnTheCouch::dataExOnTheCouch ()
 
 				setPingStatus (atoi(json.getData(ID).value.strVal.c_str ()), true);
 			}
-
-			//++iter;
 
 		}
 
@@ -303,7 +299,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 
 	checkResponse.msg = HELLO;
 
-	ping (checkResponse);
+	//ping (checkResponse);
 
 	//Share our updates with everyone else
 	pushUpdates (ADMIN);
@@ -397,6 +393,7 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 
 	stillGreetingNodes = false;
 
+	//pNachoCast->shutdown ();
 	pGreeter->join ();
 	delete pGreeter;
 
@@ -509,8 +506,6 @@ void dataExOnTheCouch::greetNewNode ()
 
 			std::cout << response.str () << "\n";
 		}
-
-		sleep (1);
 	}
 }
 

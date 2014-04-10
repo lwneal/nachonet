@@ -34,10 +34,6 @@ multicast::multicast (int port, std::string localIfaceAddr,
 {
 	char loopBack = 0;
 	int reuse = 1;
-	struct timeval tv;
-
-	tv.tv_sec = 5;
-	tv.tv_usec = 0;
 
 	problem = false;
 
@@ -86,7 +82,8 @@ multicast::multicast (int port, std::string localIfaceAddr,
 		problem = true;
 	}
 
-  fcntl (rcvSD, F_SETFL, O_NONBLOCK);
+  //If we wanted to make this socket non-blocking
+  //fcntl (rcvSD, F_SETFL, O_NONBLOCK);
 
   if (setsockopt(rcvSD, SOL_SOCKET, SO_REUSEADDR,(char *)&reuse,
   		sizeof(reuse)) < 0)
@@ -121,15 +118,12 @@ multicast::multicast (int port, std::string localIfaceAddr,
   	close (rcvSD);
   }
 
-
-
-
 }
 
 /*******************************************************************************
  * Destroyer!:	~multicast
  *
- * Description:	Close the socket
+ * Description:	Call shutdown
  *
  * Parameters:	None
  *
@@ -137,8 +131,7 @@ multicast::multicast (int port, std::string localIfaceAddr,
  ******************************************************************************/
 multicast::~multicast ()
 {
-	close (sndSD);
-	close (rcvSD);
+	shutdown ();
 }
 
 /*******************************************************************************
@@ -188,7 +181,7 @@ std::string multicast::receive ()
 
 	if (!problem)
 	{
-		if (recv(rcvSD, dataBuf, BUF_LENGTH, 0) < 0)
+		if (read (rcvSD, dataBuf, BUF_LENGTH) < 0)
 		{
 			//error
 			problem = true;
@@ -199,6 +192,21 @@ std::string multicast::receive ()
 	}
 
 	return message;
+}
+
+/*******************************************************************************
+ * Method:			shutdown
+ *
+ * Description:	Close the sockets
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
+void multicast::shutdown ()
+{
+	close (sndSD);
+	close (rcvSD);
 }
 
 

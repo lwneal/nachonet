@@ -34,9 +34,11 @@ class multicast
 		~multicast ();
 		void transmit (char data[BUF_LENGTH]);
 		std::string receive ();
-		void shutdown ();
+		void kill ();
 
 	private:
+		int recvTimeout (char * buffer, int bufLen, int timeout);
+
 		bool problem;
 		int sndSD;
 		int rcvSD;

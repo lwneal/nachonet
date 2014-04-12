@@ -161,10 +161,11 @@ src/exch/dataExOnTheCouch.cpp
 	${CC} ${CFLAGS} -o bin/dataExOnTheCouch.o -c src/exch/dataExOnTheCouch.cpp
 	
 bin/multicastDriver: bin/MulticastDriver.o bin/multicast.o
-	${CC} ${CFLAGS} -o bin/multicastDriver bin/MulticastDriver.o bin/multicast.o
+	${CC} ${CFLAGS} -o bin/multicastDriver bin/MulticastDriver.o bin/multicast.o \
+	-pthread
 
 bin/MulticastDriver.o: src/exch/MulticastDriver.cpp include/exch/multicast.h
-	${CC} ${CFLAGS} -o bin/MulticastDriver.o -c src/exch/MulticastDriver.cpp
+	${CC} ${CFLAGS} -o bin/MulticastDriver.o -c src/exch/MulticastDriver.cpp 
 	
 dataEx_valgrind: bin/dataExDriver
 	valgrind ${VALGRIND_OPTIONS} bin/dataExDriver

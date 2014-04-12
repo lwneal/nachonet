@@ -82,14 +82,23 @@ multicast::multicast (int port, std::string localIfaceAddr,
 		problem = true;
 	}
 
+  /*struct timeval tv;
+  //tv.tv_sec = 2;   30 Secs Timeout
+	if (setsockopt(rcvSD, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&tv,
+			sizeof(struct timeval)) < 0)
+	{
+				 perror("setsockopt: rcvtimeo");
+				 problem = true;
+	}*/
+
   //If we wanted to make this socket non-blocking
   //fcntl (rcvSD, F_SETFL, O_NONBLOCK);
 
   if (setsockopt(rcvSD, SOL_SOCKET, SO_REUSEADDR,(char *)&reuse,
   		sizeof(reuse)) < 0)
   {
-      perror("setting SO_REUSEADDR");
-      close(rcvSD);
+		perror("setting SO_REUSEADDR");
+		close(rcvSD);
   }
 
 
@@ -131,7 +140,7 @@ multicast::multicast (int port, std::string localIfaceAddr,
  ******************************************************************************/
 multicast::~multicast ()
 {
-	shutdown ();
+	kill ();
 }
 
 /*******************************************************************************
@@ -182,7 +191,9 @@ std::string multicast::receive ()
 	if (!problem)
 	{
 		if (read (rcvSD, dataBuf, BUF_LENGTH) < 0)
+		//if (recvTimeout (dataBuf, BUF_LENGTH, 5) < 0)
 		{
+
 			//error
 			problem = true;
 			close (rcvSD);
@@ -195,7 +206,7 @@ std::string multicast::receive ()
 }
 
 /*******************************************************************************
- * Method:			shutdown
+ * Method:			kill
  *
  * Description:	Close the sockets
  *
@@ -203,10 +214,66 @@ std::string multicast::receive ()
  *
  * Returned:		None
  ******************************************************************************/
-void multicast::shutdown ()
+void multicast::kill ()
 {
+	shutdown (rcvSD, SHUT_RD);
+
 	close (sndSD);
 	close (rcvSD);
+}
+
+/*******************************************************************************
+ * Method:
+ *
+ * Description:
+ *
+ * Parameters:
+ *
+ * Returned:
+ ******************************************************************************/
+int multicast::recvTimeout (char * buffer, int bufLen, int timeout)
+{
+	fd_set readSet;
+	int result, returnVal, iof = -1;
+	struct timeval time;
+
+	FD_ZERO (&readSet);
+	FD_SET (rcvSD, &readSet);
+
+	time.tv_sec = timeout;
+	time.tv_usec = 0;
+
+	result = select (rcvSD + 1, &readSet, NULL, NULL, &time);
+
+	if (0 > result)
+	{
+		returnVal = -1;
+	}
+	else if (0 < result && FD_ISSET (rcvSD, &readSet))
+	{
+		iof = fcntl (rcvSD, F_GETFL, 0);
+
+		if (-1 != iof)
+		{
+			fcntl (rcvSD, F_SETFL, iof | O_NONBLOCK);
+		}
+
+		result = read (rcvSD, buffer, bufLen);
+
+		if (-1 != iof)
+		{
+			fcntl (rcvSD, F_SETFL, iof);
+		}
+
+		returnVal = result;
+	}
+	else
+	{
+		//perror ("read timeout");
+	}
+
+	return returnVal;
+
 }
 
 

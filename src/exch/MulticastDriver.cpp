@@ -16,6 +16,7 @@ Purpose:		Tests the multicast object by setting up either a sender or
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <thread>
 
 /*******************************************************************************
  * Function:
@@ -34,6 +35,61 @@ void initBuffer (char * buffer, int size)
 	}
 }
 
+class threadTest
+{
+	public:
+		threadTest (std::string address)
+		{
+			pMulticast = new multicast (multicast::DEFAULT_PORT, address,
+																	multicast::MULTICAST_GROUP);
+			running = true;
+			pListener = new std::thread (&threadTest::listener, this);
+		}
+
+		~threadTest ()
+		{
+			running = false;
+
+			pMulticast->kill();
+			pListener->join ();
+			delete pMulticast;
+			delete pListener;
+		}
+
+		void send (std::string message)
+		{
+			char sendData[multicast::BUF_LENGTH];
+
+			initBuffer (sendData, multicast::BUF_LENGTH);
+
+			memcpy (sendData, message.c_str (), message.size ());
+
+			pMulticast->transmit (sendData);
+		}
+
+		void listener ()
+		{
+			std::string message;
+
+			while (running)
+			{
+				message = "";
+				message = pMulticast->receive ();
+
+				if (0 != message.compare (""))
+				{
+					std::cout << message << "\n";
+					std::cout << "~>";
+				}
+			}
+		}
+
+		bool running;
+		multicast *pMulticast;
+		std::thread * pListener;
+};
+
+
 /*******************************************************************************
  * Function:
  *
@@ -47,15 +103,17 @@ int main (int argc, char** argv)
 {
 	const char * EXIT = "exit";
 
-	multicast * pMulticast;
+	//multicast * pMulticast;
 	std::string data, receiveData, myAddress;
 	int optionChar;
-	bool sender = false, stillRunning = true;
+	bool sender = false/*, stillRunning = true*/;
 	struct ifaddrs * pIfaceAddr = NULL;
 	struct ifaddrs * pIface = NULL;
 	void * pTempAddr = NULL;
 	char addrBuffer[INET_ADDRSTRLEN];
-	char sendData[multicast::BUF_LENGTH];
+	//char sendData[multicast::BUF_LENGTH];
+
+	threadTest *pThread;
 
 	while ((optionChar = getopt (argc, argv, "s")) != -1)
 	{
@@ -87,7 +145,18 @@ int main (int argc, char** argv)
 		freeifaddrs (pIfaceAddr);
 	}
 
-	pMulticast = new multicast (multicast::DEFAULT_PORT, myAddress,
+	pThread = new threadTest (myAddress);
+
+	do
+	{
+		std::cout << "~> ";
+		std::cin >> data;
+		pThread->send (data);
+	} while (0 != data.compare (EXIT));
+
+	delete pThread;
+
+	/*pMulticast = new multicast (multicast::DEFAULT_PORT, myAddress,
 															multicast::MULTICAST_GROUP);
 
 	if (!sender)
@@ -139,7 +208,7 @@ int main (int argc, char** argv)
 		} while (0 != data.compare (EXIT));
 	}
 
-	delete pMulticast;
+	delete pMulticast;*/
 
 
 	return 0;

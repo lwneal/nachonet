@@ -182,6 +182,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 			data = json.getData (ROWS).value.array[i];
 			entry = data.value.pObject->getData(ALT_ID);
 
+			url.clear ();
 			url = "http://" + LOCALHOST + ':';
 			url.append (std::to_string (DEFAULT_COUCH_PORT));
 			url += '/' + TARGET_DB[ADMIN] + '/';
@@ -260,6 +261,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	//std::cout << "Adding to admin_db: " << json.writeJSON ("") << "\n";
 
 	curlPut (url, json.writeJSON(""), response);
+	url.clear ();
 
 	std::cout << response.str () << "\n";
 
@@ -367,6 +369,7 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 
 		delete pParser;
 	}
+	url.clear ();
 
 	url = "http://" + LOCALHOST + ':';
 	url.append (std::to_string (DEFAULT_COUCH_PORT));
@@ -388,12 +391,28 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 		delete pParser;
 	}
 
+	url.clear ();
+
 	pushUpdates (ADMIN);
 	pushUpdates (NODES);
 
+	url = "http://" + LOCALHOST + ':';
+	url.append (std::to_string (DEFAULT_COUCH_PORT));
+	url += '/' + TARGET_DB[NODES];
+
+	clearDB (url, oss);
+
+	url.clear ();
+
+	url = "http://" + LOCALHOST + ':';
+	url.append (std::to_string (DEFAULT_COUCH_PORT));
+	url += '/' + TARGET_DB[ADMIN];
+
+	clearDB (url, oss);
+
 	stillGreetingNodes = false;
 
-	//pNachoCast->shutdown ();
+	pNachoCast->kill ();
 	pGreeter->join ();
 	delete pGreeter;
 
@@ -540,6 +559,9 @@ void dataExOnTheCouch::ping (Message message)
 
 	for (int nodeID : message.dest)
 	{
+
+		std::cout << msgField.getData (MSG_TEXT).value.strVal << " " << nodeID << "\n";
+
 		if (0 == msgField.getData (MSG_TEXT).value.strVal.compare (HELLO))
 		{
 			setPingStatus (nodeID, false);
@@ -547,6 +569,8 @@ void dataExOnTheCouch::ping (Message message)
 
 		url += "http://" + LOCALHOST + ':' + std::to_string(DEFAULT_COUCH_PORT)
 					+ '/' + TARGET_DB[ADMIN] + '/' + std::to_string (nodeID);
+
+		std::cout << url << "\n";
 
 		if(CURLE_OK == curlRead(url, oss))
 		{
@@ -908,7 +932,7 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 
 	for (auto & thisNode : nodes)
 	{
-		url = url + "http://" + LOCALHOST + ':'
+		url = "http://" + LOCALHOST + ':'
 					+ std::to_string (DEFAULT_COUCH_PORT) + '/'+ TARGET_DB[NODES] + '/'
 					+ std::to_string (thisNode.first);
 
@@ -940,6 +964,28 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 			}
 
 		}
+
+		url.clear ();
+
+		url = "http://" + LOCALHOST + ':'
+					+ std::to_string (DEFAULT_COUCH_PORT) + '/'+ TARGET_DB[ADMIN] + '/'
+					+ std::to_string (thisNode.first);
+
+		//we need to make sure that all nodes have the ip addresses of all other
+		//nodes. Multicast uses UDP so it's possible that not everyone has seen
+		//the new node
+		if (CURLE_OK == curlRead(url, oss))
+		{
+			// Web page successfully written to string
+			parser.init (oss.str ());
+			json = parser.getObject ();
+			oss.str("");
+
+			nodeIPAddr[atoi(json.getData(ID).value.strVal.c_str ())]
+									 = json.getData(IP).value.strVal;
+
+		}
+
 	}
 
 }
@@ -1009,8 +1055,8 @@ void dataExOnTheCouch::updateCouchFromNode ()
 	location loc;
 	std::vector<refMeasurement> nodeMeasurements;
 
-	url = url + "http://" + LOCALHOST + ':' + std::to_string (DEFAULT_COUCH_PORT)
-				+ '/' + TARGET_DB[DEVICES] + '/' + std::to_string (getID ());
+	url = "http://" + LOCALHOST + ':' + std::to_string (DEFAULT_COUCH_PORT)
+				+ '/' + TARGET_DB[NODES] + '/' + std::to_string (getID ());
 
 	//set the ID
 	data.type = jsonParser::STR_TYPE;
@@ -1157,6 +1203,8 @@ CURLcode dataExOnTheCouch::curlRead (const std::string& url, std::ostream& os,
 	CURLcode code (CURLE_FAILED_INIT);
 	CURL* curl = curl_easy_init ();
 
+	std::cout << url << "\n";
+
 	if (curl)
 	{
 		if (CURLE_OK == (code =
@@ -1195,6 +1243,7 @@ CURLcode dataExOnTheCouch::curlPut(const std::string& url,
 	struct curl_slist* headers = NULL;
 	headers = curl_slist_append (headers, "Content-Type: application/json");
 
+	std::cout << url << "\n   " << json << "\n";
 	if (curl)
 	{
 		if (CURLE_OK
@@ -1234,6 +1283,8 @@ CURLcode dataExOnTheCouch::curlPost(const std::string& url,
 																		const std::string& json,
 																		std::ostream& os)
 {
+
+	std::cout << url << "\n   " << json << "\n";
 	CURLcode code (CURLE_FAILED_INIT);
 	CURL* curl = curl_easy_init ();
 	struct curl_slist* headers = NULL;
@@ -1260,4 +1311,54 @@ CURLcode dataExOnTheCouch::curlPost(const std::string& url,
 
 	return code;
 
+}
+
+/*******************************************************************************
+ * Method:			clearDB
+ *
+ * Description:	Deletes and recreates the database located at the URL. This is
+ * 							intended to be used in the destroyer!
+ *
+ * Parameters:	url - the url at which the database is located
+ * 							os - output stream for capturing return information (can be used
+ * 									 for debugging)
+ *
+ * Returned:		None
+ ******************************************************************************/
+void dataExOnTheCouch::clearDB (std::string url, std::ostream& os)
+{
+	CURLcode code (CURLE_FAILED_INIT);
+	CURL* curl = curl_easy_init ();
+
+	if (curl)
+	{
+		if (CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &dataWrite))
+				&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &os))
+				&& CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE"))
+				&& CURLE_OK
+						== (code = curl_easy_setopt(curl, CURLOPT_URL, url.c_str())))
+		{
+			code = curl_easy_perform (curl);
+		}
+		curl_easy_cleanup (curl);
+	}
+
+	curl = curl_easy_init ();
+
+	if (curl)
+	{
+		if (CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &dataWrite))
+				&& CURLE_OK == (code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, &os))
+				&& CURLE_OK
+					== (code = curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT"))
+				&& CURLE_OK
+						== (code = curl_easy_setopt(curl, CURLOPT_URL, url.c_str())))
+		{
+			code = curl_easy_perform (curl);
+		}
+		curl_easy_cleanup (curl);
+	}
 }

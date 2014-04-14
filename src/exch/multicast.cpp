@@ -223,13 +223,16 @@ void multicast::kill ()
 }
 
 /*******************************************************************************
- * Method:
+ * Method:			recvTimeout
  *
- * Description:
+ * Description: A version of receive that uses select to implement a non
+ * 							blocking recv that uses a timeout.
  *
- * Parameters:
+ * Parameters:	buffer - the buffer into which the socket contents are written
+ * 							bufLen - the length of the buffer
+ * 							timeout - the length of time to read before timing out
  *
- * Returned:
+ * Returned:		int - see recv error codes
  ******************************************************************************/
 int multicast::recvTimeout (char * buffer, int bufLen, int timeout)
 {

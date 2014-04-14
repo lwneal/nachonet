@@ -95,6 +95,8 @@ class dataExOnTheCouch : public dataEx
     CURLcode curlPost(const std::string& url, const std::string& json,
     									std::ostream& os);
 
+    void clearDB (std::string url, std::ostream& os);
+
     std::map<int, std::string> nodeIPAddr;
 
     //We need to track the current revision number of each document

@@ -88,26 +88,21 @@ const std::string dataExOnTheCouch::ROWS = "rows";
  ******************************************************************************/
 dataExOnTheCouch::dataExOnTheCouch ()
 {
-	struct ifaddrs * pIfaceAddr = NULL;
-	struct ifaddrs * pIface = NULL;
-	void * pTempAddr = NULL;
-	char addrBuffer[INET_ADDRSTRLEN];
-	char message[multicast::BUF_LENGTH];
-	std::string myAddress, url;
-	std::ostringstream oss, response;
-	JSON json, jsonLoc;
-	jsonData data, entry;
-	jsonParser parser;
-	std::clock_t startTimeout;
-	double duration;
-	int nextID = node::NO_ID;
-	int totalRows;
-	location loc;
-	loc.x = 0;
-	loc.y = 0;
-	loc.theID.intID = node::NO_ID;
-	node newNode (node::NO_ID, loc);
-	Message checkResponse;
+	struct ifaddrs * 		pIfaceAddr = NULL;
+	struct ifaddrs * 		pIface = NULL;
+	void * 							pTempAddr = NULL;
+	char 								addrBuffer[INET_ADDRSTRLEN];
+	std::string 				myAddress, url;
+	std::ostringstream 	oss, response;
+	JSON 								json, jsonLoc;
+	jsonData 						data, entry;
+	jsonParser 					parser;
+	location 						loc;
+		loc.x = 0;
+		loc.y = 0;
+		loc.theID.intID = node::NO_ID;
+	node 								newNode (node::NO_ID, loc);
+	Message 						checkResponse;
 
 	//Let's go get our IP address
 	getifaddrs (&pIfaceAddr);
@@ -134,102 +129,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 															multicast::MULTICAST_GROUP);
 	setIP (myAddress);
 
-	//prepare our broadcast message
-	for (int i = 0; i < multicast::BUF_LENGTH; i++)
-	{
-		message[i] = '\0';
-	}
-
-	memcpy (message, myAddress.c_str (), myAddress.length ());
-
-	//broadcast our IP address to anybody listening
-	pNachoCast->transmit (message);
-
-	startTimeout = std::clock ();
-
-	//now we need to check if anyone got back to us or for the timeout to occur
-	url = "http://" + LOCALHOST + ':';
-	url.append (std::to_string (DEFAULT_COUCH_PORT));
-	url += '/' + TARGET_DB[ADMIN] + '/' + ALL_DOCS_Q;
-
-	do
-	{
-		if (CURLE_OK == curlRead (url, oss))
-		{
-			// Web page successfully written to string
-			parser.init (oss.str());
-			json = parser.getObject ();
-			oss.str ("");
-		}
-
-		duration = 10 * ( std::clock() - startTimeout ) / (double) CLOCKS_PER_SEC;
-		//std::cout << duration << "\n";
-
-	} while (/*0 >= json.getData (TOTAL_ROWS).value.intVal
-					 &&*/ TIMEOUT > duration);
-
-	totalRows = json.getData (TOTAL_ROWS).value.intVal;
-	//we heard back so we need to go through admin_db and set up our local data
-	//to prepare for the first full sync
-	if (0 < totalRows)
-	{
-		std::cout << "Found other node. Updating...\n";
-		std::cout << "From: " << json.writeJSON ("");
-
-		for (int i = 0; i < totalRows; i++)
-		{
-
-			data = json.getData (ROWS).value.array[i];
-			entry = data.value.pObject->getData(ALT_ID);
-
-			url.clear ();
-			url = "http://" + LOCALHOST + ':';
-			url.append (std::to_string (DEFAULT_COUCH_PORT));
-			url += '/' + TARGET_DB[ADMIN] + '/';
-			url	+= entry.value.strVal ;
-
-			if (CURLE_OK == curlRead (url, oss))
-			{
-					// Web page successfully written to string
-					parser.init (oss.str());
-					json = parser.getObject ();
-					oss.str ("");
-
-
-				std::cout << "node: " << json.getData(ID).value.strVal
-									<< " " << json.getData(IP).value.strVal << "\n";
-
-				nodeIPAddr[atoi(json.getData(ID).value.strVal.c_str ())]
-									 = json.getData(IP).value.strVal;
-
-				nodes[atoi(json.getData(ID).value.strVal.c_str ())]
-									 = newNode;
-
-				//figure out our ID
-				if (atoi(json.getData(ID).value.strVal.c_str ()) >= nextID)
-				{
-					nextID = atoi(json.getData(ID).value.strVal.c_str ())
-									 + 1;
-				}
-
-				setPingStatus (atoi(json.getData(ID).value.strVal.c_str ()), true);
-			}
-
-		}
-
-		setID (nextID);
-
-		pullUpdates (ADMIN);
-		pullUpdates (NODES);
-		pullUpdates (DEVICES);
-
-
-	}
-	else //if (TIMEOUT < duration) we didn't hear back so we are the first node
-	{
-		std::cout << "FiR57 p0As7!\n";
-		setID (0);
-	}
+	discover ();
 
 	//add ourselves to the node maps
 	newNode.setID (getID ());
@@ -266,29 +166,6 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	std::cout << response.str () << "\n";
 
 	json.clear ();
-	//we can put a mostly empty doc in for the node because this will get updated
-	//later
-	/*data.type = jsonParser::STR_TYPE;
-	data.value.strVal = std::to_string(getID ());
-	json.setValue (ID, data);
-
-	data.type = jsonParser::FLT_TYPE;
-	data.value.floatVal = 0.0f;
-	jsonLoc.setValue (X_COOR, data);
-	jsonLoc.setValue (Y_COOR, data);
-
-	data.type = jsonParser::OBJ_TYPE;
-	data.value.pObject = &jsonLoc;
-	json.setValue (LOCATION, data);
-
-	data.type = jsonParser::VEC_TYPE;
-	json.setValue (MEASUREMENTS, data);
-
-	url = "http://" + LOCALHOST + ':';
-	url.append (std::to_string (DEFAULT_COUCH_PORT));
-	url += '/' + TARGET_DB[NODES] + '/' + std::to_string(getID ());
-
-	curlPut (url, json.writeJSON(""), response);*/
 
 	//Share our updates with everyone else
 	pushUpdates (ADMIN);
@@ -514,6 +391,15 @@ void dataExOnTheCouch::greetNewNode ()
 
 			std::cout << response.str () << "\n";
 		}
+
+		std::cout << "I know: ";
+
+		for (auto & entry : this->nodeIPAddr)
+		{
+			std::cout << entry.second << "   ";
+		}
+
+		std::cout << "\n";
 	}
 }
 
@@ -914,6 +800,129 @@ void dataExOnTheCouch::setState (std::string state)
 
 		curlPut (url, json.writeJSON (""), response);
 	}
+}
+
+/*******************************************************************************
+ * Method:			discover
+ *
+ * Description:	Use multicast to tell other nodes in the network that I'm hear.
+ * 							If we hear from someone we update our data from their DBs and
+ * 							figure out what our ID is.
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
+void dataExOnTheCouch::discover ()
+{
+	std::ostringstream 	oss;
+	std::string 				url, myAddress;
+	jsonParser 					parser;
+	JSON 								json;
+	jsonData 						data, entry;
+	location 						loc;
+		loc.x = 0;
+		loc.y = 0;
+		loc.theID.intID = node::NO_ID;
+	node 								newNode (node::NO_ID, loc);
+	char 								message[multicast::BUF_LENGTH];
+	int 								totalRows, nextID = node::NO_ID;
+
+	myAddress = getIP ();
+
+	//prepare our broadcast message
+	for (int i = 0; i < multicast::BUF_LENGTH; i++)
+	{
+		message[i] = '\0';
+	}
+
+	memcpy (message, myAddress.c_str (), myAddress.length ());
+
+	//broadcast our IP address to anybody listening
+	pNachoCast->transmit (message);
+
+	sleep (TIMEOUT); //wait for responses
+
+
+	//now we need to check if anyone got back to us
+	url = "http://" + LOCALHOST + ':';
+	url.append (std::to_string (DEFAULT_COUCH_PORT));
+	url += '/' + TARGET_DB[ADMIN] + '/' + ALL_DOCS_Q;
+
+	if (CURLE_OK == curlRead (url, oss))
+	{
+			// Web page successfully written to string
+			parser.init (oss.str());
+			json = parser.getObject ();
+			oss.str ("");
+	}
+
+	totalRows = json.getData (TOTAL_ROWS).value.intVal;
+	//we heard back so we need to go through admin_db and set up our local data
+	//to prepare for the first full sync
+	if (0 < totalRows)
+	{
+		std::cout << "Found other node(s). Updating...\n";
+
+		for (int i = 0; i < totalRows; i++)
+		{
+
+			data = json.getData (ROWS).value.array[i];
+			entry = data.value.pObject->getData(ALT_ID);
+
+			url.clear ();
+			url = "http://" + LOCALHOST + ':';
+			url.append (std::to_string (DEFAULT_COUCH_PORT));
+			url += '/' + TARGET_DB[ADMIN] + '/';
+			url	+= entry.value.strVal ;
+
+			if (CURLE_OK == curlRead (url, oss))
+			{
+				// Web page successfully written to string
+				parser.init (oss.str());
+				json = parser.getObject ();
+				oss.str ("");
+
+				nodeIPAddr[atoi(json.getData(ID).value.strVal.c_str ())]
+									 = json.getData(IP).value.strVal;
+
+				nodes[atoi(json.getData(ID).value.strVal.c_str ())]
+									 = newNode;
+
+				//figure out our ID
+				if (atoi(json.getData(ID).value.strVal.c_str ()) >= nextID)
+				{
+					nextID = atoi(json.getData(ID).value.strVal.c_str ())
+									 + 1;
+				}
+
+				setPingStatus (atoi(json.getData(ID).value.strVal.c_str ()), true);
+			}
+
+		}
+
+		setID (nextID);
+
+		pullUpdates (ADMIN);
+		pullUpdates (NODES);
+		pullUpdates (DEVICES);
+
+
+	}
+	else //if (TIMEOUT < duration) we didn't hear back so we are the first node
+	{
+		std::cout << "FiR57 p0As7!\n";
+		setID (0);
+	}
+
+	std::cout << "I know: ";
+
+	for (auto & entry : this->nodeIPAddr)
+	{
+		std::cout << "(" << entry.first << ", " << entry.second << ")   ";
+	}
+
+	std::cout << "\n";
 }
 
 /*******************************************************************************

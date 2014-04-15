@@ -42,6 +42,7 @@ class dataExOnTheCouch : public dataEx
     virtual void pushUpdates (int flag);
     virtual void pullUpdates (int flag);
     virtual void setState (std::string state);
+    virtual void discover ();
 
     static const double TIMEOUT;
     static const long CURL_TIMEOUT = 30;

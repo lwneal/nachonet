@@ -268,7 +268,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	json.clear ();
 	//we can put a mostly empty doc in for the node because this will get updated
 	//later
-	data.type = jsonParser::STR_TYPE;
+	/*data.type = jsonParser::STR_TYPE;
 	data.value.strVal = std::to_string(getID ());
 	json.setValue (ID, data);
 
@@ -288,24 +288,11 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	url.append (std::to_string (DEFAULT_COUCH_PORT));
 	url += '/' + TARGET_DB[NODES] + '/' + std::to_string(getID ());
 
-	curlPut (url, json.writeJSON(""), response);
-
-	//check to see if nodes are responsive
-	for (auto & host : nodes)
-	{
-		if (getID () != host.first) // we don't need to include ourselves
-		{
-			checkResponse.dest.push_back (host.first);
-		}
-	}
-
-	checkResponse.msg = HELLO;
-
-	//ping (checkResponse);
+	curlPut (url, json.writeJSON(""), response);*/
 
 	//Share our updates with everyone else
 	pushUpdates (ADMIN);
-	pushUpdates (NODES);
+	pushUpdates (NODES); //we create our node doc here
 
 	//now set up our greeter for future new nodes
 	stillGreetingNodes = true;
@@ -394,7 +381,9 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 	url.clear ();
 
 	pushUpdates (ADMIN);
-	pushUpdates (NODES);
+	pushUpdates (NODES_END); //because we don't want the same update behavior
+													 //We already set the doc to deleted, so we want to
+													 //avoid updating from our local node data
 
 	url = "http://" + LOCALHOST + ':';
 	url.append (std::to_string (DEFAULT_COUCH_PORT));
@@ -592,6 +581,8 @@ void dataExOnTheCouch::ping (Message message)
 		{
 			std::cout << "Error reading from DB\n";
 		}
+
+		url.clear ();
 	}
 }
 
@@ -700,84 +691,98 @@ void dataExOnTheCouch::pushUpdates (int flag)
 	std::ostringstream response;
 	std::string url;
 
+
+	//some simple processing before we go into the update loop
+	switch (flag)
+	{
+		case NODES:
+			entry.type = jsonParser::STR_TYPE;
+			entry.value.strVal = std::to_string (getID ());
+			data.type = jsonParser::VEC_TYPE;
+			data.value.array.push_back(entry);
+
+			json.setValue (DOC_IDS, data);
+
+			updateCouchFromNode ();
+			break;
+
+
+		case DEVICES:
+			updateCouchFromDevs ();
+			break;
+	}
+
 	for (auto & host : nodeIPAddr)
 	{
 
-		data.type = jsonParser::STR_TYPE;
-		data.value.strVal.clear ();
-		data.value.strVal.append ("http://");
-		data.value.strVal.append (host.second);
-		data.value.strVal.push_back (':');
-		data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
-		data.value.strVal.push_back ('/');
-
-		switch (flag)
+		if (getID () != host.first)
 		{
-			/*
-			 * We'll need to update each document in each db. This should happen
-			 * very rarely, so we don't need to worry about conflicts
-			 */
-			case ADMIN:
-				data.value.strVal.append (TARGET_DB [ADMIN]);
 
-				json.setValue (TARGET, data);
+			data.type = jsonParser::STR_TYPE;
+			data.value.strVal.clear ();
+			data.value.strVal.append ("http://");
+			data.value.strVal.append (host.second);
+			data.value.strVal.push_back (':');
+			data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
+			data.value.strVal.push_back ('/');
 
-				data.value.strVal.clear ();
-				data.value.strVal = TARGET_DB [ADMIN];
+			switch (flag)
+			{
+				/*
+				 * We'll need to update each document in each db. This should happen
+				 * very rarely, so we don't need to worry about conflicts
+				 */
+				case ADMIN:
+					data.value.strVal.append (TARGET_DB [ADMIN]);
 
-				json.setValue (SOURCE, data);
-				break;
+					json.setValue (TARGET, data);
 
-			/*
-			 * We only change our own node information in each db instance
-			 */
-			case NODES:
-				updateCouchFromNode ();
+					data.value.strVal.clear ();
+					data.value.strVal = TARGET_DB [ADMIN];
 
-				data.value.strVal.append (TARGET_DB [NODES]);
+					json.setValue (SOURCE, data);
+					break;
 
-				json.setValue (TARGET, data);
+				case NODES:
+				case NODES_END:
 
-				data.value.strVal.clear ();
-				data.value.strVal = TARGET_DB [NODES];
+					data.value.strVal.append (TARGET_DB [NODES]);
 
-				json.setValue (SOURCE, data);
+					json.setValue (TARGET, data);
 
-				entry.type = jsonParser::STR_TYPE;
-				entry.value.strVal = std::to_string (getID ());
-				data.type = jsonParser::VEC_TYPE;
-				data.value.array.push_back(entry);
+					data.value.strVal.clear ();
+					data.value.strVal = TARGET_DB [NODES];
 
-				json.setValue (DOC_IDS, data);
-				break;
+					json.setValue (SOURCE, data);
+					break;
 
-			/*
-			 * Since each node can only update a particular device document,
-			 * we can safely replicate the whole database without conflicts.
-			 */
-			case DEVICES:
-				updateCouchFromDevs ();
+				/*
+				 * Since each node can only update a particular device document,
+				 * we can safely replicate the whole database without conflicts.
+				 */
+				case DEVICES:
 
-				data.value.strVal.append (TARGET_DB [DEVICES]);
+					data.value.strVal.append (TARGET_DB [DEVICES]);
 
-				json.setValue (TARGET, data);
+					json.setValue (TARGET, data);
 
-				data.value.strVal.clear ();
-				data.value.strVal = TARGET_DB [DEVICES];
+					data.value.strVal.clear ();
+					data.value.strVal = TARGET_DB [DEVICES];
 
-				json.setValue (SOURCE, data);
-				break;
+					json.setValue (SOURCE, data);
+					break;
 
-			default:
-				break;
+				default:
+					break;
+			}
+
+
+			url = "http://" + LOCALHOST + ':';
+			url.append (std::to_string (DEFAULT_COUCH_PORT));
+			url.append ('/' + REPLICATE);
+
+			curlPost (url, json.writeJSON(""), response);
 		}
-
-
-		url = "http://" + LOCALHOST + ':';
-		url.append (std::to_string (DEFAULT_COUCH_PORT));
-		url.append ('/' + REPLICATE);
-
-		curlPost (url, json.writeJSON(""), response);
 	}
 
 
@@ -1064,8 +1069,11 @@ void dataExOnTheCouch::updateCouchFromNode ()
 	json.setValue (ID, data);
 
 	//use the revision ID from the last read
-	data.value.strVal = nodeDBRevisions[getID ()];
-	json.setValue (REVISION, data);
+	if (0 != nodeDBRevisions[getID ()].length ())
+	{
+		data.value.strVal = nodeDBRevisions[getID ()];
+		json.setValue (REVISION, data);
+	}
 
 	//set the location
 	loc = nodes[getID ()].getLocation ();
@@ -1101,6 +1109,8 @@ void dataExOnTheCouch::updateCouchFromNode ()
 
 		data.value.array.push_back (entry);
 	}
+
+	json.setValue (MEASUREMENTS, data);
 
 	curlPut (url, json.writeJSON(""), response);
 

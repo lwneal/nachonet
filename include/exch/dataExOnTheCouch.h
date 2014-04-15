@@ -49,7 +49,7 @@ class dataExOnTheCouch : public dataEx
     static const int DEFAULT_COUCH_PORT = 5984;
     static const std::string LOCALHOST;
 
-    static enum DB {ADMIN, NODES, DEVICES, ALL} DB;
+    static enum DB {ADMIN, NODES, DEVICES, ALL, NODES_END} DB;
     static const std::string TARGET_DB[];
     static const std::string ALL_DOCS_Q;
 

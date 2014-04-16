@@ -135,14 +135,14 @@ bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 bin/dataExDriver.o: src/exch/dataExDriver.cpp
 	${CC} ${CFLAGS} -o bin/dataExDriver.o -c src/exch/dataExDriver.cpp
 
-bin/dataExNetDriver: bin/dataExNetDriver.o bin/node.o bin/device.o bin/loc.o \
+bin/addDropTest: bin/addDropTest.o bin/node.o bin/device.o bin/loc.o \
 bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
-	${CC} ${CFLAGS} -o bin/dataExNetDriver bin/dataExNetDriver.o bin/node.o \
+	${CC} ${CFLAGS} -o bin/addDropTest bin/addDropTest.o bin/node.o \
 	bin/device.o bin/loc.o bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o \
 	bin/json.o bin/jsonParser.o -lcurl
 	
-bin/dataExNetDriver.o: src/exch/dataExNetDriver.cpp
-	${CC} ${CFLAGS} -o bin/dataExNetDriver.o -c src/exch/dataExNetDriver.cpp
+bin/addDropTest.o: src/exch/addDropTest.cpp
+	${CC} ${CFLAGS} -o bin/addDropTest.o -c src/exch/addDropTest.cpp
 	
 bin/node.o: include/exch/node.h src/exch/node.cpp include/loc/loc.h
 	${CC} ${CFLAGS} -o bin/node.o -c src/exch/node.cpp

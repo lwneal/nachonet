@@ -104,6 +104,8 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	node 								newNode (node::NO_ID, loc);
 	Message 						checkResponse;
 
+	curl_global_init (CURL_GLOBAL_ALL);
+
 	//Let's go get our IP address
 	getifaddrs (&pIfaceAddr);
 
@@ -231,6 +233,7 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 
 		curlPut (url, json.writeJSON(""), response);
 
+		json.clear ();
 		delete pParser;
 	}
 	url.clear ();
@@ -251,6 +254,8 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 		json.setValue (DELETED, data);
 
 		curlPut (url, json.writeJSON(""), response);
+
+		json.clear ();
 
 		delete pParser;
 	}
@@ -275,6 +280,9 @@ dataExOnTheCouch::~dataExOnTheCouch ()
 	url += '/' + TARGET_DB[ADMIN];
 
 	clearDB (url, oss);
+
+
+	curl_global_cleanup ();
 
 	stillGreetingNodes = false;
 
@@ -353,7 +361,7 @@ void dataExOnTheCouch::greetNewNode ()
 			//let's go find the next available ID for the new guy
 			for (auto & entry : nodeIPAddr)
 			{
-				if (entry.first > nextID)
+				if (entry.first >= nextID)
 				{
 					nextID = entry.first + 1;
 				}
@@ -396,7 +404,7 @@ void dataExOnTheCouch::greetNewNode ()
 
 		for (auto & entry : this->nodeIPAddr)
 		{
-			std::cout << entry.second << "   ";
+			std::cout << "(" << entry.first << ", " << entry.second << ")   ";
 		}
 
 		std::cout << "\n";
@@ -484,12 +492,13 @@ void dataExOnTheCouch::ping (Message message)
  ******************************************************************************/
 void dataExOnTheCouch::checkMessages ()
 {
-	std::string url = "";
+	std::string url = "", msg;
 	std::ostringstream oss, response;
 	JSON json;
 	jsonData data;
 	jsonParser parser;
 	Message returnMessage;
+	int src;
 
 	url = url + "http://" + LOCALHOST + ':' + std::to_string (DEFAULT_COUCH_PORT)
 				+ '/' + TARGET_DB[ADMIN] + '/' + std::to_string (getID ());
@@ -505,45 +514,53 @@ void dataExOnTheCouch::checkMessages ()
 		//read all of the messages out of the message queue and handle accordingly
 		for (auto & entry : data.value.array)
 		{
+			msg = entry.value.pObject->getData(MSG_TEXT).value.strVal;
+			src = entry.value.pObject->getData(MSG_SRC).value.intVal;
 
-			if (0 ==
-					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (HELLO))
+			if (0 == msg.compare (HELLO))
 			{
-				returnMessage.msg = ACK;
-				returnMessage.dest.push_back (
-						(entry.value.pObject->getData(MSG_SRC)).value.intVal);
+				if (nodeIPAddr.count (src))
+				{
+					returnMessage.msg = ACK;
+					returnMessage.dest.push_back (
+							(entry.value.pObject->getData(MSG_SRC)).value.intVal);
 
-				ping (returnMessage);
+					ping (returnMessage);
+				}
 			}
-			else if (0 ==
-				(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (GOODBYE))
+			else if (0 ==	msg.compare (GOODBYE))
 			{
-				nodeIPAddr.erase (nodeIPAddr.find (
-							(entry.value.pObject->getData(MSG_SRC)).value.intVal));
 
-				nodeDBRevisions.erase (nodeDBRevisions.find (
-						(entry.value.pObject->getData(MSG_SRC)).value.intVal));
+				if (nodeIPAddr.count (src))
+				{
+					nodeIPAddr.erase (nodeIPAddr.find (src));
 
-				dropNode ((entry.value.pObject->getData(MSG_SRC)).value.intVal);
+					nodeDBRevisions.erase (nodeDBRevisions.find (src));
+
+					dropNode (src);
+				}
 			}
-			else if (0 ==
-					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (STOP))
+			else if (0 ==	msg.compare (STOP))
 			{
 				setIsAlive (false);
 				setState (DEAD);
 			}
-			else if (0 ==
-					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (START))
+			else if (0 == msg.compare (START))
 			{
 				setIsAlive (true);
 				setState (RUNNING);
 			}
-			else if (0 ==
-					(entry.value.pObject->getData(MSG_TEXT)).value.strVal.compare (ACK))
+			else if (0 == msg.compare (ACK))
 			{
-				setPingStatus (
+				if (nodeIPAddr.count (src))
+				{
+					setPingStatus (
 							(entry.value.pObject->getData(MSG_SRC)).value.intVal, true);
+				}
 			}
+
+			delete (entry.value.pObject);
+			entry.value.pObject = NULL;
 		}
 
 		//clear the message queue
@@ -1240,6 +1257,7 @@ CURLcode dataExOnTheCouch::curlRead (const std::string& url, std::ostream& os,
 		}
 		curl_easy_cleanup (curl);
 	}
+
 	return code;
 }
 

@@ -371,6 +371,7 @@ void dataExOnTheCouch::greetNewNode ()
 			nodeIPAddr[nextID] = message;
 			newNode.setID(nextID);
 			nodes[nextID] = newNode;
+			setPingStatus (nextID, true);
 
 			//now send admin docs to the new guy
 			data.type = jsonParser::STR_TYPE;
@@ -434,7 +435,8 @@ void dataExOnTheCouch::ping (Message message)
 	data.value.strVal = message.msg;
 	msgField.setValue (MSG_TEXT, data);
 
-	data.value.strVal = std::to_string (getID ());
+	data.type = jsonParser::INT_TYPE;
+	data.value.intVal = getID ();
 	msgField.setValue (MSG_SRC, data);
 
 	entry.type = jsonParser::OBJ_TYPE;
@@ -534,10 +536,12 @@ void dataExOnTheCouch::checkMessages ()
 				if (nodeIPAddr.count (src))
 				{
 					nodeIPAddr.erase (nodeIPAddr.find (src));
-
-					nodeDBRevisions.erase (nodeDBRevisions.find (src));
-
 					dropNode (src);
+				}
+
+				if (nodeDBRevisions.count (src))
+				{
+					nodeDBRevisions.erase (nodeDBRevisions.find (src));
 				}
 			}
 			else if (0 ==	msg.compare (STOP))

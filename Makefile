@@ -19,7 +19,7 @@ dataExTests
 
 all: bin/nachonet bin/prototype bin/distDriver bin/configDriver \
 bin/collectDriver bin/jsonDriver bin/dataExDriver bin/multicastDriver \
-bin/mapDriver bin/configure bin/addDropTest bin/devTest
+bin/mapDriver bin/configure bin/addDropTest bin/devTest bin/helloTest
 
 ########################CONFIGURATION####################################
 bin/configure: bin/Configure.o bin/json.o bin/jsonParser.o
@@ -136,7 +136,8 @@ bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 bin/dataExDriver.o: src/exch/dataExDriver.cpp
 	${CC} ${CFLAGS} -o bin/dataExDriver.o -c src/exch/dataExDriver.cpp
 
-dataExTests: bin/configure bin/addDropTest bin/devTest bin/nodeTest
+dataExTests: bin/configure bin/addDropTest bin/devTest bin/nodeTest \
+bin/helloTest
 
 addDropTest_valgrind: bin/addDropTest
 	valgrind ${VALGRIND_OPTIONS} bin/addDropTest
@@ -173,6 +174,18 @@ bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 
 bin/nodeTest.o: src/exch/nodeTest.cpp
 	${CC} ${CFLAGS} -o bin/nodeTest.o -c src/exch/nodeTest.cpp
+	
+helloTest_valgrind: bin/helloTest
+	valgrind ${VALGRIND_OPTIONS} bin/helloTest		
+	
+bin/helloTest: bin/helloTest.o bin/node.o bin/device.o bin/loc.o \
+bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
+	${CC} ${CFLAGS} -o bin/helloTest bin/helloTest.o bin/node.o \
+	bin/device.o bin/loc.o bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o \
+	bin/json.o bin/jsonParser.o -lcurl
+
+bin/helloTest.o: src/exch/helloTest.cpp
+	${CC} ${CFLAGS} -o bin/helloTest.o -c src/exch/helloTest.cpp	
 	
 bin/node.o: include/exch/node.h src/exch/node.cpp include/loc/loc.h
 	${CC} ${CFLAGS} -o bin/node.o -c src/exch/node.cpp

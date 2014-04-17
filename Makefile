@@ -153,6 +153,15 @@ bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 bin/devTest.o: src/exch/devTest.cpp
 	${CC} ${CFLAGS} -o bin/devTest.o -c src/exch/devTest.cpp
 	
+bin/nodeTest: bin/nodeTest.o bin/node.o bin/device.o bin/loc.o \
+bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
+	${CC} ${CFLAGS} -o bin/nodeTest bin/nodeTest.o bin/node.o \
+	bin/device.o bin/loc.o bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o \
+	bin/json.o bin/jsonParser.o -lcurl
+
+bin/nodeTest.o: src/exch/nodeTest.cpp
+	${CC} ${CFLAGS} -o bin/nodeTest.o -c src/exch/nodeTest.cpp
+	
 bin/node.o: include/exch/node.h src/exch/node.cpp include/loc/loc.h
 	${CC} ${CFLAGS} -o bin/node.o -c src/exch/node.cpp
 	

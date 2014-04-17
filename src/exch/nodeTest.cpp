@@ -15,8 +15,9 @@ int main ()
 	node myNode;
 	device dev;
 	std::string id;
-	std::vector<location> devLocations;
+	std::vector<location> locations;
 	std::vector<refMeasurement> refMeasures;
+	std::vector<int> nodeIDs;
 	distMeasurement dist;
 	char ch;
 
@@ -86,6 +87,25 @@ int main ()
 							<< measure.nodeLocation.y << ")\n";
 	}
 
+	std::cout << "get random data:";
+	std::cin >> ch;
+
+	locations = pDataEx->getNodeLocations ();
+	nodeIDs = pDataEx->getNodeIDs ();
+
+	std::cout << "I know: ";
+	for (int id : nodeIDs)
+	{
+		std::cout << id << " ";
+	}
+	std::cout << "\n\n";
+
+	std::cout << "Nodes located at:\n";
+	for (auto & thisLoc : locations)
+	{
+		std::cout << thisLoc.theID.intID << ": (" << thisLoc.x << ", "
+							<< thisLoc.y << ")\n";
+	}
 
 	delete pDataEx;
 

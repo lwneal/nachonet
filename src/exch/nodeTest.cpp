@@ -6,7 +6,7 @@ Project:		NachoNet
 Purpose:		Tests the node interactions with CouchDB
 *******************************************************************************/
 
-#include "../../exch/dataExOnTheCouch.h"
+#include "../../include/exch/dataExOnTheCouch.h"
 
 int main ()
 {
@@ -44,6 +44,8 @@ int main ()
 		loc.y = 13.2;
 	}
 
+	pDataEx->pullUpdates (dataExOnTheCouch::NODES);
+
 	myNode = pDataEx->dropNode (pDataEx->getID ());
 	myNode.setLocation (loc);
 	pDataEx->addNode (myNode);
@@ -61,7 +63,7 @@ int main ()
 	dev.setID ("AAAAAAAAAAAA");
 	pDataEx->addDevice (dev);
 	dist.devID = dev.getID ();
-	dist.dist = 2.0 * dev.getID ();
+	dist.dist = 2.0 * pDataEx->getID ();
 
 	pDataEx->updateDevMeasurement (dist);
 	pDataEx->pushUpdates (dataExOnTheCouch::NODES);
@@ -82,7 +84,8 @@ int main ()
 
 	for (auto & measure : refMeasures)
 	{
-		std::cout << measure.devDist << " from " << measure.nodeLocation.theID.intID
+		std::cout << measure.devDist.devID << " is " << measure.devDist.dist
+							<< " from " << measure.nodeLocation.theID.intID
 							<< " at (" << measure.nodeLocation.x << ", "
 							<< measure.nodeLocation.y << ")\n";
 	}

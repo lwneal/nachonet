@@ -14,7 +14,8 @@ VALGRIND_OPTIONS=-v --leak-check=yes --leak-check=full --track-origins=yes \
 --show-reachable=yes
 
 .PHONY: all clean package zeus jsonDriver_valgrind nachonet_valgrind \
-map_valgrind dataEx_valgrind dataExNet_valgrind
+map_valgrind dataEx_valgrind addDrop_valgrind devTest_valgrind nodeTest_valgrind \
+dataExTests
 
 all: bin/nachonet bin/prototype bin/distDriver bin/configDriver \
 bin/collectDriver bin/jsonDriver bin/dataExDriver bin/multicastDriver \
@@ -135,6 +136,11 @@ bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 bin/dataExDriver.o: src/exch/dataExDriver.cpp
 	${CC} ${CFLAGS} -o bin/dataExDriver.o -c src/exch/dataExDriver.cpp
 
+dataExTests: bin/configure bin/addDropTest bin/devTest bin/nodeTest
+
+addDropTest_valgrind: bin/addDropTest
+	valgrind ${VALGRIND_OPTIONS} bin/addDropTest
+
 bin/addDropTest: bin/addDropTest.o bin/node.o bin/device.o bin/loc.o \
 bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 	${CC} ${CFLAGS} -o bin/addDropTest bin/addDropTest.o bin/node.o \
@@ -144,6 +150,9 @@ bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 bin/addDropTest.o: src/exch/addDropTest.cpp
 	${CC} ${CFLAGS} -o bin/addDropTest.o -c src/exch/addDropTest.cpp
 	
+devTest_valgrind: bin/devTest
+	valgrind ${VALGRIND_OPTIONS} bin/devTest	
+	
 bin/devTest: bin/devTest.o bin/node.o bin/device.o bin/loc.o \
 bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 	${CC} ${CFLAGS} -o bin/devTest bin/devTest.o bin/node.o \
@@ -152,6 +161,9 @@ bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 
 bin/devTest.o: src/exch/devTest.cpp
 	${CC} ${CFLAGS} -o bin/devTest.o -c src/exch/devTest.cpp
+	
+nodeTest_valgrind: bin/nodeTest
+	valgrind ${VALGRIND_OPTIONS} bin/nodeTest		
 	
 bin/nodeTest: bin/nodeTest.o bin/node.o bin/device.o bin/loc.o \
 bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o

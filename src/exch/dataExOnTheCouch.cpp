@@ -472,6 +472,8 @@ void dataExOnTheCouch::ping (Message message)
 			curlPut (url, json.writeJSON(""), response);
 
 			pushUpdates (ADMIN);
+
+			json.clear ();
 		}
 		else
 		{
@@ -566,6 +568,8 @@ void dataExOnTheCouch::checkMessages ()
 			delete (entry.value.pObject);
 			entry.value.pObject = NULL;
 		}
+
+		json.clear ();
 
 		//clear the message queue
 		data.value.array.clear ();
@@ -841,8 +845,8 @@ void dataExOnTheCouch::discover ()
 {
 	std::ostringstream 	oss;
 	std::string 				url, myAddress;
-	jsonParser 					parser;
-	JSON 								json;
+	jsonParser 		*			pParser = NULL;
+	JSON 								json, jsonDoc;
 	jsonData 						data, entry;
 	location 						loc;
 		loc.x = 0;
@@ -875,10 +879,10 @@ void dataExOnTheCouch::discover ()
 
 	if (CURLE_OK == curlRead (url, oss))
 	{
-			// Web page successfully written to string
-			parser.init (oss.str());
-			json = parser.getObject ();
-			oss.str ("");
+		// Web page successfully written to string
+		pParser = new jsonParser (oss.str());
+		json = pParser->getObject ();
+		oss.str ("");
 	}
 
 	totalRows = json.getData (TOTAL_ROWS).value.intVal;
@@ -900,30 +904,43 @@ void dataExOnTheCouch::discover ()
 			url += '/' + TARGET_DB[ADMIN] + '/';
 			url	+= entry.value.strVal ;
 
+			delete entry.value.pObject;
+			entry.value.pObject = NULL;
+
+
+			delete pParser;
+			pParser = NULL;
+
 			if (CURLE_OK == curlRead (url, oss))
 			{
 				// Web page successfully written to string
-				parser.init (oss.str());
-				json = parser.getObject ();
+				pParser = new jsonParser (oss.str());
+				jsonDoc = pParser->getObject ();
 				oss.str ("");
 
-				nodeIPAddr[atoi(json.getData(ID).value.strVal.c_str ())]
-									 = json.getData(IP).value.strVal;
+				nodeIPAddr[atoi(jsonDoc.getData(ID).value.strVal.c_str ())]
+									 = jsonDoc.getData(IP).value.strVal;
 
-				nodes[atoi(json.getData(ID).value.strVal.c_str ())]
+				nodes[atoi(jsonDoc.getData(ID).value.strVal.c_str ())]
 									 = newNode;
 
 				//figure out our ID
-				if (atoi(json.getData(ID).value.strVal.c_str ()) >= nextID)
+				if (atoi(jsonDoc.getData(ID).value.strVal.c_str ()) >= nextID)
 				{
-					nextID = atoi(json.getData(ID).value.strVal.c_str ())
+					nextID = atoi(jsonDoc.getData(ID).value.strVal.c_str ())
 									 + 1;
 				}
 
-				setPingStatus (atoi(json.getData(ID).value.strVal.c_str ()), true);
+				setPingStatus (atoi(jsonDoc.getData(ID).value.strVal.c_str ()), true);
+
+				jsonDoc.clear ();
+				delete pParser;
+				pParser = NULL;
 			}
 
 		}
+
+		json.clear ();
 
 		setID (nextID);
 
@@ -937,6 +954,12 @@ void dataExOnTheCouch::discover ()
 	{
 		std::cout << "FiR57 p0As7!\n";
 		setID (0);
+	}
+
+	if (NULL != pParser)
+	{
+		json.clear ();
+		delete pParser;
 	}
 
 	std::cout << "I know: ";
@@ -964,7 +987,7 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 	std::ostringstream oss;
 	JSON json;
 	jsonData data;
-	jsonParser parser;
+	jsonParser * pParser;
 	location loc;
 	distMeasurement dist;
 
@@ -977,8 +1000,8 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 		if (CURLE_OK == curlRead(url, oss))
 		{
 			// Web page successfully written to string
-			parser.init (oss.str ());
-			json = parser.getObject ();
+			pParser = new jsonParser (oss.str ());
+			json = pParser->getObject ();
 			oss.str("");
 
 			//store revision id
@@ -999,7 +1022,13 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 				dist.dist = entry.value.pObject->getData (DISTANCE).value.floatVal;
 
 				thisNode.second.setMeasurement (dist);
+
+				delete entry.value.pObject;
+				entry.value.pObject = NULL;
 			}
+
+			json.clear ();
+			delete pParser;
 
 		}
 
@@ -1015,12 +1044,15 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 		if (CURLE_OK == curlRead(url, oss))
 		{
 			// Web page successfully written to string
-			parser.init (oss.str ());
-			json = parser.getObject ();
+			pParser = new jsonParser (oss.str ());
+			json = pParser->getObject ();
 			oss.str("");
 
 			nodeIPAddr[atoi(json.getData(ID).value.strVal.c_str ())]
 									 = json.getData(IP).value.strVal;
+
+			json.clear ();
+			delete pParser;
 
 		}
 
@@ -1043,7 +1075,7 @@ void dataExOnTheCouch::updateDevsFromCouch ()
 	std::ostringstream oss;
 	JSON json;
 	jsonData data;
-	jsonParser parser;
+	jsonParser * pParser;
 	location loc;
 	distMeasurement dist;
 
@@ -1056,8 +1088,8 @@ void dataExOnTheCouch::updateDevsFromCouch ()
 		if (CURLE_OK == curlRead(url, oss))
 		{
 			// Web page successfully written to string
-			parser.init (oss.str ());
-			json = parser.getObject ();
+			pParser = new jsonParser (oss.str ());
+			json = pParser->getObject ();
 			oss.str("");
 
 			//store revision id
@@ -1069,9 +1101,15 @@ void dataExOnTheCouch::updateDevsFromCouch ()
 			loc.y = data.value.pObject->getData (Y_COOR).value.floatVal;
 
 			thisDev.second.setLocation (loc);
+			json.clear ();
+			delete pParser;
 
 		}
+
+
 	}
+
+
 }
 
 /*******************************************************************************
@@ -1102,7 +1140,7 @@ void dataExOnTheCouch::updateCouchFromNode ()
 	json.setValue (ID, data);
 
 	//use the revision ID from the last read
-	if (0 != nodeDBRevisions[getID ()].length ())
+	if (nodeDBRevisions.count (getID ()))
 	{
 		data.value.strVal = nodeDBRevisions[getID ()];
 		json.setValue (REVISION, data);

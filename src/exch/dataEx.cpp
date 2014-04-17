@@ -228,7 +228,7 @@ std::vector<refMeasurement> dataEx::getMeasurements (std::string id)
 		do
 		{
 			thisNode = nodes.begin ();
-			std::advance (thisNode,(rand() % nodes.size ()));
+			std::advance (thisNode, (getID () + i) % nodes.size ());
 			entry = thisNode->second.getMeasurement (id);
 
 			if ("" == entry.devDist.devID)

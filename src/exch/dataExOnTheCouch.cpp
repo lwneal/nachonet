@@ -473,6 +473,10 @@ void dataExOnTheCouch::ping (Message message)
 
 			pushUpdates (ADMIN);
 
+			data.value.array.clear (); // since json.clear assumes all objects are
+			json.setValue (MESSAGE, data); //dynamic, we need to clear out the non-
+																		 //dynamic objects
+
 			json.clear ();
 		}
 		else
@@ -560,16 +564,13 @@ void dataExOnTheCouch::checkMessages ()
 			{
 				if (nodeIPAddr.count (src))
 				{
-					setPingStatus (
-							(entry.value.pObject->getData(MSG_SRC)).value.intVal, true);
+					setPingStatus (src, true);
 				}
 			}
 
 			delete (entry.value.pObject);
 			entry.value.pObject = NULL;
 		}
-
-		json.clear ();
 
 		//clear the message queue
 		data.value.array.clear ();
@@ -883,6 +884,8 @@ void dataExOnTheCouch::discover ()
 		pParser = new jsonParser (oss.str());
 		json = pParser->getObject ();
 		oss.str ("");
+		delete pParser;
+		pParser = NULL;
 	}
 
 	totalRows = json.getData (TOTAL_ROWS).value.intVal;
@@ -892,24 +895,17 @@ void dataExOnTheCouch::discover ()
 	{
 		std::cout << "Found other node(s). Updating...\n";
 
+		data = json.getData (ROWS);
+
 		for (int i = 0; i < totalRows; i++)
 		{
-
-			data = json.getData (ROWS).value.array[i];
-			entry = data.value.pObject->getData(ALT_ID);
+			entry = data.value.array[i];
 
 			url.clear ();
 			url = "http://" + LOCALHOST + ':';
 			url.append (std::to_string (DEFAULT_COUCH_PORT));
 			url += '/' + TARGET_DB[ADMIN] + '/';
-			url	+= entry.value.strVal ;
-
-			delete entry.value.pObject;
-			entry.value.pObject = NULL;
-
-
-			delete pParser;
-			pParser = NULL;
+			url	+= entry.value.pObject->getData (ALT_ID).value.strVal;
 
 			if (CURLE_OK == curlRead (url, oss))
 			{
@@ -917,6 +913,8 @@ void dataExOnTheCouch::discover ()
 				pParser = new jsonParser (oss.str());
 				jsonDoc = pParser->getObject ();
 				oss.str ("");
+				delete pParser;
+				pParser = NULL;
 
 				nodeIPAddr[atoi(jsonDoc.getData(ID).value.strVal.c_str ())]
 									 = jsonDoc.getData(IP).value.strVal;
@@ -934,10 +932,7 @@ void dataExOnTheCouch::discover ()
 				setPingStatus (atoi(jsonDoc.getData(ID).value.strVal.c_str ()), true);
 
 				jsonDoc.clear ();
-				delete pParser;
-				pParser = NULL;
 			}
-
 		}
 
 		json.clear ();
@@ -1003,6 +998,7 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 			pParser = new jsonParser (oss.str ());
 			json = pParser->getObject ();
 			oss.str("");
+			delete pParser;
 
 			//store revision id
 			nodeDBRevisions[thisNode.first] = (json.getData (REVISION)).value.strVal;
@@ -1023,12 +1019,9 @@ void dataExOnTheCouch::updateNodesFromCouch ()
 
 				thisNode.second.setMeasurement (dist);
 
-				delete entry.value.pObject;
-				entry.value.pObject = NULL;
 			}
 
 			json.clear ();
-			delete pParser;
 
 		}
 

@@ -91,13 +91,27 @@ void JSON::setValue (std::string key, jsonData value)
  ******************************************************************************/
 void JSON::clear ()
 {
-	for (auto entry : keyVal)
+	for (auto & entry : keyVal)
 	{
 		if (jsonParser::OBJ_TYPE == entry.second.type
 				&& NULL != entry.second.value.pObject)
 		{
+			entry.second.value.pObject->clear ();
 			delete entry.second.value.pObject;
 			entry.second.value.pObject = NULL;
+		}
+		else if (jsonParser::VEC_TYPE == entry.second.type)
+		{
+			for (auto & item : entry.second.value.array)
+			{
+				if (jsonParser::OBJ_TYPE == item.type
+				&& NULL != item.value.pObject)
+				{
+					item.value.pObject->clear ();
+					delete item.value.pObject;
+					item.value.pObject == NULL;
+				}
+			}
 		}
 	}
 

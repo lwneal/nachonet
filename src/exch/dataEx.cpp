@@ -435,6 +435,7 @@ node dataEx::dropNode (int id)
 void dataEx::addDevice (device newDev)
 {
 	devices [newDev.getID()] = newDev;
+	devsUpdatedSinceLastPush.push_back (newDev);
 }
 
 /*******************************************************************************

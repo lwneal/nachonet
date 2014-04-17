@@ -720,62 +720,66 @@ void dataExOnTheCouch::pullUpdates (int flag)
 	std::ostringstream response;
 	std::string url;
 
-	do
+	if (!(1 == nodes.size () && getID () == nodes.begin ()->first))
 	{
-		host = nodeIPAddr.begin ();
-		std::advance (host, (rand() % nodeIPAddr.size ()));
-	} while (getID () == host->first || !lastPingResult (host->first));
+
+		do
+		{
+			host = nodeIPAddr.begin ();
+			std::advance (host, (rand() % nodeIPAddr.size ()));
+		} while (getID () == host->first || !lastPingResult (host->first));
 
 
-	data.type = jsonParser::STR_TYPE;
-	data.value.strVal.clear ();
-	data.value.strVal.append ("http://");
-	data.value.strVal.append (host->second);
-	data.value.strVal.push_back (':');
-	data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
-	data.value.strVal.push_back ('/');
+		data.type = jsonParser::STR_TYPE;
+		data.value.strVal.clear ();
+		data.value.strVal.append ("http://");
+		data.value.strVal.append (host->second);
+		data.value.strVal.push_back (':');
+		data.value.strVal.append (std::to_string (DEFAULT_COUCH_PORT));
+		data.value.strVal.push_back ('/');
 
-	switch (flag)
-	{
-		case ADMIN:
-			data.value.strVal.append (TARGET_DB [ADMIN]);
+		switch (flag)
+		{
+			case ADMIN:
+				data.value.strVal.append (TARGET_DB [ADMIN]);
 
-			json.setValue (SOURCE, data);
+				json.setValue (SOURCE, data);
 
-			data.value.strVal.clear ();
-			data.value.strVal = TARGET_DB [ADMIN];
+				data.value.strVal.clear ();
+				data.value.strVal = TARGET_DB [ADMIN];
 
-			json.setValue (TARGET, data);
-			break;
+				json.setValue (TARGET, data);
+				break;
 
-		case NODES:
-			data.value.strVal.append (TARGET_DB [NODES]);
+			case NODES:
+				data.value.strVal.append (TARGET_DB [NODES]);
 
-			json.setValue (SOURCE, data);
+				json.setValue (SOURCE, data);
 
-			data.value.strVal.clear ();
-			data.value.strVal = TARGET_DB [NODES];
+				data.value.strVal.clear ();
+				data.value.strVal = TARGET_DB [NODES];
 
-			json.setValue (TARGET, data);
-			break;
+				json.setValue (TARGET, data);
+				break;
 
-		case DEVICES:
-			data.value.strVal.append (TARGET_DB [DEVICES]);
+			case DEVICES:
+				data.value.strVal.append (TARGET_DB [DEVICES]);
 
-			json.setValue (SOURCE, data);
+				json.setValue (SOURCE, data);
 
-			data.value.strVal.clear ();
-			data.value.strVal = TARGET_DB [DEVICES];
+				data.value.strVal.clear ();
+				data.value.strVal = TARGET_DB [DEVICES];
 
-			json.setValue (TARGET, data);
-			break;
+				json.setValue (TARGET, data);
+				break;
+		}
+
+		url = "http://" + LOCALHOST + ':';
+		url.append (std::to_string (DEFAULT_COUCH_PORT));
+		url.append ('/' + REPLICATE);
+
+		curlPost (url, json.writeJSON(""), response);
 	}
-
-	url = "http://" + LOCALHOST + ':';
-	url.append (std::to_string (DEFAULT_COUCH_PORT));
-	url.append ('/' + REPLICATE);
-
-	curlPost (url, json.writeJSON(""), response);
 
 	switch (flag)
 	{
@@ -786,7 +790,6 @@ void dataExOnTheCouch::pullUpdates (int flag)
 			updateDevsFromCouch ();
 			break;
 	}
-
 }
 
 /*******************************************************************************
@@ -1176,8 +1179,12 @@ void dataExOnTheCouch::updateCouchFromDevs ()
 		json.setValue (ID, data);
 
 		//use the revision ID from the last read
-		data.value.strVal = devDBRevisions[thisDev.getID ()];
-		json.setValue (REVISION, data);
+
+		if (devDBRevisions.count (thisDev.getID ()))
+		{
+			data.value.strVal = devDBRevisions[thisDev.getID ()];
+			json.setValue (REVISION, data);
+		}
 
 		//set the location
 		loc = devices[thisDev.getID ()].getLocation ();

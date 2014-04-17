@@ -18,7 +18,7 @@ map_valgrind dataEx_valgrind dataExNet_valgrind
 
 all: bin/nachonet bin/prototype bin/distDriver bin/configDriver \
 bin/collectDriver bin/jsonDriver bin/dataExDriver bin/multicastDriver \
-bin/mapDriver bin/configure bin/dataExNetDriver
+bin/mapDriver bin/configure bin/addDropTest bin/devTest
 
 ########################CONFIGURATION####################################
 bin/configure: bin/Configure.o bin/json.o bin/jsonParser.o
@@ -143,6 +143,15 @@ bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
 	
 bin/addDropTest.o: src/exch/addDropTest.cpp
 	${CC} ${CFLAGS} -o bin/addDropTest.o -c src/exch/addDropTest.cpp
+	
+bin/devTest: bin/devTest.o bin/node.o bin/device.o bin/loc.o \
+bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o bin/json.o bin/jsonParser.o
+	${CC} ${CFLAGS} -o bin/devTest bin/devTest.o bin/node.o \
+	bin/device.o bin/loc.o bin/multicast.o bin/dataEx.o bin/dataExOnTheCouch.o \
+	bin/json.o bin/jsonParser.o -lcurl
+
+bin/devTest.o: src/exch/devTest.cpp
+	${CC} ${CFLAGS} -o bin/devTest.o -c src/exch/devTest.cpp
 	
 bin/node.o: include/exch/node.h src/exch/node.cpp include/loc/loc.h
 	${CC} ${CFLAGS} -o bin/node.o -c src/exch/node.cpp

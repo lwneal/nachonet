@@ -3,7 +3,7 @@
 	<head>
 		<title>Map</title>
 		<script type="text/JavaScript" src="jsDraw2D.js"></script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+		<script type="text/JavaScript" src="jquery.js"></script>
 		<script type="text/javascript">
 			var devDB = "/dev_db";
 			var nodeDB = "/node_db";
@@ -89,10 +89,10 @@
 				var canvas = new jsGraphics(document.getElementById("canvas"));
 				var col = new jsColor(color);
 
-				$(coords).each(function (index, coor)
+				$(coords).each(function (index, location)
 				{
-					var pt = new jsPoint (xRatio * coor.x + 12, 
-										  yRatio * coor.y + 12);				  
+					var pt = new jsPoint (xRatio * location.x + 12, 
+										  yRatio * location.y + 12);				  
 										  									  
 					canvas.fillCircle(col, pt, 5);
 				});
@@ -106,7 +106,7 @@
 					"language" : "javascript",
 					"views" : {"coords" : 
 											{"map" : 
-												"function(doc) {if (doc.coor) {emit(doc.id, doc.coor);}}"
+												"function(doc) {if (doc.location) {emit(doc.id, doc.location);}}"
 											}
 										}
 				}

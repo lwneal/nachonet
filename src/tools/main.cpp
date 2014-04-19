@@ -48,13 +48,13 @@ typedef enum ManageMenu { ADD_NODE = 0,
 											} ManageMenu;
 
 /*******************************************************************************
- * Function:
+ * Function:		clearScreen
  *
- * Description:
+ * Description:	"Clears" the screen by printing 100 new lines
  *
- * Parameters:
+ * Parameters:	None
  *
- * Returned:
+ * Returned:		None
  ******************************************************************************/
 void clearScreen ()
 {
@@ -62,13 +62,13 @@ void clearScreen ()
 }
 
 /*******************************************************************************
- * Function:
+ * Function:		menuSelection
  *
- * Description:
+ * Description:	Presents a menu based on the menuID and gets the users selection
  *
- * Parameters:
+ * Parameters:	menuID - the id of the menu we want to display
  *
- * Returned:
+ * Returned:		int - the selection from the menu
  ******************************************************************************/
 int menuSelection (int menuID)
 {
@@ -142,19 +142,24 @@ int menuSelection (int menuID)
 }
 
 /*******************************************************************************
- * Function:
+ * Function:		main
  *
- * Description:
+ * Description:	Interprets command line options and runs the main loop for
+ * 							navigating the options of NachoNet. Calls NachoNet and Admin
+ * 							functions.
  *
- * Parameters:
+ * Parameters:	argc - number of arguments (no command line arguments are
+ * 										 required)
  *
- * Returned:
+ * 							argv - arguments
+ *
+ * Returned:		0
  ******************************************************************************/
 int main (int argc, char** argv)
 {
 	int menuID = MAIN;
 	NachoNet *pMyNachos;
-	Admin *pMyAdmin;
+	Admin *pMyAdmin = NULL;
 	int optionChar;
 	std::string fileName = "";
 	bool debug = false, verbose = false, feeder = false, done = false;
@@ -189,7 +194,7 @@ int main (int argc, char** argv)
 
 	pMyNachos = new NachoNet (debug, verbose, feeder, fileName);
 
-	while (!done || MAIN != menuID)
+	while (!done)
 	{
 		switch(menuID)
 		{

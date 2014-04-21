@@ -238,8 +238,10 @@ map_valgrind: bin/mapDriver
 
 ##########################Utilities###############################
 
-bin/ezConfigDriver: bin/EZConfigDriver.o bin/EZConfig.o
-	${CC} ${CFLAGS} -o bin/ezConfigDriver bin/EZConfigDriver.o bin/EZConfig.o
+bin/ezConfigDriver: bin/EZConfigDriver.o bin/EZConfig.o bin/json.o \
+bin/jsonParser.o
+	${CC} ${CFLAGS} -o bin/ezConfigDriver bin/EZConfigDriver.o bin/EZConfig.o \
+	bin/json.o bin/jsonParser.o
 	
 bin/EZConfigDriver.o: src/util/EZConfigDriver.cpp include/util/EZConfig.h
 	${CC} ${CFLAGS} -o bin/EZConfigDriver.o -c src/util/EZConfigDriver.cpp
@@ -284,7 +286,7 @@ extern/radiotapParser/radiotap-parser.h
 
 
 package:
-	tar czf NachoNet.tar.gz bin/ include/ src/ extern/ Makefile;
+	tar czf NachoNet.tar.gz bin/ include/ src/ extern/ web/ Makefile dist.json;
 
 zeus:
 	cd ../ ; tar czf NachoNet.tar.gz NachoNet ; \

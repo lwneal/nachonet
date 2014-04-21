@@ -109,7 +109,7 @@ void JSON::clear ()
 				{
 					item.value.pObject->clear ();
 					delete item.value.pObject;
-					item.value.pObject == NULL;
+					item.value.pObject = NULL;
 				}
 			}
 		}

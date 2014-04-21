@@ -43,11 +43,12 @@ randomVar(0, 3.0)
 			data.value.floatVal = envVal;
 			pConfig->write (name, "n", data);
 
-			data.value.floatVal = powerAtRefDist;
-			pConfig->write (name, "P_d0", data);
-
 			data.value.floatVal = refDist;
 			pConfig->write (name, "d0", data);
+
+			data.type = jsonParser::INT_TYPE;
+			data.value.intVal = powerAtRefDist;
+			pConfig->write (name, "P_d0", data);
 
 			pConfig->save ();
 		}
@@ -86,11 +87,11 @@ void logNormalShadow::init(EZConfig *pConfig)
 
 		//if there is nothing in the file then don't overwrite the default values
 		if(0.0f != json.getData ("n").value.floatVal
-			 && 0.0f != json.getData ("P_d0").value.floatVal
+			 && 0 != json.getData ("P_d0").value.intVal
 			 && 0.0f != json.getData ("d0").value.floatVal)
 		{
 			envVal = json.getData ("n").value.floatVal;
-			powerAtRefDist = json.getData ("P_d0").value.floatVal;
+			powerAtRefDist = json.getData ("P_d0").value.intVal;
 			refDist = json.getData ("d0").value.floatVal;
 		}
 	}

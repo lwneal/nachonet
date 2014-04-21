@@ -165,7 +165,7 @@ void DistMeasureAdmin::test ()
 	ssMeasurement devSS;
 	distMeasurement devDist;
 
-	if (pNacho->pDataEx->alive ())
+	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
 	{
 		std::cout << "You can't do that while NachoNet is running!\n";
 	}

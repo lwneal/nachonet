@@ -23,7 +23,7 @@ class logNormalShadow : public distMeasure
 		virtual std::vector<std::string> getVariables ();
 
 		const float DEFAULT_REF_DIST = 1;
-		const int DEFAULT_POW_AT_REF = 38;
+		const int DEFAULT_POW_AT_REF = -38;
 		const float DEFAULT_ENV_VAL = 3.5;
 
 	private:

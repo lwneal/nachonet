@@ -33,6 +33,7 @@ pathLoss::pathLoss(bool debug, EZConfig *pConfig)
 	name = "pathLoss";
 	envVal = pathLoss::DEFAULT_ENV_VAL;
 	powerAtRefDist = pathLoss::DEFAULT_POW_AT_REF;
+	refDist = pathLoss::DEFAULT_REF_DIST;
 
 
 	if(NULL != pConfig)
@@ -44,7 +45,11 @@ pathLoss::pathLoss(bool debug, EZConfig *pConfig)
 			data.value.floatVal = envVal;
 			pConfig->write (name, "n", data);
 
-			data.value.floatVal = powerAtRefDist;
+			data.value.floatVal = refDist;
+			pConfig->write (name, "d0", data);
+
+			data.type = jsonParser::INT_TYPE;
+			data.value.intVal = powerAtRefDist;
 			pConfig->write (name, "P_d0", data);
 
 			pConfig->save();
@@ -97,10 +102,12 @@ void pathLoss::init(EZConfig *pConfig)
 
 		//if there is nothing in the file then don't overwrite the default values
 		if(0.0f != json.getData ("n").value.floatVal
-			 && 0.0f != json.getData ("P_d0").value.floatVal)
+			 && 0 != json.getData ("P_d0").value.intVal
+			 && 0.0f != json.getData ("d0").value.floatVal)
 		{
 			envVal = json.getData ("n").value.floatVal;
-			powerAtRefDist = json.getData ("P_d0").value.floatVal;
+			powerAtRefDist = json.getData ("P_d0").value.intVal;
+			refDist = json.getData ("d0").value.floatVal;
 		}
 	}
 
@@ -112,7 +119,7 @@ void pathLoss::init(EZConfig *pConfig)
  *
  *Description:  Measures the distance of a device based on the signal strength
  *							from the device. The equation, once more, is:
- *							d = 10^((P - P_d0) / (10 * n))
+ *							d = ((P_d0 * d_0^n) /  P) ^ (1/n)
  *
  *Parameters:   devSS - the signal strength measurement struct which has the
  *											signal strength and the device ID
@@ -125,7 +132,8 @@ distMeasurement pathLoss::measure(ssMeasurement devSS)
 
 	devDist.devID = devSS.devID;
 
-	devDist.dist = pow(10, (devSS.ss - powerAtRefDist) / (10 * envVal));
+	devDist.dist = pow (powerAtRefDist * pow (refDist, envVal) / devSS.ss,
+									1 / envVal);
 
 	if(debug)
 	{
@@ -156,6 +164,7 @@ std::vector<std::string> pathLoss::getVariables ()
 
 	varNames.push_back ("n");
 	varNames.push_back ("P_d0");
+	varNames.push_back ("d0");
 
 	return varNames;
 }

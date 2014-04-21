@@ -20,16 +20,17 @@ class pathLoss : public distMeasure
 		virtual distMeasurement measure(ssMeasurement devSS);
 		virtual std::vector<std::string> getVariables ();
 
-		//These values have been chosen by looking at an example graph in
-		// [Pu et. al. 2011]
-		const float DEFAULT_ENV_VAL = 2.25;
-		static const int DEFAULT_POW_AT_REF = -38; //the power at 1m (unobstructed)
+		const float DEFAULT_ENV_VAL = -.2;
+		static const int DEFAULT_POW_AT_REF = -32; //the power at reference dist
+		const float DEFAULT_REF_DIST = .3048;
 
 	private:
 		//n
 		float envVal; //environmental characterization value
 		//P_d0
 		int powerAtRefDist;
+		//d0
+		float refDist;
 
 		bool debug;
 };

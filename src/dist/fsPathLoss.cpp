@@ -136,7 +136,7 @@ void fsPathLoss::init(EZConfig *pConfig)
  *
  *Description:	Measures the distance of a device based on the free space path
  *							loss model which is, once more:
- *							d = sqrt(lamba^2 / ((4*pi)^2 * 10^(P/-10)))
+ *							d = (10^(((P/-10) - 2log(lamda) + 2log(4*pi)) / 2)) / 10000
  *
  *Parameters:		devSS - the signal strength measurement struct which has the
  *											signal strength and the device ID
@@ -149,8 +149,8 @@ distMeasurement fsPathLoss::measure(ssMeasurement devSS)
 
 	devDist.devID = devSS.devID;
 
-	devDist.dist = sqrt(pow(wavelength, 2) / (pow(4 * M_PI, 2)
-			* pow(10.0, devSS.ss / 10.0)));
+	devDist.dist = pow(10,
+			((devSS.ss/-10) - 2 * log (wavelength) + 2 * log (4 * M_PI)) / 2) / 10000;
 
 	if(debug)
 	{

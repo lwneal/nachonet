@@ -18,19 +18,29 @@ int main ()
 	EZConfig myConfig ("dist.json"), otherConfig ("dist.json");
 	EZConfig badConfig ("dist.conf");
 	jsonData myData;
+	JSON data;
 
-	myData = myConfig.getSection ("pathLoss");
+	data = myConfig.getSection ("pathLoss");
 
-	if (-38 != myData.value.pObject->getData ("P_d0").value.intVal)
+	if (-38 != data.getData ("P_d0").value.intVal)
 	{
 		failure ("did not get correct value");
 	}
 
-	myData = myConfig.getSection ("fsPathLoss");
+	data = myConfig.getSection ("fsPathLoss");
 
-	if (1 != myData.value.pObject->getData ("channel").value.intVal)
+	if (1 != data.getData ("channel").value.intVal)
 	{
 		failure ("did not get correct value");
+	}
+
+
+	myConfig.getSection ("pathLoss").writeJSON ("");
+	myConfig.getSection ("thing").writeJSON ("");
+
+	if (!myConfig.sectionExists ("thing"))
+	{
+
 	}
 
 

@@ -119,11 +119,9 @@ void fsPathLoss::init(EZConfig *pConfig)
 
 	if(NULL != pConfig && !noConfig)
 	{
-		pJson = pConfig->getSection (name);
-
-		//if there is nothing in the file then don't overwrite the default values
-		if(0 != pJson->getData ("channel").value.intVal)
+		if (pConfig->sectionExists (name))
 		{
+			pJson = pConfig->getSection (name);
 
 			setWavelength (pJson->getData ("channel").value.intVal);
 		}

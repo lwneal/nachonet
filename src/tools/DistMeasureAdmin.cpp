@@ -65,6 +65,8 @@ void DistMeasureAdmin::options ()
 				break;
 		}
 
+		pNacho->pDistMeasure->init (&distConfig);
+
 		std::cout << "Check the configuration for the current equation\n";
 	}
 }
@@ -150,6 +152,8 @@ void DistMeasureAdmin::configure ()
 				}
 
 				distConfig.save ();
+
+				pNacho->pDistMeasure->init (&distConfig);
 			}
 		}
 	}
@@ -197,7 +201,7 @@ void DistMeasureAdmin::test ()
 				testFile >> devSS.devID >> devSS.ss;
 				devDist = pNacho->pDistMeasure->measure (devSS);
 
-				*pOut << devDist.devID << "  " << devDist.dist << "\n";
+				*pOut << devDist.devID << "\t" << devDist.dist << "\n";
 			}
 		}
 

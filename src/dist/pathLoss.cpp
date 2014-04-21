@@ -98,13 +98,11 @@ void pathLoss::init(EZConfig *pConfig)
 
 	if(NULL != pConfig && !noConfig)
 	{
-		pJson = pConfig->getSection (name);
 
-		//if there is nothing in the file then don't overwrite the default values
-		if(0.0f != pJson->getData ("n").value.floatVal
-			 && 0 != pJson->getData ("P_d0").value.intVal
-			 && 0.0f != pJson->getData ("d0").value.floatVal)
+		if (pConfig->sectionExists (name))
 		{
+			pJson = pConfig->getSection (name);
+
 			envVal = pJson->getData ("n").value.floatVal;
 			powerAtRefDist = pJson->getData ("P_d0").value.intVal;
 			refDist = pJson->getData ("d0").value.floatVal;

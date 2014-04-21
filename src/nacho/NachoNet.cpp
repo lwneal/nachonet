@@ -52,6 +52,7 @@ NachoNet::NachoNet (bool debug, bool verbose, bool feeder,
 		pDataCollect = new stdCollect (stdCollect::DEFAULT_IFACE, debug);
 	}
 	pDistMeasure = new pathLoss (debug, &distConfig);
+	pDistMeasure->init (&distConfig);
 	pDataEx = NULL;
 	pLocalization = new localization (debug);
 	pWorker = NULL;

@@ -25,14 +25,14 @@ Purpose:		Defines the behavior of the logNormalShadow object which means
  *Returned:		 None
  *****************************************************************************/
 logNormalShadow::logNormalShadow(bool debug, EZConfig *pConfig) :
-randomVar(0, 3.0)
+randomVar(0, 1.0)
 {
 	jsonData data;
 
 	name = "logNormal";
 	envVal = logNormalShadow::DEFAULT_ENV_VAL;
-	powerAtRefDist = logNormalShadow::DEFAULT_REF_DIST;
-	refDist = logNormalShadow::DEFAULT_POW_AT_REF;
+	powerAtRefDist = logNormalShadow::DEFAULT_POW_AT_REF;
+	refDist = logNormalShadow::DEFAULT_REF_DIST;
 
 	if(NULL != pConfig)
 	{
@@ -83,13 +83,11 @@ void logNormalShadow::init(EZConfig *pConfig)
 
 	if(NULL != pConfig && !noConfig)
 	{
-		pJson = pConfig->getSection (name);
-
-		//if there is nothing in the file then don't overwrite the default values
-		if(0.0f != pJson->getData ("n").value.floatVal
-			 && 0 != pJson->getData ("P_d0").value.intVal
-			 && 0.0f != pJson->getData ("d0").value.floatVal)
+		if (pConfig->sectionExists (name))
 		{
+
+			pJson = pConfig->getSection (name);
+
 			envVal = pJson->getData ("n").value.floatVal;
 			powerAtRefDist = pJson->getData ("P_d0").value.intVal;
 			refDist = pJson->getData ("d0").value.floatVal;
@@ -115,7 +113,7 @@ distMeasurement logNormalShadow::measure(ssMeasurement devSS)
 	float random = randomVar(generator);
 	devDist.devID = devSS.devID;
 
-	devDist.dist = refDist * exp(((float)(devSS.ss) - (float)(powerAtRefDist) -
+	devDist.dist = refDist * exp(((float)(-devSS.ss) + (float)(powerAtRefDist) -
 																random) / (10.0 * envVal));
 
 	if(debug)

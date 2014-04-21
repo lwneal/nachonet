@@ -25,7 +25,7 @@ class EZConfig
 		~EZConfig ();
 		void write (std::string section, std::string key, jsonData data);
 		void save (bool readable = false);
-		JSON getSection (std::string section);
+		JSON * getSection (std::string section);
 		JSON getAll ();
 		std::string getFileName ();
 		void clearSection (std::string section);

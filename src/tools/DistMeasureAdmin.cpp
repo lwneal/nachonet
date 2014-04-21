@@ -88,7 +88,7 @@ void DistMeasureAdmin::configure ()
 	std::pair<std::string, std::string> update;
 
 	jsonData data;
-	JSON json;
+	JSON * pJson;
 	std::vector<std::string> varNames;
 
 	if (NULL != pNacho->pDataEx && pNacho->pDataEx->alive ())
@@ -103,46 +103,54 @@ void DistMeasureAdmin::configure ()
 
 			name = pNacho->pDistMeasure->getName();
 
-			json = distConfig.getSection (name);
-			varNames = pNacho->pDistMeasure->getVariables ();
-
-			std::cout << "Enter a number to update the value or 0 to leave it alone\n";
-			std::cout << name << std::endl;
-
-			for (auto & var : varNames)
+			if (!distConfig.sectionExists (name))
 			{
-				std::cout << var << " (";
-
-				if (jsonParser::INT_TYPE == json.getData (var).type)
-				{
-					std::cout << json.getData (var).value.intVal;
-				}
-				else if (jsonParser::FLT_TYPE == json.getData (var).type)
-				{
-					std::cout << json.getData (var).value.floatVal;
-				}
-
-				std::cout << "): ";
-				std::cin >> input;
-
-				if(0 != input.compare("0"))
-				{
-					data = json.getData (var);
-
-					if (jsonParser::INT_TYPE == data.type)
-					{
-						data.value.intVal = std::atoi (input.c_str ());
-					}
-					else if (jsonParser::FLT_TYPE == data.type)
-					{
-						data.value.floatVal = std::atof (input.c_str ());
-					}
-
-					distConfig.write (name, var, data);
-				}
+				std::cout << "Section not found!\n";
 			}
+			else
+			{
 
-			distConfig.save ();
+				pJson = distConfig.getSection (name);
+				varNames = pNacho->pDistMeasure->getVariables ();
+
+				std::cout << "Enter a number to update the value or 0 to leave it alone\n";
+				std::cout << name << std::endl;
+
+				for (auto & var : varNames)
+				{
+					std::cout << var << " (";
+
+					if (jsonParser::INT_TYPE == pJson->getData (var).type)
+					{
+						std::cout << pJson->getData (var).value.intVal;
+					}
+					else if (jsonParser::FLT_TYPE == pJson->getData (var).type)
+					{
+						std::cout << pJson->getData (var).value.floatVal;
+					}
+
+					std::cout << "): ";
+					std::cin >> input;
+
+					if(0 != input.compare("0"))
+					{
+						data = pJson->getData (var);
+
+						if (jsonParser::INT_TYPE == data.type)
+						{
+							data.value.intVal = std::atoi (input.c_str ());
+						}
+						else if (jsonParser::FLT_TYPE == data.type)
+						{
+							data.value.floatVal = std::atof (input.c_str ());
+						}
+
+						distConfig.write (name, var, data);
+					}
+				}
+
+				distConfig.save ();
+			}
 		}
 	}
 }

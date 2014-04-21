@@ -22,7 +22,7 @@ class fsPathLoss : public distMeasure
 		virtual std::vector<std::string> getVariables ();
 
 		void setWavelength(int channel);
-		void setWavelength(float frequency);
+		void setWavelength(double frequency);
 
 		//frequency in GHz of WiFi channel 1
 		const float DEFAULT_FREQ = 2.412;
@@ -35,7 +35,7 @@ class fsPathLoss : public distMeasure
 		static const char FREQUENCY = 'f';
 
 	private:
-		float wavelength; //lambda in the above eqn (from file) based on channel
+		double wavelength; //lambda in the above eqn (from file) based on channel
 
 		bool debug;
 };

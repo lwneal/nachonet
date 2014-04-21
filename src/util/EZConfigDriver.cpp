@@ -15,39 +15,81 @@ void failure(const char * message)
 
 int main ()
 {
-	EZConfig myConfig ("dist.json"), otherConfig ("dist.json");
-	EZConfig badConfig ("dist.conf");
+	EZConfig myConfig ("testfiles/ezTest.json"),
+					 otherConfig ("testfiles/ezTest.json");
+	EZConfig badConfig ("testfiles/ezTest.conf");
 	jsonData myData;
-	JSON data;
+	JSON * pData;
 
-	data = myConfig.getSection ("pathLoss");
+	pData = myConfig.getSection ("myVal");
 
-	if (-38 != data.getData ("P_d0").value.intVal)
+	if (!myConfig.sectionExists ("myVal"))
+	{
+		failure ("did not return true on existent section");
+	}
+
+	if (-22 != pData->getData ("int").value.intVal)
 	{
 		failure ("did not get correct value");
 	}
 
-	data = myConfig.getSection ("fsPathLoss");
+	pData = myConfig.getSection ("otherVal");
 
-	if (1 != data.getData ("channel").value.intVal)
+	if (!pData->getData ("bool").value.boolVal)
 	{
 		failure ("did not get correct value");
 	}
 
+	pData = myConfig.getSection ("empty");
 
-	myConfig.getSection ("pathLoss").writeJSON ("");
-	myConfig.getSection ("thing").writeJSON ("");
-
-	if (!myConfig.sectionExists ("thing"))
+	if (NULL == pData)
 	{
-
+		failure ("returned null on empty json object");
 	}
 
+	if (myConfig.sectionExists ("thing"))
+	{
+		failure ("returned true on nonexistent section");
+	}
+
+	myData.type = jsonParser::STR_TYPE;
+	myData.value.strVal = "text";
+	myConfig.write ("myVal", "string", myData);
+
+	myConfig.save ();
+
+	pData = myConfig.getSection ("myVal");
+
+	if (-22 != pData->getData ("int").value.intVal)
+	{
+		failure ("did not get correct value");
+	}
+
+	pData = myConfig.getSection ("otherVal");
+
+	if (!pData->getData ("bool").value.boolVal)
+	{
+		failure ("did not get correct value");
+	}
+
+	pData = myConfig.getSection ("myVal");
+
+	if (0 != pData->getData ("string").value.strVal.compare ("text"))
+	{
+		failure ("did not return correct value");
+	}
 
 	myData.type = jsonParser::INT_TYPE;
-	myData.value.intVal = 25;
-	otherConfig.write ("fsPathLoss", "thing", myData);
+	myData.value.intVal = myConfig.getSection ("myVal")->getData("int").value.intVal - 1;
+	myConfig.write ("myVal", "int", myData);
 
+	if (-23 != pData->getData ("int").value.intVal)
+	{
+		failure ("did not get correct value");
+	}
+
+
+	myConfig.save ();
 
 
 	return 0;

@@ -26,7 +26,7 @@ typedef struct distMeasurement
 	}
 
   std::string devID;
-  float dist;
+  double dist;
 } distMeasurement;
 
 class distMeasure

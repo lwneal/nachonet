@@ -47,7 +47,7 @@ JSON::~JSON ()
 /*******************************************************************************
  * Method:			getData
  *
- * Description: Return the value for the given key
+ * Description: Return the value for the given key if it exists
  *
  * Parameters:  key - the key to search for
  *
@@ -55,7 +55,14 @@ JSON::~JSON ()
  ******************************************************************************/
 jsonData JSON::getData (std::string key)
 {
-	return keyVal[key];
+	jsonData returnVal;
+
+	if (keyVal.count (key))
+	{
+		returnVal = keyVal[key];
+	}
+
+	return returnVal;
 }
 
 /*******************************************************************************

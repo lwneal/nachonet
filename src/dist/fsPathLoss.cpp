@@ -80,7 +80,7 @@ fsPathLoss::~fsPathLoss()
  *****************************************************************************/
 void fsPathLoss::setWavelength(int channel)
 {
-	float frequency = DEFAULT_FREQ + ((channel - 1) * CHANNEL_DIFF);
+	double frequency = DEFAULT_FREQ + ((channel - 1) * CHANNEL_DIFF);
 
 	setWavelength(frequency);
 }
@@ -95,7 +95,7 @@ void fsPathLoss::setWavelength(int channel)
  *
  *Returned:			None
  *****************************************************************************/
-void fsPathLoss::setWavelength(float frequency)
+void fsPathLoss::setWavelength(double frequency)
 {
 	wavelength = 299792458 / (frequency * pow(10,9));
 }
@@ -115,17 +115,17 @@ void fsPathLoss::setWavelength(float frequency)
  *****************************************************************************/
 void fsPathLoss::init(EZConfig *pConfig)
 {
-	JSON json;
+	JSON * pJson;
 
 	if(NULL != pConfig && !noConfig)
 	{
-		json = pConfig->getSection (name);
+		pJson = pConfig->getSection (name);
 
 		//if there is nothing in the file then don't overwrite the default values
-		if(0 != json.getData ("channel").value.intVal)
+		if(0 != pJson->getData ("channel").value.intVal)
 		{
 
-			setWavelength(json.getData ("channel").value.intVal);
+			setWavelength (pJson->getData ("channel").value.intVal);
 		}
 	}
 
@@ -150,7 +150,8 @@ distMeasurement fsPathLoss::measure(ssMeasurement devSS)
 	devDist.devID = devSS.devID;
 
 	devDist.dist = pow(10,
-			((devSS.ss/-10) - 2 * log (wavelength) + 2 * log (4 * M_PI)) / 2) / 10000;
+			((devSS.ss / -10.0) - (2 * log10 (wavelength)) + (2 * log10 (4 * M_PI))) / 2)
+			/ 10000;
 
 	if(debug)
 	{
@@ -158,7 +159,7 @@ distMeasurement fsPathLoss::measure(ssMeasurement devSS)
 		std::cout << std::setw(10) << "SS" << std::setw(10)<< "lamda";
 		std::cout	<< std::setw(10) << "d\n";
 		std::cout << "------------------------------\n";
-		std::cout << std::setw(10) << devSS.ss << std::setw(10) << std::setprecision(4)
+		std::cout << std::setw(10) << devSS.ss << std::setw(10) << std::setprecision(6)
 							<< wavelength;
 		std::cout << std::setw(10) << std::setprecision(4) << devDist.dist << "\n\n";
 	}

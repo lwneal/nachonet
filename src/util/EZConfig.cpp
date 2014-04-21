@@ -69,8 +69,8 @@ EZConfig::EZConfig (std::string fileName)
  ******************************************************************************/
 EZConfig::~EZConfig ()
 {
-	myJSON.clear ();
 	save ();
+	myJSON.clear ();
 }
 
 /*******************************************************************************
@@ -88,12 +88,14 @@ void EZConfig::write (std::string section, std::string key, jsonData data)
 {
 	jsonData sectionData;
 
-	sectionData = myJSON.getData (section);
+	if (sectionExists (section))
+	{
+		sectionData = myJSON.getData (section);
+		sectionData.type = jsonParser::OBJ_TYPE;
+		sectionData.value.pObject->setValue (key, data);
 
-	sectionData.type = jsonParser::OBJ_TYPE;
-	sectionData.value.pObject->setValue (key, data);
-
-	myJSON.setValue (section, sectionData);
+		myJSON.setValue (section, sectionData);
+	}
 }
 
 /*******************************************************************************
@@ -163,19 +165,20 @@ void EZConfig::save (bool readable)
  *
  *Returned:			JSON - the section data
  ******************************************************************************/
-JSON EZConfig::getSection (std::string section)
+JSON * EZConfig::getSection (std::string section)
 {
 	jsonData sectionData;
-	JSON json;
-	jsonParser parser;
 
 	sectionData = myJSON.getData (section);
 
-	parser.init (sectionData.value.pObject->writeJSON (""));
-
-	json = parser.getObject ();
-
-	return json;
+	if (NULL == sectionData.value.pObject)
+	{
+		return NULL;
+	}
+	else
+	{
+		return sectionData.value.pObject;
+	}
 }
 
 /*******************************************************************************
@@ -237,7 +240,7 @@ bool EZConfig::sectionExists (std::string section)
 {
 	bool returnVal = true;
 
-	if (0 == getSection (section).writeJSON("").compare ("{}"))
+	if (NULL == getSection (section))
 	{
 		returnVal = false;
 	}

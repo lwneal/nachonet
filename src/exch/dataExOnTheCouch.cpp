@@ -1121,11 +1121,11 @@ void dataExOnTheCouch::updateCouchFromNode ()
 {
 	std::ostringstream response;
 	std::string url = "";
-	JSON json, jsonLoc, jsonDist, jsonResponse;
+	JSON json, jsonLoc, *pJsonDist, jsonResponse;
 	jsonParser parser;
 	jsonData data, entry;
 	location loc;
-	std::vector<refMeasurement> nodeMeasurements;
+	std::vector<distMeasurement> measurements;
 
 	url = "http://" + LOCALHOST + ':' + std::to_string (DEFAULT_COUCH_PORT)
 				+ '/' + TARGET_DB[NODES] + '/' + std::to_string (getID ());
@@ -1156,30 +1156,37 @@ void dataExOnTheCouch::updateCouchFromNode ()
 
 	//now start building up an array of device measurements because we don't know
 	//what is different between this and CouchDB we will just update everything
-	nodeMeasurements = nodes[getID ()].getAllMeasurements ();
+	measurements = nodes[getID ()].getAllBasicMeasurements ();
 	data.type = jsonParser::VEC_TYPE;
 
-	for (auto & distEntry : nodeMeasurements)
+	pJsonDist = new JSON[measurements.size ()];
+
+	int i = 0;
+	for (auto & distEntry : measurements)
 	{
 		entry.type = jsonParser::STR_TYPE;
-		entry.value.strVal = distEntry.devDist.devID;
+		entry.value.strVal = distEntry.devID;
 
-		jsonDist.setValue (ID, entry);
+		pJsonDist[i].setValue (ID, entry);
 
 		entry.type = jsonParser::FLT_TYPE;
-		entry.value.floatVal = distEntry.devDist.dist;
+		entry.value.floatVal = distEntry.dist;
 
-		jsonDist.setValue (DISTANCE, entry);
+		pJsonDist[i].setValue (DISTANCE, entry);
 
 		entry.type = jsonParser::OBJ_TYPE;
-		entry.value.pObject = &jsonDist;
+		entry.value.pObject = &pJsonDist[i];
 
 		data.value.array.push_back (entry);
+		i++;
 	}
 
 	json.setValue (MEASUREMENTS, data);
 
+	std::cout << json.writeJSON ("") << "\n";
 	curlPut (url, json.writeJSON(""), response);
+
+	delete [] pJsonDist;
 
 	parser.init (response.str ());
 	jsonResponse = parser.getObject ();

@@ -280,7 +280,6 @@ void NachoNet::worker ()
 		}
 
 		//update measurement information in data exchange
-		std::cout << "updating dev distances\n";
 		for (auto & dist : distances)
 		{
 			pDataEx->updateDevMeasurement (dist);
@@ -294,7 +293,6 @@ void NachoNet::worker ()
 		pDataEx->pullUpdates (dataExOnTheCouch::DEVICES);
 
 		//get reference measurements for a valid device
-		std::cout << "get reference distances\n";
 		devForUpdate = pDataEx->getDevForUpdate ();
 
 		if (0 != devForUpdate.compare (""))
@@ -321,8 +319,6 @@ void NachoNet::worker ()
 		signalStrengths.clear ();
 		distances.clear ();
 		referenceDistances.clear ();
-
-		std::cout << "End of worker loop\n";
 	}
 }
 

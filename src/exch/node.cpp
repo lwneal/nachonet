@@ -142,6 +142,20 @@ refMeasurement node::getMeasurement (std::string devID)
 }
 
 /*******************************************************************************
+ * Method:			getBasicMeasurement
+ *
+ * Description:	Get a reference measurement for a particular device.
+ *
+ * Parameters:	devID - the device whose measurement we want to get
+ *
+ * Returned:		distMeasurement
+ ******************************************************************************/
+distMeasurement node::getBasicMeasurement (std::string devID)
+{
+	return measurements[devID];
+}
+
+/*******************************************************************************
  * Method:			getAllMeasurements
  *
  * Description:	Get a vector of all of the measurements that the node has taken
@@ -160,6 +174,27 @@ std::vector<refMeasurement> node::getAllMeasurements ()
 	}
 
 	return allMeasurements;
+}
+
+/*******************************************************************************
+ * Method:			getAllBasicMeasurements
+ *
+ * Description:	Get a vector of all of the measurements that the node has taken
+ *
+ * Parameters:	None
+ *
+ * Returned:		vector of distance measurements
+ ******************************************************************************/
+std::vector<distMeasurement> node::getAllBasicMeasurements ()
+{
+	std::vector<distMeasurement> distances;
+
+	for (auto entry : measurements)
+	{
+		distances.push_back (entry.second);
+	}
+
+	return distances;
 }
 
 /*******************************************************************************

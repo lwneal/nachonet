@@ -12,7 +12,7 @@ Purpose:		Tests the functionality of the json parser and writer
 
 int main ()
 {
-	JSON obj;
+	JSON obj, entry;
 	jsonParser *pParser;
 	jsonData data, element;
 	std::string jsonStr;
@@ -181,6 +181,22 @@ int main ()
 	std::cout << "\n";
 
 	obj.clear ();
+
+	std::cout << "\nBuild array of objects and print:\n";
+	jsonData val;
+
+	val.type = jsonParser::INT_TYPE;
+	val.value.intVal = 1;
+	entry.setValue ("a", val);
+
+	val.type = jsonParser::BOOL_TYPE;
+	val.value.boolVal = true;
+	entry.setValue ("alive", val);
+
+	element.type = jsonParser::OBJ_TYPE;
+	element.value.pObject = & entry;
+
+
 
 	delete pParser;
 

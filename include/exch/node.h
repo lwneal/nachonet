@@ -26,7 +26,9 @@ class node
     void setLocation (location loc);
     void setMeasurement (distMeasurement devDist);
     refMeasurement getMeasurement (std::string devID);
+    distMeasurement getBasicMeasurement (std::string devID);
     std::vector<refMeasurement> getAllMeasurements ();
+    std::vector<distMeasurement> getAllBasicMeasurements ();
     void clearMeasurements ();
 
     static const int NO_ID = -1;

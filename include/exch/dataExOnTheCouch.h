@@ -65,6 +65,7 @@ class dataExOnTheCouch : public dataEx
     static const std::string DEV_ID;
     static const std::string DISTANCE;
     static const std::string REVISION;
+    static const std::string RESPONSE_REV;
     static const std::string SOURCE;
     static const std::string TARGET;
     static const std::string REPLICATE;

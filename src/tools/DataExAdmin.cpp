@@ -38,18 +38,26 @@ void DataExAdmin::configure ()
 	}
 	else
 	{
-		loc.theID.intID = pNacho->pDataEx->getID ();
+		//loc.theID.intID = pNacho->pDataEx->getID ();
 		thisNode = pNacho->pDataEx->dropNode (pNacho->pDataEx->getID ());
+
+
+		loc = thisNode.getLocation ();
+		std::cout << "Current location : (" << loc.x << ", " << loc.y << ")\n";
 
 		do
 		{
-			std::cout << "Please enter the location of this node x y:";
-		 std::cin >> loc.x >> loc.y;
+			std::cout << "Please enter the location of this node\n";
+			std::cout <<	"x: ";
+			std::cin >> loc.x;
+			std::cout << "y: ";
+			std::cin >> loc.y;
 		} while (0 > loc.x || 0 > loc.y);
 
 		thisNode.setLocation (loc);
 
 		pNacho->pDataEx->addNode (thisNode);
+		pNacho->pDataEx->pushUpdates (dataExOnTheCouch::NODES);
 	}
 
 }

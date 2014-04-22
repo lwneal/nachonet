@@ -55,6 +55,7 @@ const std::string dataExOnTheCouch::MEASUREMENTS = "measurements";
 const std::string dataExOnTheCouch::DEV_ID = "devID";
 const std::string dataExOnTheCouch::DISTANCE = "dist";
 const std::string dataExOnTheCouch::REVISION = "_rev";
+const std::string dataExOnTheCouch::RESPONSE_REV = "rev";
 const std::string dataExOnTheCouch::SOURCE = "source";
 const std::string dataExOnTheCouch::TARGET = "target";
 const std::string dataExOnTheCouch::REPLICATE = "_replicate";
@@ -1120,7 +1121,8 @@ void dataExOnTheCouch::updateCouchFromNode ()
 {
 	std::ostringstream response;
 	std::string url = "";
-	JSON json, jsonLoc, jsonDist;
+	JSON json, jsonLoc, jsonDist, jsonResponse;
+	jsonParser parser;
 	jsonData data, entry;
 	location loc;
 	std::vector<refMeasurement> nodeMeasurements;
@@ -1179,6 +1181,13 @@ void dataExOnTheCouch::updateCouchFromNode ()
 
 	curlPut (url, json.writeJSON(""), response);
 
+	parser.init (response.str ());
+	jsonResponse = parser.getObject ();
+
+	nodeDBRevisions[getID ()] = jsonResponse.getData (RESPONSE_REV).value.strVal;
+
+	jsonResponse.clear ();
+
 }
 
 /*******************************************************************************
@@ -1196,14 +1205,15 @@ void dataExOnTheCouch::updateCouchFromDevs ()
 	//use stored revision id
 	std::ostringstream response;
 	std::string url = "";
-	JSON json, jsonLoc;
+	JSON json, jsonLoc, jsonResponse;
+	jsonParser parser;
 	jsonData data, entry;
 	location loc;
 	std::vector<refMeasurement> nodeMeasurements;
 
 	for (auto & thisDev : devsUpdatedSinceLastPush)
 	{
-		url = url + "http://" + LOCALHOST + ':' + std::to_string(DEFAULT_COUCH_PORT)
+		url = "http://" + LOCALHOST + ':' + std::to_string(DEFAULT_COUCH_PORT)
 					+ '/' + TARGET_DB[DEVICES] + '/' + thisDev.getID();
 
 		data.type = jsonParser::STR_TYPE;
@@ -1231,6 +1241,16 @@ void dataExOnTheCouch::updateCouchFromDevs ()
 		json.setValue (LOCATION, data);
 
 		curlPut (url, json.writeJSON(""), response);
+
+		parser.init (response.str ());
+		jsonResponse = parser.getObject ();
+
+		devDBRevisions[thisDev.getID ()] =
+				jsonResponse.getData (RESPONSE_REV).value.strVal;
+
+		jsonResponse.clear ();
+
+		url.clear ();
 	}
 
 	//reset

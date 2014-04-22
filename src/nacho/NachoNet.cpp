@@ -273,7 +273,7 @@ void NachoNet::worker ()
 		//calculate distances from signal strengths
 		for (auto & ss : signalStrengths)
 		{
-			if (SS_THRESHOLD > ss.ss)
+			if (SS_THRESHOLD < ss.ss)
 			{
 				distances.push_back (pDistMeasure->measure (ss));
 			}
@@ -288,6 +288,7 @@ void NachoNet::worker ()
 
 		//share new data with the rest of NachoNet
 		pDataEx->pushUpdates (dataExOnTheCouch::NODES);
+		pDataEx->pushUpdates (dataExOnTheCouch::DEVICES);
 
 		//get updated device data
 		pDataEx->pullUpdates (dataExOnTheCouch::DEVICES);

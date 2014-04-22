@@ -23,6 +23,34 @@ const std::string MapOnTheCouch::RESPONSE_REV = "rev";
 using namespace cimg_library;
 
 /*******************************************************************************
+ * Constructor:	MapOnTheCouch
+ *
+ * Description:	Calls global init for curl
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
+MapOnTheCouch::MapOnTheCouch () : Map ()
+{
+	curl_global_init (CURL_GLOBAL_ALL);
+}
+
+/*******************************************************************************
+ * Destroyer!:	~MapOnTheCouch
+ *
+ * Description:	Calls global cleanup for curl (memory leaks otherwise)
+ *
+ * Parameters:	None
+ *
+ * Returned:		None
+ ******************************************************************************/
+MapOnTheCouch::~MapOnTheCouch ()
+{
+	curl_global_cleanup ();
+}
+
+/*******************************************************************************
  * Method:			save
  *
  * Description:	Save the data in the class to the couch. Also send the height
@@ -37,7 +65,7 @@ using namespace cimg_library;
 void MapOnTheCouch::save ()
 {
 	std::ostringstream oss, response;
-	std::string url = RES_LOCATION;
+	std::string url = RES_LOCATION, rev;
 	JSON resource, maxDim, imgDim;
 	jsonParser * pParser;
 	jsonData data, objData;
@@ -68,9 +96,15 @@ void MapOnTheCouch::save ()
 		resource = pParser->getObject ();
 		delete pParser;
 
+		rev = resource.getData (REVISION).value.strVal;
+		resource.clear ();
+
 		data.type = jsonParser::STR_TYPE;
 		data.value.strVal = getMapFileName ();
 		resource.setValue (FILE_NAME, data);
+
+		data.value.strVal = rev;
+		resource.setValue (REVISION, data);
 
 		data.type = jsonParser::FLT_TYPE;
 		data.value.floatVal = getMaxX ();
@@ -102,7 +136,7 @@ void MapOnTheCouch::save ()
 		resource = pParser->getObject ();
 		delete pParser;
 
-		//we have to specify the which revision of the doc to which we
+		//we have to specify which revision of the doc to which we
 		//want to attach the image
 		url += "/image?rev=";
 		url += resource.getData (RESPONSE_REV).value.strVal;
@@ -110,6 +144,8 @@ void MapOnTheCouch::save ()
 		//std::cout << "putting image to: " << url << "\n";
 
 		curlPutImage (url);
+
+		resource.clear ();
 
 		std::cout << "Operation complete.\n";
 	}
@@ -145,6 +181,8 @@ void MapOnTheCouch::load ()
 		y = json.getData (MAX_DIM).value.pObject->getData (Y).value.floatVal;
 
 		setMaxDimensions (x,y);
+
+		json.clear ();
 	}
 }
 

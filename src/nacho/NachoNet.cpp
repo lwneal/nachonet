@@ -453,8 +453,15 @@ void NachoNet::dropNode ()
 			std::cout << "Removing node from NachoNet...\n";
 		}
 
+		active = false;
+		pListener->join ();
+		delete pListener;
+
 		delete pDataEx;
 		pDataEx = NULL;
+
+		active = true;
+		pListener = new std::thread (&NachoNet::listener, this);
 
 
 		if (isVerbose ())

@@ -1281,7 +1281,7 @@ CURLcode dataExOnTheCouch::curlRead (const std::string& url, std::ostream& os,
 	CURLcode code (CURLE_FAILED_INIT);
 	CURL* curl = curl_easy_init ();
 
-	std::cout << url << "\n";
+	//std::cout << url << "\n";
 
 	if (curl)
 	{
@@ -1322,7 +1322,7 @@ CURLcode dataExOnTheCouch::curlPut(const std::string& url,
 	struct curl_slist* headers = NULL;
 	headers = curl_slist_append (headers, "Content-Type: application/json");
 
-	std::cout << url << "\n   " << json << "\n";
+	//std::cout << url << "\n   " << json << "\n";
 	if (curl)
 	{
 		if (CURLE_OK
@@ -1363,7 +1363,7 @@ CURLcode dataExOnTheCouch::curlPost(const std::string& url,
 																		std::ostream& os)
 {
 
-	std::cout << url << "\n   " << json << "\n";
+	//std::cout << url << "\n   " << json << "\n";
 	CURLcode code (CURLE_FAILED_INIT);
 	CURL* curl = curl_easy_init ();
 	struct curl_slist* headers = NULL;

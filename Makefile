@@ -286,7 +286,8 @@ extern/radiotapParser/radiotap-parser.h
 
 
 package:
-	tar czf NachoNet.tar.gz bin/ include/ src/ extern/ web/ Makefile dist.json;
+	tar czf NachoNet.tar.gz bin/ include/ src/ extern/ web/ Makefile dist.json \
+	testfiles/;
 
 zeus:
 	cd ../ ; tar czf NachoNet.tar.gz NachoNet ; \

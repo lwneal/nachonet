@@ -19,6 +19,8 @@ Purpose:		The interface of the Map objected implemented through CouchDB
 class MapOnTheCouch : public Map
 {
 	public:
+		MapOnTheCouch ();
+		~MapOnTheCouch ();
 		virtual void save ();
 		virtual void load ();
 

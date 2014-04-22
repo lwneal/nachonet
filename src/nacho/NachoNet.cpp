@@ -342,6 +342,8 @@ void NachoNet::listener ()
 				pWorker = NULL;
 
 			}
+
+			sleep (2);
 		}
 	}
 }

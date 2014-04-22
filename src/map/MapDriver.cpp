@@ -31,6 +31,8 @@ int main ()
 
 	pMap->load ();
 	pMap->getUserInput ();
+
+	delete pMap;
 }
 
 

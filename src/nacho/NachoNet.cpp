@@ -87,10 +87,10 @@ NachoNet::~NachoNet ()
 
 		pDataEx->setIsAlive (false);
 
-		pWorker->join ();
-		delete pWorker;
+		//pWorker->join ();
+		//delete pWorker;
 
-		pWorker = NULL;
+		//pWorker = NULL;
 	}
 
 	if (isVerbose ())
@@ -139,28 +139,31 @@ void NachoNet::stop ()
 {
 	Message message;
 
-	if (!pDataEx->alive ())
-	{
-		std::cout << "NachoNet is already stopped... Now doing less than nothing.\n";
-	}
-	else if (NULL == pDataEx)
+	if (NULL == pDataEx)
 	{
 		std::cout << "This node has not yet been added to NachoNet.\n";
+	}
+	else if (!pDataEx->alive ())
+	{
+		std::cout << "NachoNet is already stopped... Now doing less than nothing.\n";
 	}
 	else
 	{
 		pDataEx->setIsAlive (false);
 
-		pWorker->join ();
-		delete pWorker;
+		//pWorker->join ();
+		//delete pWorker;
 
-		pWorker = NULL;
+		//pWorker = NULL;
 
 		message.msg = dataEx::STOP;
 
 		for (int id : pDataEx->getNodeIDs ())
 		{
-			message.dest.push_back (id);
+			if (pDataEx->getID () != id)
+			{
+				message.dest.push_back (id);
+			}
 		}
 
 		pDataEx->ping (message);
@@ -186,25 +189,29 @@ void NachoNet::stop ()
 void NachoNet::start ()
 {
 	Message message;
-	if (pDataEx->alive ())
-	{
-		std::cout << "NachoNet is already running\n";
-	}
-	else if (NULL == pDataEx)
+
+	if (NULL == pDataEx)
 	{
 		std::cout << "This node has not yet been added to NachoNet.\n";
+	}
+	else if (pDataEx->alive ())
+	{
+		std::cout << "NachoNet is already running\n";
 	}
 	else
 	{
 		pDataEx->setIsAlive (true);
 
-		pWorker = new std::thread (&NachoNet::worker, this);
+		//pWorker = new std::thread (&NachoNet::worker, this);
 
 		message.msg = dataEx::START;
 
 		for (int id : pDataEx->getNodeIDs ())
 		{
-			message.dest.push_back (id);
+			if (pDataEx->getID () != id)
+			{
+				message.dest.push_back (id);
+			}
 		}
 
 		pDataEx->ping (message);
@@ -236,6 +243,7 @@ void NachoNet::worker ()
 	std::vector<distMeasurement> distances;
 	std::vector<refMeasurement> referenceDistances;
 	location devLocation;
+	std::string devForUpdate;
 	int interval = 0, networkReads = 0;
 
 	while (pDataEx->alive ())
@@ -259,15 +267,20 @@ void NachoNet::worker ()
 
 		} while (!pDataCollect->isReadyToRead ()
 						 || MIN_NETWORK_READS > networkReads);
+
 		signalStrengths = pDataCollect->getSS ();
 
 		//calculate distances from signal strengths
 		for (auto & ss : signalStrengths)
 		{
-			distances.push_back (pDistMeasure->measure (ss));
+			if (SS_THRESHOLD > ss.ss)
+			{
+				distances.push_back (pDistMeasure->measure (ss));
+			}
 		}
 
 		//update measurement information in data exchange
+		std::cout << "updating dev distances\n";
 		for (auto & dist : distances)
 		{
 			pDataEx->updateDevMeasurement (dist);
@@ -280,18 +293,25 @@ void NachoNet::worker ()
 		pDataEx->pullUpdates (dataExOnTheCouch::DEVICES);
 
 		//get reference measurements for a valid device
-		referenceDistances = pDataEx->getMeasurements (pDataEx->getDevForUpdate ());
+		std::cout << "get reference distances\n";
+		devForUpdate = pDataEx->getDevForUpdate ();
 
-		//we must have exactly 3 measurements to trilaterate
-		if (REQUIRED_MEASUREMENTS == referenceDistances.size ())
+		if (0 != devForUpdate.compare (""))
 		{
-			//trilateration
-			devLocation = pLocalization->localize (referenceDistances[0],
-																						 referenceDistances[1],
-																						 referenceDistances[2]);
+			referenceDistances = pDataEx->getMeasurements (devForUpdate);
 
-			//update device location in data exchange
-			pDataEx->updateDevLocation (devLocation.theID.strID, devLocation);
+			//we must have exactly 3 measurements to trilaterate
+			if (REQUIRED_MEASUREMENTS == referenceDistances.size ())
+			{
+				//trilateration
+				devLocation = pLocalization->localize (referenceDistances[0],
+																							 referenceDistances[1],
+																							 referenceDistances[2]);
+
+				//update device location in data exchange
+
+				pDataEx->updateDevLocation (devLocation.theID.strID, devLocation);
+			}
 		}
 
 		//share updated location with the rest of NachoNet
@@ -300,6 +320,8 @@ void NachoNet::worker ()
 		signalStrengths.clear ();
 		distances.clear ();
 		referenceDistances.clear ();
+
+		std::cout << "End of worker loop\n";
 	}
 }
 
@@ -316,7 +338,7 @@ void NachoNet::worker ()
  ******************************************************************************/
 void NachoNet::listener ()
 {
-	bool stateChange = false;
+	bool wasAlive = false;
 
 	while (active)
 	{
@@ -324,17 +346,20 @@ void NachoNet::listener ()
 		{
 			pDataEx->checkMessages ();
 
-			stateChange = stateChange ^ pDataEx->alive ();
-
-			if (stateChange && pDataEx->alive ())
+			if (!wasAlive && pDataEx->alive ())
 			{
-				pDataEx->setIsAlive (true);
+				if (isVerbose ())
+				{
+					std::cout << "starting worker\n";
+				}
+				//pDataEx->setIsAlive (true);
+				wasAlive = true;
 
 				pWorker = new std::thread (&NachoNet::worker, this);
 			}
-			else if (stateChange && !pDataEx->alive ())
+			else if (wasAlive && !pDataEx->alive ())
 			{
-				stateChange = false;
+				wasAlive = false;
 
 				pWorker->join ();
 				delete pWorker;

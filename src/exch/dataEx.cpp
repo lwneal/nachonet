@@ -150,6 +150,7 @@ std::string dataEx::getDevForUpdate ()
 {
 	std::vector<std::string> myDevsToUpdate;
 	std::vector<std::string>::iterator dev;
+	std::string device;
 
 	char * p;
 	unsigned h = 0, g;
@@ -175,11 +176,21 @@ std::string dataEx::getDevForUpdate ()
 
 	//now choose a random element to update since we have no idea how much this
 	//vector has changed since the last time we called this function
-	dev = myDevsToUpdate.begin ();
-	srand (time (0));
-	std::advance (dev, (rand() % myDevsToUpdate.size ()));
 
-	return *dev;
+	if (0 != myDevsToUpdate.size ())
+	{
+		dev = myDevsToUpdate.begin ();
+		srand (time (0));
+		std::advance (dev, (rand() % myDevsToUpdate.size ()));
+
+		device = *dev;
+	}
+	else
+	{
+		device = "";
+	}
+
+	return device;
 }
 
 /*******************************************************************************
@@ -278,6 +289,13 @@ void dataEx::updateDevLocation (std::string id, location loc)
  ******************************************************************************/
 void dataEx::updateDevMeasurement (distMeasurement devDist)
 {
+	device thisDev (devDist.devID);
+
+	if (!devices.count (devDist.devID))
+	{
+		addDevice (thisDev);
+	}
+
 	nodes[myID].setMeasurement(devDist);
 }
 

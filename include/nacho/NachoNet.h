@@ -48,6 +48,7 @@ class NachoNet
 		static const unsigned int REQUIRED_MEASUREMENTS = 3;
 		static const int GARBAGE_COLLECTION_INTERVAL = 10;
 		static const int MIN_NETWORK_READS = 5;
+		static const int SS_THRESHOLD = -68;
 
 	private:
 		dataCollect * pDataCollect;

@@ -165,7 +165,7 @@ dataExOnTheCouch::dataExOnTheCouch ()
 	curlPut (url, json.writeJSON(""), response);
 	url.clear ();
 
-	std::cout << response.str () << "\n";
+	//std::cout << response.str () << "\n";
 
 	json.clear ();
 
@@ -357,7 +357,7 @@ void dataExOnTheCouch::greetNewNode ()
 		//is the message more than just null terminators
 		if (0 < message.size ())
 		{
-			std::cout << "Heard from someone\n";
+			//std::cout << "Heard from someone\n";
 			//let's go find the next available ID for the new guy
 			for (auto & entry : nodeIPAddr)
 			{
@@ -398,17 +398,17 @@ void dataExOnTheCouch::greetNewNode ()
 			curlPost (url, json.writeJSON(""), response);//admin docs sent
 
 
-			std::cout << response.str () << "\n";
+			//std::cout << response.str () << "\n";
 		}
 
-		std::cout << "I know: ";
+		/*std::cout << "I know: ";
 
 		for (auto & entry : this->nodeIPAddr)
 		{
 			std::cout << "(" << entry.first << ", " << entry.second << ")   ";
 		}
 
-		std::cout << "\n";
+		std::cout << "\n";*/
 	}
 }
 
@@ -445,7 +445,8 @@ void dataExOnTheCouch::ping (Message message)
 	for (int nodeID : message.dest)
 	{
 
-		std::cout << msgField.getData (MSG_TEXT).value.strVal << " " << nodeID << "\n";
+		//std::cout << msgField.getData (MSG_TEXT).value.strVal << " " << nodeID
+								//<< "\n";
 
 		if (0 == msgField.getData (MSG_TEXT).value.strVal.compare (HELLO))
 		{
@@ -455,7 +456,7 @@ void dataExOnTheCouch::ping (Message message)
 		url += "http://" + LOCALHOST + ':' + std::to_string(DEFAULT_COUCH_PORT)
 					+ '/' + TARGET_DB[ADMIN] + '/' + std::to_string (nodeID);
 
-		std::cout << url << "\n";
+		//std::cout << url << "\n";
 
 		if(CURLE_OK == curlRead(url, oss))
 		{
@@ -957,14 +958,14 @@ void dataExOnTheCouch::discover ()
 		delete pParser;
 	}
 
-	std::cout << "I know: ";
+	/*std::cout << "I know: ";
 
 	for (auto & entry : this->nodeIPAddr)
 	{
 		std::cout << "(" << entry.first << ", " << entry.second << ")   ";
 	}
 
-	std::cout << "\n";
+	std::cout << "\n";*/
 }
 
 /*******************************************************************************

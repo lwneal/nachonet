@@ -47,6 +47,9 @@ bin/jsonParser.o bin/Map.o bin/MapOnTheCouch.o bin/DataFeeder.o bin/NachoNet.o
 nachonet_valgrind: bin/nachonet
 	valgrind ${VALGRIND_OPTIONS} bin/nachonet
 	
+nachonet_feed_valgrind: bin/nachonet
+	valgrind ${VALGRIND_OPTIONS} bin/nachonet -f testfiles/feed_0.txt
+	
 bin/main.o: src/tools/main.cpp 
 	${CC} ${CFLAGS} -o bin/main.o -c src/tools/main.cpp
 

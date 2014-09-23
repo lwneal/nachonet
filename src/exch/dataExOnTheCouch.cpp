@@ -1183,7 +1183,7 @@ void dataExOnTheCouch::updateCouchFromNode ()
 
 	json.setValue (MEASUREMENTS, data);
 
-	std::cout << json.writeJSON ("") << "\n";
+	//std::cout << json.writeJSON ("") << "\n";
 	curlPut (url, json.writeJSON(""), response);
 
 	delete [] pJsonDist;

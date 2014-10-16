@@ -8,6 +8,7 @@ Purpose:
 *******************************************************************************/
 
 #include "../../include/util/jsonParser.h"
+#include <stdlib.h>
 
 const std::string jsonParser::TRUE = "true";
 const std::string jsonParser::FALSE = "false";

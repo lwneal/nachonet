@@ -6,9 +6,9 @@
 #Purpose:	This is the makefile for the NachoNet project
 ##############################################################################
 
-CC=g++-4.7 -std=gnu++11
+CC=g++ -std=gnu++11
 
-CFLAGS=-g -Wall
+CFLAGS=-g -Wall -I/usr/X11R6/include -L/usr/X11R6/lib -lX11
 
 VALGRIND_OPTIONS=-v --leak-check=yes --leak-check=full --track-origins=yes \
 --show-reachable=yes
